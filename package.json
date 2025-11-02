@@ -1,6 +1,7 @@
 {
   "name": "timescope",
   "version": "0.1.0",
+  "description": "⏰ TimeScope - Application de gestion intelligente du temps et de productivité 📊✨",
   "private": true,
   "scripts": {
     "dev": "next dev",

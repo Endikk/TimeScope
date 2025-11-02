@@ -7,7 +7,6 @@ import {
   Calendar,
   Contact,
   BarChart3,
-  Sparkles
 } from "lucide-react"
 
 import {
@@ -38,7 +37,7 @@ const data = {
       icon: Home,
     },
     {
-      title: "Contact", 
+      title: "Contact",
       url: "/contact",
       icon: Contact,
     },
@@ -59,7 +58,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-            <Sparkles className="h-4 w-4" />
+            <Calendar className="h-4 w-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold text-gray-900">TimeScope</span>
@@ -145,7 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="px-2 py-2">
           {state === "expanded" && (
             <div className="text-xs text-gray-500 text-center">
-              v1.0.0 • TimeScope
+             v1.0.0 • TimeScope
             </div>
           )}
         </div>
