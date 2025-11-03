@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent } from "@/components/ui/card"
 import { Building2, Target, Calendar, MessageSquare } from "lucide-react"
 

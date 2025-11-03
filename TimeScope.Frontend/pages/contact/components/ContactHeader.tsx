@@ -1,5 +1,3 @@
-"use client"
-
 import { MessageSquare } from "lucide-react"
 
 export function ContactHeader() {

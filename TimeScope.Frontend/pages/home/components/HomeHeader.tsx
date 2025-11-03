@@ -1,5 +1,3 @@
-"use client"
-
 import React from "react"
 import { Calendar } from "lucide-react"
 import { CURRENT_USER } from "@/lib/config/user"
