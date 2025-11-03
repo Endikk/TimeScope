@@ -1,127 +1,254 @@
-# TimeScope
+# ⏰ TimeScope
 
-A smart time-tracking software that calculates employees' working hours based on the tasks they complete. It helps monitor productivity, optimize workload distribution, and generate accurate time reports automatically.
+Application de gestion intelligente du temps et de productivité. TimeScope calcule automatiquement les heures de travail des employés en fonction des tâches qu'ils accomplissent, facilite le suivi de la productivité et génère des rapports précis.
 
-## Tech Stack
-
-This is a modern web application built with:
-
-- **[Next.js 16](https://nextjs.org/)** - React framework with App Router
-- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript (strict mode enabled)
-- **[TailwindCSS v4](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[shadcn/ui](https://ui.shadcn.com/)** - High-quality, customizable UI components
-- **[React 19](https://react.dev/)** - Latest React with server components
-
-## Project Structure
+## 📁 Structure du Projet
 
 ```
 TimeScope/
-├── app/                    # Next.js App Router
-│   ├── layout.tsx         # Root layout with navbar
-│   ├── page.tsx           # Homepage
-│   └── globals.css        # Global styles with theme variables
-├── components/            # React components
-│   ├── navbar.tsx        # Navigation component
-│   └── ui/               # shadcn/ui components
-│       ├── button.tsx
-│       ├── card.tsx
-│       └── input.tsx
-├── lib/                  # Utility functions
-│   └── utils.ts         # cn() helper for className merging
-└── public/              # Static assets
+├── TimeScope.Frontend/      # Application Next.js 15 + React 19 + TypeScript
+│   ├── components/          # Composants UI avec shadcn/ui
+│   ├── pages/              # Pages et routing Next.js
+│   ├── lib/                # Utilitaires et types TypeScript
+│   └── public/             # Assets statiques
+│
+├── TimeScope.API/          # API REST ASP.NET Core 8
+│   ├── Controllers/        # Contrôleurs API
+│   ├── Program.cs          # Configuration de l'application
+│   └── appsettings.json    # Configuration
+│
+├── TimeScope.Core/         # Domain Layer - Clean Architecture
+│   ├── Entities/           # Entités métier
+│   └── Interfaces/         # Contrats/Interfaces
+│
+├── TimeScope.Infrastructure/ # Infrastructure Layer
+│   ├── Data/               # DbContext et configuration EF Core
+│   └── Repositories/       # Implémentations des repositories
+│
+├── docker-compose.yml      # PostgreSQL + pgAdmin
+└── TimeScope.sln          # Solution .NET
 ```
 
-## Features
+## 🚀 Stack Technologique
 
-✅ **Modern Next.js Setup** - App Router with server components  
-✅ **TypeScript Strict Mode** - Full type safety  
-✅ **TailwindCSS v4** - Latest styling framework  
-✅ **shadcn/ui Components** - Pre-built, customizable UI components  
-✅ **Responsive Design** - Mobile-friendly layout  
-✅ **Dark Mode Ready** - Theme variables configured  
-✅ **Clean Architecture** - Well-organized folder structure  
+### Frontend
+- **[Next.js 15](https://nextjs.org/)** - Framework React avec App Router
+- **[React 19](https://react.dev/)** - Bibliothèque UI avec Server Components
+- **[TypeScript](https://www.typescriptlang.org/)** - JavaScript typé (mode strict)
+- **[TailwindCSS v4](https://tailwindcss.com/)** - Framework CSS utility-first
+- **[shadcn/ui](https://ui.shadcn.com/)** - Composants UI de haute qualité
 
-## Getting Started
+### Backend
+- **[.NET 8](https://dotnet.microsoft.com/)** - Framework backend haute performance
+- **[ASP.NET Core 8](https://learn.microsoft.com/aspnet/core/)** - API Web moderne
+- **[Entity Framework Core 8](https://learn.microsoft.com/ef/core/)** - ORM avec LINQ
+- **[PostgreSQL 16](https://www.postgresql.org/)** - Base de données relationnelle
+- **[MediatR](https://github.com/jbogard/MediatR)** - Pattern CQRS
+- **[FluentValidation](https://fluentvalidation.net/)** - Validation élégante
+- **[AutoMapper](https://automapper.org/)** - Mapping objet-objet
+- **[Serilog](https://serilog.net/)** - Logging structuré
 
-### Prerequisites
+### Architecture & Patterns
+- **Clean Architecture** - Séparation des couches
+- **Repository Pattern** - Abstraction de l'accès aux données
+- **Unit of Work Pattern** - Gestion transactionnelle
+- **CQRS** - Séparation Command/Query
 
-- Node.js 18+ 
-- npm, yarn, or pnpm
+## 📋 Prérequis
 
-### Installation
+### Pour le Frontend
+- Node.js 18+ (LTS recommandé)
+- npm, yarn ou pnpm
 
-1. Clone the repository:
+### Pour le Backend
+- .NET 8 SDK ou supérieur
+- PostgreSQL 16+ (ou Docker)
+- dotnet-ef CLI tool
+
+## 🛠️ Installation
+
+### 1. Cloner le Projet
+
 ```bash
 git clone https://github.com/Endikk/TimeScope.git
 cd TimeScope
 ```
 
-2. Install dependencies:
+### 2. Démarrer PostgreSQL avec Docker
+
 ```bash
-npm install
+docker-compose up -d
 ```
 
-3. Run the development server:
+Cela démarrera :
+- PostgreSQL sur le port 5432
+- pgAdmin sur le port 5050 (http://localhost:5050)
+  - Email: admin@timescope.local
+  - Password: admin
+
+### 3. Configurer et Démarrer le Backend
+
 ```bash
+# Restaurer les packages
+dotnet restore
+
+# Appliquer les migrations
+cd TimeScope.Infrastructure
+dotnet ef database update --startup-project ../TimeScope.API
+
+# Démarrer l'API
+cd ../TimeScope.API
+dotnet run
+```
+
+L'API sera disponible sur :
+- HTTPS: https://localhost:5001
+- HTTP: http://localhost:5000
+- Swagger: https://localhost:5001/swagger
+
+### 4. Démarrer le Frontend
+
+```bash
+cd TimeScope.Frontend
+
+# Installer les dépendances
+npm install
+
+# Démarrer le serveur de développement
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Le frontend sera disponible sur http://localhost:3000
 
-## Available Scripts
+## 📚 Documentation
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+- **[README Backend](./README-BACKEND.md)** - Documentation complète du backend .NET
+- **[Documentation API](http://localhost:5001/swagger)** - Documentation interactive Swagger (quand l'API est lancée)
 
-## Adding More Components
+## 🗄️ Modèle de Données
 
-To add more shadcn/ui components, you can manually create them in `components/ui/` following the same pattern as the existing components. All components use the `cn()` utility for className merging and follow shadcn/ui conventions.
+### Entités Principales
 
-## Customization
+- **User** - Utilisateurs du système (Admin, Manager, Employee)
+- **WorkTask** - Tâches de travail avec statut et priorité
+- **TimeEntry** - Enregistrements de temps passé sur les tâches
+- **Theme** - Thèmes pour catégoriser les tâches
+- **Group** - Groupes de travail
+- **Project** - Projets associés aux thèmes
 
-### Theme Colors
+Pour plus de détails, voir [README-BACKEND.md](./README-BACKEND.md)
 
-Edit `app/globals.css` to customize the color scheme. The theme uses CSS variables for easy customization:
+## 🔧 Scripts Disponibles
 
-```css
-:root {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
-  --primary: 240 5.9% 10%;
-  /* ... more variables */
-}
-```
-
-### TailwindCSS Configuration
-
-Modify `tailwind.config.ts` to extend the theme with custom colors, fonts, or other utilities.
-
-## Production Build
-
-Build the application for production:
-
+### Frontend (dans TimeScope.Frontend/)
 ```bash
-npm run build
-npm run start
+npm run dev      # Démarrer le serveur de développement
+npm run build    # Build de production
+npm run start    # Démarrer le serveur de production
+npm run lint     # Lancer ESLint
 ```
 
-The application will be optimized and ready for deployment.
+### Backend
+```bash
+dotnet build                    # Compiler la solution
+dotnet run --project TimeScope.API    # Lancer l'API
+dotnet test                     # Lancer les tests (à venir)
 
-## Deployment
+# Entity Framework
+dotnet ef migrations add <MigrationName> --startup-project TimeScope.API
+dotnet ef database update --startup-project TimeScope.API
+dotnet ef migrations remove --startup-project TimeScope.API
+```
 
-This application can be deployed to:
+## 🌐 Endpoints API Principaux
 
-- **Vercel** (recommended for Next.js)
-- **Netlify**
-- **AWS Amplify**
-- Any Node.js hosting platform
+### Users
+- `GET /api/users` - Liste des utilisateurs
+- `GET /api/users/{id}` - Détails d'un utilisateur
+- `POST /api/users` - Créer un utilisateur
+- `PUT /api/users/{id}` - Modifier un utilisateur
+- `DELETE /api/users/{id}` - Supprimer un utilisateur
 
-## License
+### Tasks
+- `GET /api/tasks` - Liste des tâches
+- `GET /api/tasks/{id}` - Détails d'une tâche
+- `POST /api/tasks` - Créer une tâche
+- `PUT /api/tasks/{id}` - Modifier une tâche
+- `DELETE /api/tasks/{id}` - Supprimer une tâche
 
-This project is open source and available under the MIT License.
+Pour la documentation complète de l'API, visitez http://localhost:5001/swagger
 
-## Contributing
+## 🔒 Sécurité
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+- Authentification JWT (à implémenter)
+- Hachage des mots de passe avec BCrypt
+- Validation côté serveur avec FluentValidation
+- Protection CSRF
+- CORS configuré pour le frontend
+
+## 📊 Fonctionnalités
+
+### Actuelles
+✅ Architecture backend Clean Architecture
+✅ API REST avec .NET 8
+✅ Base de données PostgreSQL avec EF Core
+✅ Frontend Next.js avec TailwindCSS
+✅ Composants UI avec shadcn/ui
+✅ Logging avec Serilog
+✅ Documentation API avec Swagger
+
+### À Venir
+🔲 Authentification et autorisation JWT
+🔲 Dashboard de statistiques en temps réel
+🔲 Rapports et exports (PDF, Excel)
+🔲 Notifications en temps réel
+🔲 Mode hors ligne (PWA)
+🔲 Tests unitaires et d'intégration
+🔲 CI/CD Pipeline
+🔲 Déploiement Docker
+
+## 🚀 Déploiement
+
+### Production Build
+
+**Backend**
+```bash
+dotnet publish -c Release -o ./publish
+```
+
+**Frontend**
+```bash
+cd TimeScope.Frontend
+npm run build
+```
+
+### Docker (à venir)
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📝 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 👥 Auteurs
+
+- **Endikk** - *Travail initial* - [GitHub](https://github.com/Endikk)
+
+## 🙏 Remerciements
+
+- [shadcn/ui](https://ui.shadcn.com/) pour les composants UI
+- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) par Uncle Bob
+- La communauté .NET et React
+
+---
+
+⭐ N'oubliez pas de donner une étoile si ce projet vous plaît !
