@@ -1,8 +1,8 @@
-# ⏰ TimeScope
+# TimeScope
 
 Application de gestion intelligente du temps et de productivité. TimeScope calcule automatiquement les heures de travail des employés en fonction des tâches qu'ils accomplissent, facilite le suivi de la productivité et génère des rapports précis.
 
-## 📁 Structure du Projet
+## Structure du Projet
 
 ```
 TimeScope/
@@ -29,7 +29,7 @@ TimeScope/
 └── TimeScope.sln          # Solution .NET
 ```
 
-## 🚀 Stack Technologique
+## Stack Technologique
 
 ### Frontend
 - **[Next.js 15](https://nextjs.org/)** - Framework React avec App Router
@@ -54,7 +54,7 @@ TimeScope/
 - **Unit of Work Pattern** - Gestion transactionnelle
 - **CQRS** - Séparation Command/Query
 
-## 📋 Prérequis
+## Prérequis
 
 ### Pour le Frontend
 - Node.js 18+ (LTS recommandé)
@@ -65,7 +65,7 @@ TimeScope/
 - PostgreSQL 16+ (ou Docker)
 - dotnet-ef CLI tool
 
-## 🛠️ Installation
+## Installation
 
 ### 1. Cloner le Projet
 
@@ -120,12 +120,12 @@ npm run dev
 
 Le frontend sera disponible sur http://localhost:3000
 
-## 📚 Documentation
+## Documentation
 
 - **[README Backend](./README-BACKEND.md)** - Documentation complète du backend .NET
 - **[Documentation API](http://localhost:5001/swagger)** - Documentation interactive Swagger (quand l'API est lancée)
 
-## 🗄️ Modèle de Données
+## Modèle de Données
 
 ### Entités Principales
 
@@ -138,7 +138,7 @@ Le frontend sera disponible sur http://localhost:3000
 
 Pour plus de détails, voir [README-BACKEND.md](./README-BACKEND.md)
 
-## 🔧 Scripts Disponibles
+## Scripts Disponibles
 
 ### Frontend (dans TimeScope.Frontend/)
 ```bash
@@ -160,7 +160,7 @@ dotnet ef database update --startup-project TimeScope.API
 dotnet ef migrations remove --startup-project TimeScope.API
 ```
 
-## 🌐 Endpoints API Principaux
+## Endpoints API Principaux
 
 ### Users
 - `GET /api/users` - Liste des utilisateurs
@@ -178,7 +178,7 @@ dotnet ef migrations remove --startup-project TimeScope.API
 
 Pour la documentation complète de l'API, visitez http://localhost:5001/swagger
 
-## 🔒 Sécurité
+## Sécurité
 
 - Authentification JWT (à implémenter)
 - Hachage des mots de passe avec BCrypt
@@ -186,28 +186,28 @@ Pour la documentation complète de l'API, visitez http://localhost:5001/swagger
 - Protection CSRF
 - CORS configuré pour le frontend
 
-## 📊 Fonctionnalités
+## Fonctionnalités
 
 ### Actuelles
-✅ Architecture backend Clean Architecture
-✅ API REST avec .NET 8
-✅ Base de données PostgreSQL avec EF Core
-✅ Frontend Next.js avec TailwindCSS
-✅ Composants UI avec shadcn/ui
-✅ Logging avec Serilog
-✅ Documentation API avec Swagger
+- Architecture backend Clean Architecture
+- API REST avec .NET 8
+- Base de données PostgreSQL avec EF Core
+- Frontend Next.js avec TailwindCSS
+- Composants UI avec shadcn/ui
+- Logging avec Serilog
+- Documentation API avec Swagger
 
 ### À Venir
-🔲 Authentification et autorisation JWT
-🔲 Dashboard de statistiques en temps réel
-🔲 Rapports et exports (PDF, Excel)
-🔲 Notifications en temps réel
-🔲 Mode hors ligne (PWA)
-🔲 Tests unitaires et d'intégration
-🔲 CI/CD Pipeline
-🔲 Déploiement Docker
+- Authentification et autorisation JWT
+- Dashboard de statistiques en temps réel
+- Rapports et exports (PDF, Excel)
+- Notifications en temps réel
+- Mode hors ligne (PWA)
+- Tests unitaires et d'intégration
+- CI/CD Pipeline
+- Déploiement Docker
 
-## 🚀 Déploiement
+## Déploiement
 
 ### Production Build
 
@@ -227,7 +227,7 @@ npm run build
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
-## 🤝 Contribution
+## Contribution
 
 1. Fork le projet
 2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
@@ -235,20 +235,16 @@ docker-compose -f docker-compose.prod.yml up -d
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
 
-## 📝 Licence
+## Licence
 
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
-## 👥 Auteurs
+## Auteurs
 
 - **Endikk** - *Travail initial* - [GitHub](https://github.com/Endikk)
 
-## 🙏 Remerciements
+## Remerciements
 
 - [shadcn/ui](https://ui.shadcn.com/) pour les composants UI
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) par Uncle Bob
 - La communauté .NET et React
-
----
-
-⭐ N'oubliez pas de donner une étoile si ce projet vous plaît !
