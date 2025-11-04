@@ -6,16 +6,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Badge } from "@/components/ui/badge"
-import { ContactHeader } from "@/pages/contact/components/ContactHeader"
-import { RequestTypeCards, REQUEST_TYPES } from "@/pages/contact/components/RequestTypeCards"
-import { SuccessMessage } from "@/pages/contact/components/SuccessMessage"
+import { REQUEST_TYPES } from "@/pages/contact/components/RequestTypeCards"
 import { contactFormSchema, ContactFormValues, PRIORITY_LEVELS } from "@/lib/types/form"
 import { CURRENT_USER } from "@/lib/config/user"
-import { 
-  Send, 
-  Building2, 
-  Target, 
-  Calendar,
+import {
+  Send,
   AlertTriangle,
   User,
   CheckCircle2,
@@ -69,7 +64,7 @@ export default function Contact() {
                     Demande envoyée avec succès !
                   </h3>
                   <p className="text-green-700 max-w-md">
-                    Votre demande a été transmise à l'équipe d'administration. 
+                    Votre demande a été transmise à l&apos;équipe d&apos;administration.
                     Vous recevrez une réponse sous 24-48h par email.
                   </p>
                   <Badge className="bg-green-100 text-green-800">
@@ -93,10 +88,10 @@ export default function Contact() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
               <MessageSquare className="h-8 w-8 text-blue-600" />
-              Demandes à l'Administration
+              Demandes à l&apos;Administration
             </h1>
             <p className="text-gray-600">
-              Demandez l'ajout de nouveaux projets, activités ou templates à votre espace de travail
+              Demandez l&apos;ajout de nouveaux projets, activités ou templates à votre espace de travail
             </p>
           </div>
 
@@ -122,7 +117,7 @@ export default function Contact() {
                 Nouvelle Demande
               </CardTitle>
               <CardDescription>
-                Remplissez ce formulaire pour demander l'ajout d'éléments à votre système de suivi
+                Remplissez ce formulaire pour demander l&apos;ajout d&apos;éléments à votre système de suivi
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -136,7 +136,7 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Dernière sauvegarde: Aujourd'hui</p>
+                <p className="text-sm text-muted-foreground">Dernière sauvegarde: Aujourd&apos;hui</p>
                 <p className="text-sm text-muted-foreground">Taille: 2.4 GB</p>
               </div>
               <Button className="w-full mt-4" variant="outline">
@@ -194,7 +194,7 @@ export default function AdminPage() {
                 Monitoring temps réel
               </CardTitle>
               <CardDescription>
-                Surveillance en temps réel de l'activité
+                Surveillance en temps réel de l&apos;activité
               </CardDescription>
             </CardHeader>
             <CardContent>

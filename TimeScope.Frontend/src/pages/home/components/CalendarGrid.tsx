@@ -43,8 +43,8 @@ export function CalendarGrid({
           const isToday = dateStr === new Date().toISOString().split('T')[0]
 
           return (
-            <div 
-              key={day}
+            <div
+              key={`${selectedYear}-${selectedMonth}-${day}-${index}`}
               className={`
                 h-12 w-full p-1.5 rounded border transition-all cursor-pointer flex flex-col items-center justify-center
                 ${getIntensityClass(dayTotal)}

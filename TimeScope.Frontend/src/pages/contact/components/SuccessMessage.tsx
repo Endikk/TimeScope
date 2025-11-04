@@ -18,7 +18,7 @@ export function SuccessMessage({ ticketNumber }: SuccessMessageProps) {
             Demande envoyée avec succès !
           </h3>
           <p className="text-green-700 max-w-md">
-            Votre demande a été transmise à l'équipe d'administration. 
+            Votre demande a été transmise à l&apos;équipe d&apos;administration.
             Vous recevrez une réponse sous 24-48h par email.
           </p>
           <Badge className="bg-green-100 text-green-800">

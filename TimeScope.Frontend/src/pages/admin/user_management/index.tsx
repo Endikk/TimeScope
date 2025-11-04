@@ -305,7 +305,7 @@ export default function UserManagement() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.managers}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Gestion d'équipe
+              Gestion d&apos;équipe
             </p>
           </CardContent>
         </Card>
@@ -439,7 +439,7 @@ export default function UserManagement() {
                     Annuler
                   </Button>
                   <Button onClick={handleAddUser}>
-                    Créer l'utilisateur
+                    Créer l&apos;utilisateur
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -466,7 +466,7 @@ export default function UserManagement() {
                   <TableHead>Département</TableHead>
                   <TableHead>Rôle</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead>Date d'entrée</TableHead>
+                  <TableHead>Date d&apos;entrée</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -584,9 +584,9 @@ export default function UserManagement() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Modifier l'utilisateur</DialogTitle>
+            <DialogTitle>Modifier l&apos;utilisateur</DialogTitle>
             <DialogDescription>
-              Modifiez les informations de l'utilisateur
+              Modifiez les informations de l&apos;utilisateur
             </DialogDescription>
           </DialogHeader>
           {selectedUser && (
