@@ -1,78 +1,181 @@
 
 @import "tw-animate-css";
 
+/* Font Face Declarations */
+@font-face {
+  font-family: 'Space Mono';
+  src: url('/assets/Space_Mono/SpaceMono-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  src: url('/assets/Space_Mono/SpaceMono-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Work Sans';
+  src: url('/assets/Work_Sans/WorkSans-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Work Sans';
+  src: url('/assets/Work_Sans/WorkSans-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* TimeScope Design System Variables */
 :root {
+  /* Primary Color System */
+  --fp-bg: #FFFFFF;
+  --fp-text: #1F2937;
+  --fp-accent: #6366F1;
+  
+  /* Font Families */
+  --font-heading: 'Space Mono', monospace;
+  --font-body: 'Work Sans', sans-serif;
+  
+  /* Tailwind CSS Variables (adapted to use our color system) */
   --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
+  --foreground: 220 39% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
+  --card-foreground: 220 39% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 240 5.9% 10%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
+  --popover-foreground: 220 39% 11%;
+  --primary: 239 84% 67%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 14.3% 95.9%;
+  --secondary-foreground: 220 39% 11%;
+  --muted: 220 14.3% 95.9%;
+  --muted-foreground: 220 8.9% 46.1%;
+  --accent: 239 84% 67%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 240 5.9% 10%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 239 84% 67%;
   --radius: 0.5rem;
   --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 240 5.9% 10%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
-  --sidebar-border: 240 5.9% 90%;
-  --sidebar-ring: 240 5.9% 10%;
+  --sidebar-foreground: 220 39% 11%;
+  --sidebar-primary: 239 84% 67%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 14.3% 95.9%;
+  --sidebar-accent-foreground: 220 39% 11%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 239 84% 67%;
   --sidebar: hsl(0 0% 98%);
 }
 
 .dark {
-  --background: 240 10% 3.9%;
+  /* Dark mode with adapted colors */
+  --fp-bg: #1F2937;
+  --fp-text: #FFFFFF;
+  --fp-accent: #818CF8;
+  
+  --background: 220 39% 11%;
   --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
+  --card: 220 39% 11%;
   --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
+  --popover: 220 39% 11%;
   --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 240 5.9% 10%;
-  --secondary: 240 3.7% 15.9%;
+  --primary: 239 84% 80%;
+  --primary-foreground: 220 39% 11%;
+  --secondary: 220 39% 15%;
   --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
+  --muted: 220 39% 15%;
+  --muted-foreground: 220 5% 65%;
+  --accent: 239 84% 80%;
+  --accent-foreground: 220 39% 11%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
-  --sidebar-background: 240 5.2% 33.9%;
+  --border: 220 39% 20%;
+  --input: 220 39% 20%;
+  --ring: 239 84% 80%;
+  --sidebar-background: 220 39% 15%;
   --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 0 0% 98%;
-  --sidebar-primary-foreground: 240 5.9% 10%;
-  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-primary: 239 84% 80%;
+  --sidebar-primary-foreground: 220 39% 11%;
+  --sidebar-accent: 220 39% 20%;
   --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 240 4.9% 83.9%;
-  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-border: 220 39% 20%;
+  --sidebar-ring: 239 84% 80%;
+  --sidebar: hsl(220 39% 15%);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background: var(--fp-bg);
+  color: var(--fp-text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography System */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 1rem 0;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+/* Utility Classes */
+.fp-bg { background: var(--fp-bg); }
+.fp-text { color: var(--fp-text); }
+.fp-accent { background: var(--fp-accent); color: var(--fp-bg); }
+.fp-accent-text { color: var(--fp-accent); }
+
+/* Button Base Style */
+.fp-button {
+  background: var(--fp-accent);
+  color: var(--fp-bg);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fp-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.fp-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 @theme inline {

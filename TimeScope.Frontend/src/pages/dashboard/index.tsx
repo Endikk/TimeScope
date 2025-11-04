@@ -51,17 +51,17 @@ export default function DashboardPage() {
   ];
 
   const projectData: ProjectData[] = [
-    { name: 'TimeScope', hours: 45, color: '#3b82f6' },
-    { name: 'Client Portal', hours: 32, color: '#8b5cf6' },
-    { name: 'Mobile App', hours: 28, color: '#ec4899' },
-    { name: 'API Backend', hours: 22, color: '#10b981' },
-    { name: 'Autres', hours: 15, color: '#f59e0b' }
+    { name: 'TimeScope', hours: 45, color: '#6366F1' },
+    { name: 'Client Portal', hours: 32, color: '#8B7CF6' },
+    { name: 'Mobile App', hours: 28, color: '#A78BFA' },
+    { name: 'API Backend', hours: 22, color: '#C4B5FD' },
+    { name: 'Autres', hours: 15, color: '#DDD6FE' }
   ];
 
   const taskCompletionData = [
-    { status: 'TerminÈ', value: 24, color: '#10b981' },
-    { status: 'En cours', value: 12, color: '#3b82f6' },
-    { status: 'En attente', value: 8, color: '#f59e0b' }
+    { status: 'Termin√©', value: 24, color: '#6366F1' },
+    { status: 'En cours', value: 12, color: '#8B7CF6' },
+    { status: 'En attente', value: 8, color: '#C4B5FD' }
   ];
 
   const StatCard = ({ title, value, icon: Icon, description, trend }: {
@@ -71,16 +71,16 @@ export default function DashboardPage() {
     description: string;
     trend?: string;
   }) => (
-    <Card>
+    <Card className="bg-white border-fp-text/10">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <CardTitle className="text-sm font-medium font-body text-fp-text">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-fp-accent" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <div className="text-2xl font-bold font-heading text-fp-text">{value}</div>
+        <p className="text-xs text-fp-text/60 font-body">{description}</p>
         {trend && (
-          <p className="text-xs text-green-600 mt-1">
+          <p className="text-xs text-fp-accent mt-1 font-body">
             <TrendingUp className="inline h-3 w-3 mr-1" />
             {trend}
           </p>
@@ -90,11 +90,11 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-fp-bg min-h-screen">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Vue d'ensemble de votre activitÈ et de vos performances
+        <h1 className="text-3xl font-heading font-bold tracking-tight text-fp-text">Dashboard</h1>
+        <p className="text-fp-text/70 font-body">
+          Vue d'ensemble de votre activit√© et de vos performances
         </p>
       </div>
 
@@ -104,22 +104,22 @@ export default function DashboardPage() {
           title="Heures aujourd'hui"
           value={stats.totalHoursToday + 'h'}
           icon={Clock}
-          description="Temps enregistrÈ"
+          description="Temps enregistr√©"
           trend="+12% vs hier"
         />
         <StatCard
           title="Heures cette semaine"
           value={stats.totalHoursWeek + 'h'}
           icon={Calendar}
-          description="Sur 40h prÈvues"
-          trend="81% complÈtÈ"
+          description="Sur 40h pr√©vues"
+          trend="81% compl√©t√©"
         />
         <StatCard
           title="Heures ce mois"
           value={stats.totalHoursMonth + 'h'}
           icon={Activity}
-          description="Sur 160h prÈvues"
-          trend="89% complÈtÈ"
+          description="Sur 160h pr√©vues"
+          trend="89% compl√©t√©"
         />
         <StatCard
           title="Projets actifs"
@@ -128,14 +128,14 @@ export default function DashboardPage() {
           description="En cours"
         />
         <StatCard
-          title="T‚ches terminÈes"
+          title="T√¢ches termin√©es"
           value={stats.completedTasks}
           icon={TrendingUp}
           description="Ce mois-ci"
           trend="+8 cette semaine"
         />
         <StatCard
-          title="Membres d'Èquipe"
+          title="Membres d'√©quipe"
           value={stats.teamMembers}
           icon={Users}
           description="Actifs"
@@ -145,10 +145,10 @@ export default function DashboardPage() {
       {/* Charts Section */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Weekly Hours Chart */}
-        <Card>
+        <Card className="bg-white border-fp-text/10">
           <CardHeader>
-            <CardTitle>Heures par jour - Cette semaine</CardTitle>
-            <CardDescription>RÈpartition de votre temps hebdomadaire</CardDescription>
+            <CardTitle className="font-heading text-fp-text">Heures par jour - Cette semaine</CardTitle>
+            <CardDescription className="font-body text-fp-text/70">R√©partition de votre temps hebdomadaire</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -158,17 +158,17 @@ export default function DashboardPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="hours" fill="#3b82f6" name="Heures" />
+                <Bar dataKey="hours" fill="var(--fp-accent)" name="Heures" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         {/* Monthly Trend Chart */}
-        <Card>
+        <Card className="bg-white border-fp-text/10">
           <CardHeader>
-            <CardTitle>Tendance mensuelle</CardTitle>
-            <CardDescription>…volution du temps de travail par semaine</CardDescription>
+            <CardTitle className="font-heading text-fp-text">Tendance mensuelle</CardTitle>
+            <CardDescription className="font-body text-fp-text/70">√âvolution du temps de travail par semaine</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -181,7 +181,7 @@ export default function DashboardPage() {
                 <Line
                   type="monotone"
                   dataKey="hours"
-                  stroke="#8b5cf6"
+                  stroke="var(--fp-accent)"
                   strokeWidth={2}
                   name="Heures"
                 />
@@ -193,10 +193,10 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Project Distribution */}
-        <Card>
+        <Card className="bg-white border-fp-text/10">
           <CardHeader>
-            <CardTitle>RÈpartition par projet</CardTitle>
-            <CardDescription>Distribution des heures ce mois-ci</CardDescription>
+            <CardTitle className="font-heading text-fp-text">R√©partition par projet</CardTitle>
+            <CardDescription className="font-body text-fp-text/70">Distribution des heures ce mois-ci</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -222,10 +222,10 @@ export default function DashboardPage() {
         </Card>
 
         {/* Task Completion Status */}
-        <Card>
+        <Card className="bg-white border-fp-text/10">
           <CardHeader>
-            <CardTitle>Statut des t‚ches</CardTitle>
-            <CardDescription>RÈpartition de vos t‚ches par statut</CardDescription>
+            <CardTitle className="font-heading text-fp-text">Statut des t√¢ches</CardTitle>
+            <CardDescription className="font-body text-fp-text/70">R√©partition de vos t√¢ches par statut</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -252,27 +252,27 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <Card>
+      <Card className="bg-white border-fp-text/10">
         <CardHeader>
-          <CardTitle>ActivitÈ rÈcente</CardTitle>
-          <CardDescription>Vos derniËres actions</CardDescription>
+          <CardTitle className="font-heading text-fp-text">Activit√© r√©cente</CardTitle>
+          <CardDescription className="font-body text-fp-text/70">Vos derni√®res actions</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {[
-              { time: 'Il y a 5 minutes', action: 'EnregistrÈ 2h sur TimeScope - DÈveloppement Dashboard' },
-              { time: 'Il y a 1 heure', action: 'ComplÈtÈ la t‚che "CrÈer les pages admin"' },
-              { time: 'Il y a 2 heures', action: 'EnregistrÈ 1.5h sur Client Portal - API Integration' },
-              { time: 'Hier ‡ 16:30', action: 'ComplÈtÈ la t‚che "Review code PR #123"' },
-              { time: 'Hier ‡ 14:00', action: 'EnregistrÈ 3h sur Mobile App - UI Components' }
+              { time: 'Il y a 5 minutes', action: 'Enregistr√© 2h sur TimeScope - D√©veloppement Dashboard' },
+              { time: 'Il y a 1 heure', action: 'Compl√©t√© la t√¢che "Cr√©er les pages admin"' },
+              { time: 'Il y a 2 heures', action: 'Enregistr√© 1.5h sur Client Portal - API Integration' },
+              { time: 'Hier √† 16:30', action: 'Compl√©t√© la t√¢che "Review code PR #123"' },
+              { time: 'Hier √† 14:00', action: 'Enregistr√© 3h sur Mobile App - UI Components' }
             ].map((activity, index) => (
-              <div key={index} className="flex items-start space-x-4 pb-4 border-b last:border-0">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <Activity className="h-4 w-4 text-blue-600" />
+              <div key={index} className="flex items-start space-x-4 pb-4 border-b border-fp-text/10 last:border-0">
+                <div className="bg-fp-accent/10 p-2 rounded-full">
+                  <Activity className="h-4 w-4 text-fp-accent" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">{activity.action}</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
+                  <p className="text-sm font-medium font-body text-fp-text">{activity.action}</p>
+                  <p className="text-xs text-fp-text/60 font-body">{activity.time}</p>
                 </div>
               </div>
             ))}

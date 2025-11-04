@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import HomePage from "@/pages/home"
 import ContactPage from "@/pages/contact"
 import DashboardPage from "@/pages/dashboard"
+import LoginPage from "@/pages/login"
 import AdminPage from "@/pages/admin"
 import UserManagementPage from "@/pages/admin/user-management"
 import ProjectsManagementPage from "@/pages/admin/projects"
@@ -15,7 +16,8 @@ import './App.css'
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route element={<MainLayout />}>
         <Route path="/home" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />

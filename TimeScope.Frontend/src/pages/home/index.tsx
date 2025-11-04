@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -66,6 +66,45 @@ export default function Home() {
     groupe: '', projet: '', activite: '', heures: 0, description: ''
   })
   const [, setEditingEntry] = useState<string | null>(null)
+  const [joursFeries, setJoursFeries] = useState<Set<string>>(new Set())
+
+  // Récupérer les jours fériés depuis l'API
+  useEffect(() => {
+    const fetchJoursFeries = async () => {
+      try {
+        // API française des jours fériés: https://calendrier.api.gouv.fr/jours-feries/metropole/{annee}.json
+        const response = await fetch(`https://calendrier.api.gouv.fr/jours-feries/metropole/${selectedYear}.json`)
+        if (response.ok) {
+          const data = await response.json()
+          // data est un objet avec des dates en clés (format YYYY-MM-DD)
+          const feriesSet = new Set(Object.keys(data))
+          setJoursFeries(feriesSet)
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des jours fériés:', error)
+      }
+    }
+
+    fetchJoursFeries()
+  }, [selectedYear])
+
+  // Fonction pour vérifier si une date est un weekend
+  const isWeekend = (year: number, month: number, day: number): boolean => {
+    const date = new Date(year, month, day)
+    const dayOfWeek = date.getDay()
+    return dayOfWeek === 0 || dayOfWeek === 6 // 0 = dimanche, 6 = samedi
+  }
+
+  // Fonction pour vérifier si une date est un jour férié
+  const isJourFerie = (dateStr: string): boolean => {
+    return joursFeries.has(dateStr)
+  }
+
+  // Fonction pour vérifier si une date est non-travaillée
+  const isNonWorkingDay = (year: number, month: number, day: number): boolean => {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    return isWeekend(year, month, day) || isJourFerie(dateStr)
+  }
 
   const monthNames = [
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -289,6 +328,7 @@ export default function Home() {
               getDailyTotal={getDailyTotal}
               getIntensityClass={getIntensityClass}
               getTextColorClass={getTextColorClass}
+              isNonWorkingDay={isNonWorkingDay}
             />
           </CardContent>
         </Card>
@@ -512,32 +552,40 @@ export default function Home() {
         {/* Légende du calendrier */}
         <Card className="mt-6 border-accent bg-accent">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Légende du calendrier :</span>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-gray-100 rounded"></div>
-                  <span className="text-xs text-muted-foreground">0h</span>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">Légende du calendrier :</span>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-3 h-3 bg-gray-100 rounded"></div>
+                    <span className="text-xs text-muted-foreground">0h</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-3 h-3 bg-gray-200 rounded"></div>
+                    <span className="text-xs text-muted-foreground">1-2h</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-3 h-3 bg-gray-300 rounded"></div>
+                    <span className="text-xs text-muted-foreground">2-4h</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                    <span className="text-xs text-muted-foreground">4-6h</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-3 h-3 bg-gray-500 rounded"></div>
+                    <span className="text-xs text-muted-foreground">6-8h</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-3 h-3 bg-gray-600 rounded"></div>
+                    <span className="text-xs text-muted-foreground">8h+</span>
+                  </div>
                 </div>
+              </div>
+              <div className="flex items-center space-x-2 pt-2 border-t">
                 <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-gray-200 rounded"></div>
-                  <span className="text-xs text-muted-foreground">1-2h</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-gray-300 rounded"></div>
-                  <span className="text-xs text-muted-foreground">2-4h</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-gray-400 rounded"></div>
-                  <span className="text-xs text-muted-foreground">4-6h</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-gray-500 rounded"></div>
-                  <span className="text-xs text-muted-foreground">6-8h</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-gray-600 rounded"></div>
-                  <span className="text-xs text-muted-foreground">8h+</span>
+                  <div className="w-3 h-3 bg-gray-200 opacity-60 rounded border border-gray-300"></div>
+                  <span className="text-xs text-muted-foreground">Weekend / Jour férié (non cliquable)</span>
                 </div>
               </div>
             </div>

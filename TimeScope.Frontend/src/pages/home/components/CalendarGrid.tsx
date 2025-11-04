@@ -8,6 +8,7 @@ interface CalendarGridProps {
   getDailyTotal: (date: string) => number
   getIntensityClass: (hours: number) => string
   getTextColorClass: (hours: number) => string
+  isNonWorkingDay: (year: number, month: number, day: number) => boolean
 }
 
 export function CalendarGrid({
@@ -18,7 +19,8 @@ export function CalendarGrid({
   setSelectedDate,
   getDailyTotal,
   getIntensityClass,
-  getTextColorClass
+  getTextColorClass,
+  isNonWorkingDay
 }: CalendarGridProps) {
   return (
     <div className="bg-white border rounded-lg p-3">
@@ -40,23 +42,33 @@ export function CalendarGrid({
           const dayTotal = getDailyTotal(dateStr)
           const isSelected = selectedDate === dateStr
           const isToday = dateStr === new Date().toISOString().split('T')[0]
+          const isDisabled = isNonWorkingDay(selectedYear, selectedMonth, day)
 
           return (
             <div
               key={`${selectedYear}-${selectedMonth}-${day}-${index}`}
               className={`
-                h-12 w-full p-1.5 rounded border transition-all cursor-pointer flex flex-col items-center justify-center
-                ${getIntensityClass(dayTotal)}
-                ${isSelected ? 'border-primary ring-1' : 'border-gray-200 hover:border-gray-300'}
-                ${isToday ? 'border-orange-400 ring-1 ring-orange-200' : ''}
+                h-12 w-full p-1.5 rounded border transition-all flex flex-col items-center justify-center
+                ${isDisabled
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                  : `cursor-pointer ${getIntensityClass(dayTotal)}`
+                }
+                ${!isDisabled && isSelected ? 'border-primary ring-1' : 'border-gray-200'}
+                ${!isDisabled && !isSelected ? 'hover:border-gray-300' : ''}
+                ${isToday && !isDisabled ? 'border-orange-400 ring-1 ring-orange-200' : ''}
               `}
-              onClick={() => setSelectedDate(dateStr)}
-              title={`${day}/${selectedMonth + 1}/${selectedYear} - ${dayTotal}h travaillées`}
+              onClick={() => !isDisabled && setSelectedDate(dateStr)}
+              title={isDisabled
+                ? `${day}/${selectedMonth + 1}/${selectedYear} - Jour non-travaillé (weekend ou férié)`
+                : `${day}/${selectedMonth + 1}/${selectedYear} - ${dayTotal}h travaillées`
+              }
             >
-              <div className={`text-xs font-semibold ${getTextColorClass(dayTotal)} leading-none`}>
+              <div className={`text-xs font-semibold leading-none ${
+                isDisabled ? 'text-gray-400' : getTextColorClass(dayTotal)
+              }`}>
                 {day}
               </div>
-              {dayTotal > 0 && (
+              {dayTotal > 0 && !isDisabled && (
                 <div className={`text-xs ${getTextColorClass(dayTotal)} leading-none mt-0.5`}>
                   {dayTotal}h
                 </div>

@@ -8,7 +8,20 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'heading': ['Space Mono', 'monospace'],
+        'body': ['Work Sans', 'sans-serif'],
+        'sans': ['Work Sans', 'sans-serif'],
+        'mono': ['Space Mono', 'monospace'],
+      },
       colors: {
+        // TimeScope Design System
+        'fp': {
+          'bg': 'var(--fp-bg)',
+          'text': 'var(--fp-text)',
+          'accent': 'var(--fp-accent)',
+        },
+        // Tailwind CSS Variables
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
