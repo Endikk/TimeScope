@@ -54,22 +54,22 @@ export function MonthlyStats({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-6 mb-6">
-          <div className="text-center p-4 bg-accent rounded-lg">
-            <Timer className="h-8 w-8 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold text-foreground">{monthlyTotal.toFixed(1)}h</div>
-            <div className="text-sm text-muted-foreground">Total du mois</div>
+          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <Timer className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-blue-900">{monthlyTotal.toFixed(1)}h</div>
+            <div className="text-sm text-blue-600 font-medium">Total du mois</div>
           </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
+          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
             <Activity className="h-8 w-8 text-green-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-green-900">{workingDays}</div>
-            <div className="text-sm text-green-600">Jours travaillés</div>
+            <div className="text-sm text-green-600 font-medium">Jours travaillés</div>
           </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
+          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
             <Target className="h-8 w-8 text-purple-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-purple-900">
               {workingDays > 0 ? (monthlyTotal / workingDays).toFixed(1) : 0}h
             </div>
-            <div className="text-sm text-purple-600">Moyenne/jour</div>
+            <div className="text-sm text-purple-600 font-medium">Moyenne/jour</div>
           </div>
         </div>
       </CardContent>

@@ -85,12 +85,14 @@ export default function Contact() {
         <div className="max-w-4xl mx-auto space-y-6 p-6">
           
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-6 rounded-xl border border-indigo-100">
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-              <MessageSquare className="h-8 w-8 text-primary" />
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg shadow-lg">
+                <MessageSquare className="h-8 w-8 text-white" />
+              </div>
               Demandes à l&apos;Administration
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-700 font-medium">
               Demandez l&apos;ajout de nouveaux projets, activités ou templates à votre espace de travail
             </p>
           </div>

@@ -64,30 +64,74 @@ export default function DashboardPage() {
     { status: 'En attente', value: 8, color: '#C4B5FD' }
   ];
 
-  const StatCard = ({ title, value, icon: Icon, description, trend }: {
+  const StatCard = ({ title, value, icon: Icon, description, trend, color = "blue" }: {
     title: string;
     value: string | number;
     icon: any;
     description: string;
     trend?: string;
-  }) => (
-    <Card className="bg-white border-fp-text/10">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium font-body text-fp-text">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-fp-accent" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold font-heading text-fp-text">{value}</div>
-        <p className="text-xs text-fp-text/60 font-body">{description}</p>
-        {trend && (
-          <p className="text-xs text-fp-accent mt-1 font-body">
-            <TrendingUp className="inline h-3 w-3 mr-1" />
-            {trend}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
+    color?: "blue" | "green" | "purple" | "orange" | "pink" | "cyan";
+  }) => {
+    const colorClasses = {
+      blue: {
+        bg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200",
+        icon: "text-blue-600",
+        text: "text-blue-900",
+        trend: "text-blue-600"
+      },
+      green: {
+        bg: "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200",
+        icon: "text-green-600",
+        text: "text-green-900",
+        trend: "text-green-600"
+      },
+      purple: {
+        bg: "bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200",
+        icon: "text-purple-600",
+        text: "text-purple-900",
+        trend: "text-purple-600"
+      },
+      orange: {
+        bg: "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200",
+        icon: "text-orange-600",
+        text: "text-orange-900",
+        trend: "text-orange-600"
+      },
+      pink: {
+        bg: "bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200",
+        icon: "text-pink-600",
+        text: "text-pink-900",
+        trend: "text-pink-600"
+      },
+      cyan: {
+        bg: "bg-gradient-to-br from-cyan-50 to-sky-50 border-cyan-200",
+        icon: "text-cyan-600",
+        text: "text-cyan-900",
+        trend: "text-cyan-600"
+      }
+    };
+
+    const colors = colorClasses[color];
+
+    return (
+      <Card className={`${colors.bg} border shadow-sm hover:shadow-md transition-shadow`}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium font-body text-gray-700">{title}</CardTitle>
+          <Icon className={`h-5 w-5 ${colors.icon}`} />
+        </CardHeader>
+        <CardContent>
+          <div className={`text-2xl font-bold font-heading ${colors.text}`}>{value}</div>
+          <p className="text-xs text-gray-600 font-body">{description}</p>
+          {trend && (
+            <p className={`text-xs ${colors.trend} mt-1 font-body font-medium`}>
+              <TrendingUp className="inline h-3 w-3 mr-1" />
+              {trend}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="p-6 space-y-6 bg-fp-bg min-h-screen">
@@ -106,6 +150,7 @@ export default function DashboardPage() {
           icon={Clock}
           description="Temps enregistré"
           trend="+12% vs hier"
+          color="blue"
         />
         <StatCard
           title="Heures cette semaine"
@@ -113,6 +158,7 @@ export default function DashboardPage() {
           icon={Calendar}
           description="Sur 40h prévues"
           trend="81% complété"
+          color="cyan"
         />
         <StatCard
           title="Heures ce mois"
@@ -120,12 +166,14 @@ export default function DashboardPage() {
           icon={Activity}
           description="Sur 160h prévues"
           trend="89% complété"
+          color="purple"
         />
         <StatCard
           title="Projets actifs"
           value={stats.activeProjects}
           icon={FolderKanban}
           description="En cours"
+          color="orange"
         />
         <StatCard
           title="Tâches terminées"
@@ -133,12 +181,14 @@ export default function DashboardPage() {
           icon={TrendingUp}
           description="Ce mois-ci"
           trend="+8 cette semaine"
+          color="green"
         />
         <StatCard
           title="Membres d'équipe"
           value={stats.teamMembers}
           icon={Users}
           description="Actifs"
+          color="pink"
         />
       </div>
 

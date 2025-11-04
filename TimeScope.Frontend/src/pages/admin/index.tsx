@@ -12,29 +12,33 @@ export default function AdminPage() {
       title: "Utilisateurs actifs",
       value: "248",
       change: "+12%",
-  icon: Users,
-  color: "bg-purple-500"
+      icon: Users,
+      iconBg: "bg-gradient-to-br from-purple-500 to-indigo-600",
+      cardBg: "bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200"
     },
     {
       title: "Projets en cours",
       value: "42",
-      change: "+8%", 
+      change: "+8%",
       icon: FolderOpen,
-      color: "bg-green-500"
+      iconBg: "bg-gradient-to-br from-green-500 to-emerald-600",
+      cardBg: "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
     },
     {
       title: "Heures cette semaine",
       value: "1,247",
       change: "+5%",
       icon: Clock,
-      color: "bg-purple-500"
+      iconBg: "bg-gradient-to-br from-blue-500 to-cyan-600",
+      cardBg: "bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200"
     },
     {
       title: "Tâches complétées",
       value: "186",
       change: "+18%",
       icon: BarChart3,
-      color: "bg-orange-500"
+      iconBg: "bg-gradient-to-br from-orange-500 to-amber-600",
+      cardBg: "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200"
     }
   ]
 
@@ -63,18 +67,18 @@ export default function AdminPage() {
           {stats.map((stat, index) => {
             const IconComponent = stat.icon
             return (
-              <Card key={index}>
+              <Card key={index} className={`${stat.cardBg} border shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105`}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-gray-700">
                     {stat.title}
                   </CardTitle>
-                  <div className={`${stat.color} p-2 rounded-md`}>
-                    <IconComponent className="h-4 w-4 text-white" />
+                  <div className={`${stat.iconBg} p-2.5 rounded-lg shadow-lg`}>
+                    <IconComponent className="h-5 w-5 text-white" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-green-600">
+                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                  <p className="text-xs text-green-600 font-semibold">
                     {stat.change} par rapport au mois dernier
                   </p>
                 </CardContent>
@@ -85,10 +89,12 @@ export default function AdminPage() {
 
         {/* Admin Sections */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <Card className="border-2 border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Users className="mr-2 h-5 w-5" />
+                <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-2 rounded-lg mr-2">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
                 Gestion des utilisateurs
               </CardTitle>
               <CardDescription>
@@ -100,16 +106,18 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">248 utilisateurs actifs</p>
                 <p className="text-sm text-muted-foreground">12 nouveaux cette semaine</p>
               </div>
-              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/user_management')}>
+              <Button className="w-full mt-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white" onClick={() => navigate('/admin/user_management')}>
                 Gérer les utilisateurs
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-green-100 hover:border-green-300 hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <FolderOpen className="mr-2 h-5 w-5" />
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-2 rounded-lg mr-2">
+                  <FolderOpen className="h-5 w-5 text-white" />
+                </div>
                 Projets et équipes
               </CardTitle>
               <CardDescription>
@@ -121,16 +129,18 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">42 projets actifs</p>
                 <p className="text-sm text-muted-foreground">8 équipes configurées</p>
               </div>
-              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/projects')}>
+              <Button className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white" onClick={() => navigate('/admin/projects')}>
                 Gérer les projets
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Database className="mr-2 h-5 w-5" />
+                <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-2 rounded-lg mr-2">
+                  <Database className="h-5 w-5 text-white" />
+                </div>
                 Base de données
               </CardTitle>
               <CardDescription>
@@ -142,16 +152,18 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">Dernière sauvegarde: Aujourd&apos;hui</p>
                 <p className="text-sm text-muted-foreground">Taille: 2.4 GB</p>
               </div>
-              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/database-maintenance')}>
+              <Button className="w-full mt-4 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white" onClick={() => navigate('/admin/database-maintenance')}>
                 Maintenance DB
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-orange-100 hover:border-orange-300 hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <BarChart3 className="mr-2 h-5 w-5" />
+                <div className="bg-gradient-to-br from-orange-500 to-amber-600 p-2 rounded-lg mr-2">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
                 Rapports avancés
               </CardTitle>
               <CardDescription>
@@ -163,16 +175,18 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">15 rapports disponibles</p>
                 <p className="text-sm text-muted-foreground">Exportation automatique activée</p>
               </div>
-              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/reports')}>
+              <Button className="w-full mt-4 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white" onClick={() => navigate('/admin/reports')}>
                 Voir les rapports
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-slate-100 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Settings className="mr-2 h-5 w-5" />
+                <div className="bg-gradient-to-br from-slate-500 to-gray-600 p-2 rounded-lg mr-2">
+                  <Settings className="h-5 w-5 text-white" />
+                </div>
                 Configuration système
               </CardTitle>
               <CardDescription>
@@ -184,16 +198,18 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">Version: 1.0.0</p>
                 <p className="text-sm text-muted-foreground">Dernière mise à jour: 02/11/2025</p>
               </div>
-              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/settings')}>
+              <Button className="w-full mt-4 bg-gradient-to-r from-slate-500 to-gray-600 hover:from-slate-600 hover:to-gray-700 text-white" onClick={() => navigate('/admin/settings')}>
                 Paramètres
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 border-pink-100 hover:border-pink-300 hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Clock className="mr-2 h-5 w-5" />
+                <div className="bg-gradient-to-br from-pink-500 to-rose-600 p-2 rounded-lg mr-2">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
                 Monitoring temps réel
               </CardTitle>
               <CardDescription>
@@ -205,7 +221,7 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">89 utilisateurs connectés</p>
                 <p className="text-sm text-muted-foreground">Serveur: En ligne</p>
               </div>
-              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/monitoring')}>
+              <Button className="w-full mt-4 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white" onClick={() => navigate('/admin/monitoring')}>
                 Voir le monitoring
               </Button>
             </CardContent>

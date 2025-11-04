@@ -282,15 +282,15 @@ export default function Home() {
 
   const getIntensityClass = (hours: number) => {
     if (hours === 0) return "bg-gray-100"
-    if (hours < 2) return "bg-gray-200"
-    if (hours < 4) return "bg-gray-300" 
-    if (hours < 6) return "bg-gray-400"
-    if (hours < 8) return "bg-gray-500"
-    return "bg-gray-600"
+    if (hours < 2) return "bg-blue-100 border-blue-200"
+    if (hours < 4) return "bg-blue-200 border-blue-300"
+    if (hours < 6) return "bg-blue-400 border-blue-500"
+    if (hours < 8) return "bg-indigo-500 border-indigo-600"
+    return "bg-indigo-600 border-indigo-700"
   }
 
   const getTextColorClass = (hours: number) => {
-    return hours >= 6 ? "text-white" : "text-gray-700"
+    return hours >= 6 ? "text-white font-semibold" : hours >= 2 ? "text-blue-900 font-medium" : "text-gray-700"
   }
 
   return (
