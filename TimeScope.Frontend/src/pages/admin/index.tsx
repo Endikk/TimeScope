@@ -9,8 +9,8 @@ export default function AdminPage() {
       title: "Utilisateurs actifs",
       value: "248",
       change: "+12%",
-      icon: Users,
-      color: "bg-blue-500"
+  icon: Users,
+  color: "bg-purple-500"
     },
     {
       title: "Projets en cours",

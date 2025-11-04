@@ -1,4 +1,3 @@
-import React from "react"
 
 interface CalendarGridProps {
   monthDays: (number | null)[]
@@ -48,7 +47,7 @@ export function CalendarGrid({
               className={`
                 h-12 w-full p-1.5 rounded border transition-all cursor-pointer flex flex-col items-center justify-center
                 ${getIntensityClass(dayTotal)}
-                ${isSelected ? 'border-blue-500 ring-1 ring-blue-200' : 'border-gray-200 hover:border-gray-300'}
+                ${isSelected ? 'border-primary ring-1' : 'border-gray-200 hover:border-gray-300'}
                 ${isToday ? 'border-orange-400 ring-1 ring-orange-200' : ''}
               `}
               onClick={() => setSelectedDate(dateStr)}

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,6 @@ import { CalendarGrid } from "@/pages/home/components/CalendarGrid"
 import { 
   Calendar, 
   Timer, 
-  Activity, 
   Target, 
   Plus, 
   Save, 
@@ -66,7 +65,7 @@ export default function Home() {
   const [newEntry, setNewEntry] = useState<NewTimeEntry>({
     groupe: '', projet: '', activite: '', heures: 0, description: ''
   })
-  const [editingEntry, setEditingEntry] = useState<string | null>(null)
+  const [, setEditingEntry] = useState<string | null>(null)
 
   const monthNames = [
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -244,11 +243,11 @@ export default function Home() {
 
   const getIntensityClass = (hours: number) => {
     if (hours === 0) return "bg-gray-100"
-    if (hours < 2) return "bg-blue-100"
-    if (hours < 4) return "bg-blue-200" 
-    if (hours < 6) return "bg-blue-300"
-    if (hours < 8) return "bg-blue-400"
-    return "bg-blue-500"
+    if (hours < 2) return "bg-gray-200"
+    if (hours < 4) return "bg-gray-300" 
+    if (hours < 6) return "bg-gray-400"
+    if (hours < 8) return "bg-gray-500"
+    return "bg-gray-600"
   }
 
   const getTextColorClass = (hours: number) => {
@@ -402,7 +401,7 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Timer className="h-5 w-5 mr-2 text-blue-600" />
+                <Timer className="h-5 w-5 mr-2 text-primary" />
                 {selectedDate ? `Entrées du ${new Date(selectedDate).toLocaleDateString('fr-FR')}` : "Sélectionnez une date"}
               </CardTitle>
             </CardHeader>
@@ -446,8 +445,8 @@ export default function Home() {
                             <span className="font-medium">{entry.activite}</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <Timer className="h-4 w-4 text-blue-500" />
-                            <span className="font-semibold text-blue-600">{entry.heures}h</span>
+                            <Timer className="h-4 w-4 text-primary" />
+                            <span className="font-semibold text-foreground">{entry.heures}h</span>
                           </div>
                           {entry.description && (
                             <p className="text-sm text-gray-600 italic mt-2">"{entry.description}"</p>
@@ -511,34 +510,34 @@ export default function Home() {
         )}
 
         {/* Légende du calendrier */}
-        <Card className="mt-6 border-blue-200 bg-blue-50">
+        <Card className="mt-6 border-accent bg-accent">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-blue-800">Légende du calendrier :</span>
+              <span className="text-sm font-medium text-muted-foreground">Légende du calendrier :</span>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 bg-gray-100 rounded"></div>
-                  <span className="text-xs text-blue-700">0h</span>
+                  <span className="text-xs text-muted-foreground">0h</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-blue-100 rounded"></div>
-                  <span className="text-xs text-blue-700">1-2h</span>
+                  <div className="w-3 h-3 bg-gray-200 rounded"></div>
+                  <span className="text-xs text-muted-foreground">1-2h</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-blue-200 rounded"></div>
-                  <span className="text-xs text-blue-700">2-4h</span>
+                  <div className="w-3 h-3 bg-gray-300 rounded"></div>
+                  <span className="text-xs text-muted-foreground">2-4h</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-blue-300 rounded"></div>
-                  <span className="text-xs text-blue-700">4-6h</span>
+                  <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                  <span className="text-xs text-muted-foreground">4-6h</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-blue-400 rounded"></div>
-                  <span className="text-xs text-blue-700">6-8h</span>
+                  <div className="w-3 h-3 bg-gray-500 rounded"></div>
+                  <span className="text-xs text-muted-foreground">6-8h</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                  <span className="text-xs text-blue-700">8h+</span>
+                  <div className="w-3 h-3 bg-gray-600 rounded"></div>
+                  <span className="text-xs text-muted-foreground">8h+</span>
                 </div>
               </div>
             </div>

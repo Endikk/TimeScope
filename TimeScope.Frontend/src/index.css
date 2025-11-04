@@ -27,15 +27,20 @@
   --input: 240 5.9% 90%;
   --ring: 240 5.9% 10%;
   --radius: 0.5rem;
-  --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 240 5.9% 10%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
-  --sidebar-border: 240 5.9% 90%;
-  --sidebar-ring: 240 5.9% 10%;
-  --sidebar: hsl(0 0% 98%);
+  /* Brand (modern blue) */
+  --brand: 221 83% 53%;
+
+  /* Sidebar palette (clean white) */
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 240 5% 26%;
+  --sidebar-primary: 221 83% 53%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 5% 96%;
+  --sidebar-accent-foreground: 240 5% 11%;
+  --sidebar-border: 240 6% 90%;
+  --sidebar-ring: 221 83% 53%;
+  /* Main sidebar background used by bg-sidebar (raw HSL channels for hsl(var(--sidebar))) */
+  --sidebar: 0 0% 100%;
 }
 
 .dark {
@@ -58,7 +63,11 @@
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
   --ring: 240 4.9% 83.9%;
-  --sidebar-background: 240 5.2% 33.9%;
+  /* Brand in dark mode */
+  --brand: 218 92% 70%;
+
+  /* Sidebar palette (dark, neutral gray) */
+  --sidebar-background: 240 10% 3.9%;
   --sidebar-foreground: 0 0% 98%;
   --sidebar-primary: 0 0% 98%;
   --sidebar-primary-foreground: 240 5.9% 10%;
@@ -66,7 +75,7 @@
   --sidebar-accent-foreground: 0 0% 98%;
   --sidebar-border: 240 3.7% 15.9%;
   --sidebar-ring: 240 4.9% 83.9%;
-  --sidebar: hsl(240 5.9% 10%);
+  --sidebar: 240 10% 3.9%;
 }
 
 body {
@@ -91,5 +100,24 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Global title color: apply modern blue to main headings and card titles */
+  h1, h2, h3, [data-slot=card-title] {
+    color: hsl(var(--brand));
+  }
+
+  /* Sidebar enhancements */
+  [data-sidebar="sidebar"] {
+    box-shadow: 0 0 0 1px hsl(var(--sidebar-border));
+  }
+
+  /* Clean sidebar header */
+  [data-sidebar="header"] {
+    border-bottom: 1px solid hsl(var(--sidebar-border));
+  }
+
+  /* Clean sidebar footer */
+  [data-sidebar="footer"] {
+    border-top: 1px solid hsl(var(--sidebar-border));
   }
 }

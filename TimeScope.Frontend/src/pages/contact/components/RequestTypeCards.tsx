@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Building2, Target, Calendar, MessageSquare } from "lucide-react"
 
 export const REQUEST_TYPES = [
-  { value: "projet", label: "Nouveau Projet", icon: Building2, color: "bg-blue-500" },
+  { value: "projet", label: "Nouveau Projet", icon: Building2, color: "bg-purple-500" },
   { value: "activite", label: "Nouvelle Activité", icon: Target, color: "bg-green-500" },
   { value: "template", label: "Nouveau Template", icon: Calendar, color: "bg-purple-500" },
   { value: "autre", label: "Autre Demande", icon: MessageSquare, color: "bg-gray-500" },

@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { MonthData, ThemeRow, DayEntry, MonthlyProgress } from "@/lib/types"
 import { ChevronLeft, ChevronRight, Calendar, Target, Clock, TrendingUp, Save } from "lucide-react"
@@ -10,7 +9,7 @@ interface MonthlyTrackerProps {
   userId: string
 }
 
-export function MonthlyTracker({ userId }: MonthlyTrackerProps) {
+export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   
   // Structure organisationnelle : Groupe(société) > Projet > Activité
@@ -128,8 +127,6 @@ export function MonthlyTracker({ userId }: MonthlyTrackerProps) {
   const getCellBackground = (value: number, isWeekend: boolean, isToday: boolean) => {
     if (isWeekend) return 'bg-gray-100'
     if (isToday) return 'bg-yellow-50 border-yellow-300'
-    
-    const opacity = value * 0.8 + 0.1
     return value > 0 ? `bg-green-500` : 'bg-gray-50'
   }
 
@@ -140,7 +137,7 @@ export function MonthlyTracker({ userId }: MonthlyTrackerProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
+              <div className="p-2 bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-xl shadow-lg">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -170,7 +167,7 @@ export function MonthlyTracker({ userId }: MonthlyTrackerProps) {
         <Card className="border-0 shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
-              <Clock className="h-8 w-8 text-blue-600" />
+              <Clock className="h-8 w-8 text-primary" />
               <div>
                 <p className="text-sm text-gray-600">Total heures</p>
                 <p className="text-2xl font-bold">{monthlyProgress.totalHours.toFixed(1)}h</p>
@@ -244,7 +241,7 @@ export function MonthlyTracker({ userId }: MonthlyTrackerProps) {
                           key={day} 
                           className={`px-1 py-2 text-center text-xs font-medium w-[45px] ${
                             isWeekend ? 'text-gray-400 bg-gray-100' : 
-                            isToday ? 'text-blue-600 bg-blue-50' : 'text-gray-700'
+                            isToday ? 'text-primary bg-accent' : 'text-gray-700'
                           }`}
                         >
                           {day}
@@ -259,7 +256,7 @@ export function MonthlyTracker({ userId }: MonthlyTrackerProps) {
                       <td className="sticky left-0 bg-inherit px-2 py-2 border-r w-[100px]">
                         <div className="flex items-center space-x-1">
                           <div className={`w-2 h-2 rounded-full ${theme.color} flex-shrink-0`}></div>
-                          <span className="font-semibold text-blue-700 text-xs truncate" title={theme.groupe}>
+                          <span className="font-semibold text-foreground text-xs truncate" title={theme.groupe}>
                             {theme.groupe}
                           </span>
                         </div>
@@ -286,7 +283,7 @@ export function MonthlyTracker({ userId }: MonthlyTrackerProps) {
                             className={`
                               w-full h-8 text-center text-xs border-0 
                               ${getCellBackground(dayEntry.value, dayEntry.isWeekend, dayEntry.isToday)}
-                              ${dayEntry.isWeekend ? 'cursor-not-allowed' : 'hover:bg-blue-50'}
+                              ${dayEntry.isWeekend ? 'cursor-not-allowed' : 'hover:bg-accent'}
                               ${dayEntry.value > 0 ? 'text-white font-bold' : 'text-gray-700'}
                             `}
                             disabled={dayEntry.isWeekend}

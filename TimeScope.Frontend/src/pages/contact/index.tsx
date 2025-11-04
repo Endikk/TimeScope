@@ -87,7 +87,7 @@ export default function Contact() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-              <MessageSquare className="h-8 w-8 text-blue-600" />
+              <MessageSquare className="h-8 w-8 text-primary" />
               Demandes à l&apos;Administration
             </h1>
             <p className="text-gray-600">
@@ -113,7 +113,7 @@ export default function Contact() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Send className="h-5 w-5 text-blue-600" />
+                <Send className="h-5 w-5 text-primary" />
                 Nouvelle Demande
               </CardTitle>
               <CardDescription>

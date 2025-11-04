@@ -1,4 +1,3 @@
-import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar, Timer, Activity, Target } from "lucide-react"
@@ -27,7 +26,7 @@ export function MonthlyStats({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5 text-blue-600" />
+            <Calendar className="h-5 w-5 text-primary" />
             <CardTitle>Vue Mensuelle - {monthNames[selectedMonth]} {selectedYear}</CardTitle>
           </div>
           <div className="flex gap-3">
@@ -55,10 +54,10 @@ export function MonthlyStats({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-6 mb-6">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <Timer className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-blue-900">{monthlyTotal.toFixed(1)}h</div>
-            <div className="text-sm text-blue-600">Total du mois</div>
+          <div className="text-center p-4 bg-accent rounded-lg">
+            <Timer className="h-8 w-8 text-primary mx-auto mb-2" />
+            <div className="text-2xl font-bold text-foreground">{monthlyTotal.toFixed(1)}h</div>
+            <div className="text-sm text-muted-foreground">Total du mois</div>
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
             <Activity className="h-8 w-8 text-green-600 mx-auto mb-2" />
