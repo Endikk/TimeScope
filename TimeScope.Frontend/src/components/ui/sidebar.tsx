@@ -5,7 +5,6 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import {
   PanelLeftIcon,
-  Calendar,
   ChevronUp,
   Home,
   LayoutDashboard,
@@ -24,6 +23,7 @@ import {
   Moon,
   Sun,
   ChevronRight,
+  Crosshair,
 } from "lucide-react"
 import { Link, useLocation } from "react-router"
 
@@ -842,13 +842,12 @@ function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <LinkWithRef to="/home">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Calendar className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">TimeScope</span>
-                  <span className="truncate text-xs">Time Management</span>
+              <LinkWithRef to="/home" className="justify-center">
+                <div className="flex items-center justify-center w-full">
+                  <img src="/assets/2.svg" alt="Time Management Logo" className="h-16 w-auto group-data-[collapsible=icon]:hidden" />
+                  <div className="hidden group-data-[collapsible=icon]:flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+                    <Crosshair className="size-5 text-white" />
+                  </div>
                 </div>
               </LinkWithRef>
             </SidebarMenuButton>
