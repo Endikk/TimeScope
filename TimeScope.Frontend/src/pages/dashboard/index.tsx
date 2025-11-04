@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Clock, TrendingUp, Users, FolderKanban, Calendar, Activity } from 'lucide-react';
@@ -24,7 +24,7 @@ interface ProjectData {
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats>({
+  const [stats] = useState<DashboardStats>({
     totalHoursToday: 6.5,
     totalHoursWeek: 32.5,
     totalHoursMonth: 142,
