@@ -7,6 +7,11 @@ import {
   MessageSquare,
   Settings,
   User,
+  FolderKanban,
+  Database,
+  FileText,
+  Activity,
+  Users,
 } from "lucide-react"
 import { Link, useLocation } from "react-router"
 
@@ -54,11 +59,6 @@ const mainMenuItems = [
     url: "/dashboard",
     icon: LayoutDashboard,
   },
-  {
-    title: "Time Tracking",
-    url: "/home",
-    icon: Calendar,
-  },
 ]
 
 const adminMenuItems = [
@@ -69,10 +69,37 @@ const adminMenuItems = [
       {
         title: "Dashboard",
         url: "/admin",
+        icon: LayoutDashboard,
       },
       {
-        title: "User Management",
+        title: "Gestion utilisateurs",
         url: "/admin/user_management",
+        icon: Users,
+      },
+      {
+        title: "Gérer les projets",
+        url: "/admin/projects",
+        icon: FolderKanban,
+      },
+      {
+        title: "Maintenance DB",
+        url: "/admin/database-maintenance",
+        icon: Database,
+      },
+      {
+        title: "Voir les rapports",
+        url: "/admin/reports",
+        icon: FileText,
+      },
+      {
+        title: "Paramètres",
+        url: "/admin/settings",
+        icon: Settings,
+      },
+      {
+        title: "Monitoring",
+        url: "/admin/monitoring",
+        icon: Activity,
       },
     ],
   },
@@ -163,6 +190,7 @@ export function AppSidebar() {
                               isActive={isActive(subItem.url)}
                             >
                               <LinkWithRef to={subItem.url}>
+                                {subItem.icon && <subItem.icon className="mr-2 h-4 w-4" />}
                                 <span>{subItem.title}</span>
                               </LinkWithRef>
                             </SidebarMenuSubButton>

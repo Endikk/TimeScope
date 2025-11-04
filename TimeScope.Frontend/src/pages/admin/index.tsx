@@ -2,8 +2,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Users, FolderOpen, Clock, Settings, BarChart3, Database } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export default function AdminPage() {
+  const navigate = useNavigate();
+
   const stats = [
     {
       title: "Utilisateurs actifs",
@@ -48,7 +51,7 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary">v1.0.0</Badge>
-            <Button>
+            <Button onClick={() => navigate('/admin/settings')}>
               <Settings className="mr-2 h-4 w-4" />
               Paramètres
             </Button>
@@ -97,7 +100,7 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">248 utilisateurs actifs</p>
                 <p className="text-sm text-muted-foreground">12 nouveaux cette semaine</p>
               </div>
-              <Button className="w-full mt-4" variant="outline">
+              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/user_management')}>
                 Gérer les utilisateurs
               </Button>
             </CardContent>
@@ -118,7 +121,7 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">42 projets actifs</p>
                 <p className="text-sm text-muted-foreground">8 équipes configurées</p>
               </div>
-              <Button className="w-full mt-4" variant="outline">
+              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/projects')}>
                 Gérer les projets
               </Button>
             </CardContent>
@@ -139,7 +142,7 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">Dernière sauvegarde: Aujourd&apos;hui</p>
                 <p className="text-sm text-muted-foreground">Taille: 2.4 GB</p>
               </div>
-              <Button className="w-full mt-4" variant="outline">
+              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/database-maintenance')}>
                 Maintenance DB
               </Button>
             </CardContent>
@@ -160,7 +163,7 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">15 rapports disponibles</p>
                 <p className="text-sm text-muted-foreground">Exportation automatique activée</p>
               </div>
-              <Button className="w-full mt-4" variant="outline">
+              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/reports')}>
                 Voir les rapports
               </Button>
             </CardContent>
@@ -181,7 +184,7 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">Version: 1.0.0</p>
                 <p className="text-sm text-muted-foreground">Dernière mise à jour: 02/11/2025</p>
               </div>
-              <Button className="w-full mt-4" variant="outline">
+              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/settings')}>
                 Paramètres
               </Button>
             </CardContent>
@@ -202,7 +205,7 @@ export default function AdminPage() {
                 <p className="text-sm text-muted-foreground">89 utilisateurs connectés</p>
                 <p className="text-sm text-muted-foreground">Serveur: En ligne</p>
               </div>
-              <Button className="w-full mt-4" variant="outline">
+              <Button className="w-full mt-4" variant="outline" onClick={() => navigate('/admin/monitoring')}>
                 Voir le monitoring
               </Button>
             </CardContent>
