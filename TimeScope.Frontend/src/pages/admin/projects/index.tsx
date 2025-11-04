@@ -54,7 +54,7 @@ interface Project {
 }
 
 export default function ProjectsManagementPage() {
-  const [projects, setProjects] = useState<Project[]>([
+  const [projects] = useState<Project[]>([
     {
       id: '1',
       name: 'TimeScope',

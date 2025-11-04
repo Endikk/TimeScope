@@ -16,16 +16,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import {
   Settings,
-  Building2,
-  Mail,
   Bell,
   Shield,
-  Clock,
   Database,
   Palette,
-  Users,
-  Key,
-  Globe
 } from 'lucide-react';
 
 export default function SettingsPage() {

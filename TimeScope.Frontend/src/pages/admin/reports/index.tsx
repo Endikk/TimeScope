@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { FileText, Download, Calendar, Users, FolderKanban, TrendingUp, Clock, DollarSign } from 'lucide-react';
+import { Download, Users, FolderKanban, TrendingUp, Clock, DollarSign } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
