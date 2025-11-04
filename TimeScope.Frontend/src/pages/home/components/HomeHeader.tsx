@@ -5,11 +5,11 @@ export function HomeHeader() {
   return (
     <div className="text-center lg:text-left mb-6">
       <div className="flex items-center justify-center lg:justify-start space-x-3 mb-4">
-  <div className="p-2 bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-xl shadow-lg">
+        <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-lg">
           <Calendar className="h-6 w-6 text-white" />
         </div>
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-purple-800 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-heading font-bold tracking-tight text-fp-text">
              Suivi Temps Personnel
           </h1>
           <p className="text-sm text-gray-500 mt-1">

@@ -7,7 +7,7 @@ import {
   PanelLeftIcon,
   ChevronUp,
   Home,
-  LayoutDashboard,
+  Presentation,
   MessageSquare,
   Settings,
   User,
@@ -749,7 +749,7 @@ const mainMenuItems = [
   {
     title: "Dashboard",
     url: "/dashboard",
-    icon: LayoutDashboard,
+    icon: Presentation,
   },
 ]
 
@@ -761,7 +761,7 @@ const adminMenuItems = [
       {
         title: "Dashboard",
         url: "/admin",
-        icon: LayoutDashboard,
+        icon: Presentation,
       },
       {
         title: "Gestion utilisateurs",
