@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -37,382 +38,512 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, FolderKanban, Users, Calendar, CheckCircle2 } from 'lucide-react';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import { Plus, Search, MoreHorizontal, Edit, Trash2, FolderKanban, Layers, RefreshCw } from 'lucide-react';
+import { useProjects, useGroups, useThemes, useProjectMutations, useGroupMutations, useThemeMutations } from '@/lib/hooks/use-projects';
+import type { CreateProjectDto, CreateGroupDto, CreateThemeDto } from '@/lib/api/services/projects.service';
 
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  client: string;
-  status: 'Actif' | 'En attente' | 'Terminé' | 'Archivé';
-  startDate: string;
-  endDate?: string;
-  budget: number;
-  timeSpent: number;
-  team: string[];
-  color: string;
-}
+export default function ProjectsManagementPageSimple() {
+  // Hooks API
+  const { projects, loading: projectsLoading, error: projectsError, refetch: refetchProjects } = useProjects();
+  const { groups, loading: groupsLoading, refetch: refetchGroups } = useGroups();
+  const { themes, loading: themesLoading, refetch: refetchThemes } = useThemes();
 
-export default function ProjectsManagementPage() {
-  const [projects] = useState<Project[]>([
-    {
-      id: '1',
-      name: 'TimeScope',
-      description: 'Application de gestion du temps pour les équipes',
-      client: 'Interne',
-      status: 'Actif',
-      startDate: '2025-01-01',
-      budget: 500,
-      timeSpent: 142,
-      team: ['Alice Martin', 'Bob Dupont', 'Claire Rousseau'],
-      color: '#3b82f6'
-    },
-    {
-      id: '2',
-      name: 'Client Portal',
-      description: 'Portail client avec authentification et dashboard',
-      client: 'TechCorp Inc.',
-      status: 'Actif',
-      startDate: '2025-02-15',
-      budget: 300,
-      timeSpent: 89,
-      team: ['Alice Martin', 'David Chen'],
-      color: '#8b5cf6'
-    },
-    {
-      id: '3',
-      name: 'Mobile App',
-      description: 'Application mobile React Native',
-      client: 'StartupXYZ',
-      status: 'En attente',
-      startDate: '2025-03-01',
-      budget: 400,
-      timeSpent: 45,
-      team: ['Claire Rousseau'],
-      color: '#ec4899'
-    },
-    {
-      id: '4',
-      name: 'API Backend',
-      description: 'Refonte de l\'API REST en .NET 9',
-      client: 'Interne',
-      status: 'Actif',
-      startDate: '2024-12-01',
-      endDate: '2025-02-28',
-      budget: 250,
-      timeSpent: 198,
-      team: ['Bob Dupont', 'Eve Lambert'],
-      color: '#10b981'
-    },
-    {
-      id: '5',
-      name: 'Legacy Migration',
-      description: 'Migration du système legacy vers le cloud',
-      client: 'BigCorp Ltd.',
-      status: 'Terminé',
-      startDate: '2024-06-01',
-      endDate: '2024-12-15',
-      budget: 800,
-      timeSpent: 756,
-      team: ['Alice Martin', 'Bob Dupont', 'David Chen', 'Eve Lambert'],
-      color: '#f59e0b'
+  const { createProject, updateProject, deleteProject } = useProjectMutations();
+  const { createGroup, deleteGroup } = useGroupMutations();
+  const { createTheme, deleteTheme } = useThemeMutations();
+
+  // États locaux
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
+  const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
+  const [isAddThemeOpen, setIsAddThemeOpen] = useState(false);
+
+  // Formulaires
+  const [newProject, setNewProject] = useState<CreateProjectDto>({ name: '', description: '' });
+  const [newGroup, setNewGroup] = useState<CreateGroupDto>({ name: '', description: '' });
+  const [newTheme, setNewTheme] = useState<CreateThemeDto>({ name: '', color: '#3b82f6', description: '' });
+
+  // Handlers Projects
+  const handleCreateProject = async () => {
+    try {
+      await createProject(newProject);
+      await refetchProjects();
+      setIsAddProjectOpen(false);
+      setNewProject({ name: '', description: '' });
+    } catch (error) {
+      alert('Erreur lors de la création du projet');
     }
-  ]);
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.client.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const getStatusBadge = (status: Project['status']) => {
-    const styles = {
-      'Actif': 'bg-green-100 text-green-800',
-      'En attente': 'bg-yellow-100 text-yellow-800',
-      'Terminé': 'bg-blue-100 text-blue-800',
-      'Archivé': 'bg-gray-100 text-gray-800'
-    };
-    return <Badge className={styles[status]}>{status}</Badge>;
   };
 
-  const stats = {
-    total: projects.length,
-    active: projects.filter(p => p.status === 'Actif').length,
-    pending: projects.filter(p => p.status === 'En attente').length,
-    completed: projects.filter(p => p.status === 'Terminé').length
+  const handleDeleteProject = async (id: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) {
+      try {
+        await deleteProject(id);
+        await refetchProjects();
+      } catch (error) {
+        alert('Erreur lors de la suppression');
+      }
+    }
   };
 
-  const ProjectForm = ({ project }: { project?: Project }) => (
-    <div className="grid gap-4 py-4">
-      <div className="grid gap-2">
-        <Label htmlFor="name">Nom du projet</Label>
-        <Input id="name" defaultValue={project?.name} placeholder="Ex: TimeScope" />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea id="description" defaultValue={project?.description} placeholder="Description du projet" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="client">Client</Label>
-          <Input id="client" defaultValue={project?.client} placeholder="Nom du client" />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="status">Statut</Label>
-          <Select defaultValue={project?.status || 'Actif'}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Actif">Actif</SelectItem>
-              <SelectItem value="En attente">En attente</SelectItem>
-              <SelectItem value="Terminé">Terminé</SelectItem>
-              <SelectItem value="Archivé">Archivé</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="startDate">Date de début</Label>
-          <Input id="startDate" type="date" defaultValue={project?.startDate} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="endDate">Date de fin</Label>
-          <Input id="endDate" type="date" defaultValue={project?.endDate} />
-        </div>
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="budget">Budget (heures)</Label>
-        <Input id="budget" type="number" defaultValue={project?.budget} placeholder="500" />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="color">Couleur</Label>
-        <Input id="color" type="color" defaultValue={project?.color || '#3b82f6'} />
-      </div>
-    </div>
+  // Handlers Groups
+  const handleCreateGroup = async () => {
+    try {
+      await createGroup(newGroup);
+      await refetchGroups();
+      setIsAddGroupOpen(false);
+      setNewGroup({ name: '', description: '' });
+    } catch (error) {
+      alert('Erreur lors de la création du groupe');
+    }
+  };
+
+  const handleDeleteGroup = async (id: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) {
+      try {
+        await deleteGroup(id);
+        await refetchGroups();
+      } catch (error) {
+        alert('Erreur lors de la suppression');
+      }
+    }
+  };
+
+  // Handlers Themes
+  const handleCreateTheme = async () => {
+    try {
+      await createTheme(newTheme);
+      await refetchThemes();
+      setIsAddThemeOpen(false);
+      setNewTheme({ name: '', color: '#3b82f6', description: '' });
+    } catch (error) {
+      alert('Erreur lors de la création du thème');
+    }
+  };
+
+  const handleDeleteTheme = async (id: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce thème ?')) {
+      try {
+        await deleteTheme(id);
+        await refetchThemes();
+      } catch (error) {
+        alert('Erreur lors de la suppression');
+      }
+    }
+  };
+
+  const handleRefreshAll = async () => {
+    await Promise.all([refetchProjects(), refetchGroups(), refetchThemes()]);
+  };
+
+  // Filtrage
+  const filteredProjects = projects.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const filteredGroups = groups.filter(g =>
+    g.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredThemes = themes.filter(t =>
+    t.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (projectsError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Alert variant="destructive">
+          <AlertDescription>{projectsError}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestion des projets</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Gestion des Projets</h1>
           <p className="text-muted-foreground">
-            Gérez vos projets, clients et budgets
+            Gérez vos projets, groupes et thèmes
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau projet
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Créer un nouveau projet</DialogTitle>
-              <DialogDescription>
-                Ajoutez un nouveau projet à votre système de gestion du temps
-              </DialogDescription>
-            </DialogHeader>
-            <ProjectForm />
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Annuler</Button>
-              <Button onClick={() => setIsAddDialogOpen(false)}>Créer le projet</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleRefreshAll} variant="outline">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Actualiser
+        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats */}
+      <div className="grid gap-4 md:grid-cols-3 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projets</CardTitle>
+            <CardTitle className="text-sm font-medium">Projets</CardTitle>
             <FolderKanban className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Dans le système</p>
+            <div className="text-2xl font-bold">{projects.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Projets Actifs</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Groupes</CardTitle>
+            <Layers className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">En cours de développement</p>
+            <div className="text-2xl font-bold">{groups.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Attente</CardTitle>
-            <Calendar className="h-4 w-4 text-yellow-600" />
+            <CardTitle className="text-sm font-medium">Thèmes</CardTitle>
+            <Layers className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-            <p className="text-xs text-muted-foreground">À démarrer</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Terminés</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.completed}</div>
-            <p className="text-xs text-muted-foreground">Ce mois-ci</p>
+            <div className="text-2xl font-bold">{themes.length}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters and Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Liste des projets</CardTitle>
-          <CardDescription>Tous vos projets en un coup d'œil</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un projet ou un client..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Statut" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="Actif">Actif</SelectItem>
-                <SelectItem value="En attente">En attente</SelectItem>
-                <SelectItem value="Terminé">Terminé</SelectItem>
-                <SelectItem value="Archivé">Archivé</SelectItem>
-              </SelectContent>
-            </Select>
+      {/* Recherche */}
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
           </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Projet</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Dates</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead>Temps</TableHead>
-                <TableHead>Équipe</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProjects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: project.color }}
-                      />
-                      <div>
-                        <div className="font-medium">{project.name}</div>
-                        <div className="text-sm text-muted-foreground max-w-[200px] truncate">
-                          {project.description}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{project.client}</TableCell>
-                  <TableCell>{getStatusBadge(project.status)}</TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{new Date(project.startDate).toLocaleDateString('fr-FR')}</div>
-                      {project.endDate && (
-                        <div className="text-muted-foreground">
-                          → {new Date(project.endDate).toLocaleDateString('fr-FR')}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{project.budget}h</div>
-                      <div className="text-muted-foreground">
-                        {Math.round((project.timeSpent / project.budget) * 100)}% utilisé
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm font-medium">{project.timeSpent}h</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{project.team.length}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Voir détails
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setEditingProject(project)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Modifier
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Supprimer
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
-      <Dialog open={editingProject !== null} onOpenChange={() => setEditingProject(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Modifier le projet</DialogTitle>
-            <DialogDescription>
-              Modifiez les informations du projet {editingProject?.name}
-            </DialogDescription>
-          </DialogHeader>
-          {editingProject && <ProjectForm project={editingProject} />}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingProject(null)}>Annuler</Button>
-            <Button onClick={() => setEditingProject(null)}>Enregistrer</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Tabs */}
+      <Tabs defaultValue="projects" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="projects">Projets</TabsTrigger>
+          <TabsTrigger value="groups">Groupes</TabsTrigger>
+          <TabsTrigger value="themes">Thèmes</TabsTrigger>
+        </TabsList>
+
+        {/* Tab Projects */}
+        <TabsContent value="projects">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Projets</CardTitle>
+                  <CardDescription>{filteredProjects.length} projet(s)</CardDescription>
+                </div>
+                <Dialog open={isAddProjectOpen} onOpenChange={setIsAddProjectOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nouveau projet
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Créer un projet</DialogTitle>
+                      <DialogDescription>Ajoutez un nouveau projet</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label>Nom</Label>
+                        <Input
+                          value={newProject.name}
+                          onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                          placeholder="Mon Projet"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={newProject.description}
+                          onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                          placeholder="Description du projet..."
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Groupe</Label>
+                        <Select
+                          value={newProject.groupId}
+                          onValueChange={(value) => setNewProject({ ...newProject, groupId: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner un groupe (optionnel)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {groups.map((group) => (
+                              <SelectItem key={group.id} value={group.id}>
+                                {group.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsAddProjectOpen(false)}>
+                        Annuler
+                      </Button>
+                      <Button onClick={handleCreateProject}>Créer</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {projectsLoading ? (
+                <p className="text-center py-8 text-muted-foreground">Chargement...</p>
+              ) : filteredProjects.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">
+                  Aucun projet. Cliquez sur "Nouveau projet" pour commencer.
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Groupe</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProjects.map((project) => (
+                      <TableRow key={project.id}>
+                        <TableCell className="font-medium">{project.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{project.description || '-'}</TableCell>
+                        <TableCell>
+                          {project.groupId ? (
+                            <Badge variant="secondary">
+                              {groups.find(g => g.id === project.groupId)?.name || 'Groupe'}
+                            </Badge>
+                          ) : (
+                            '-'
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleDeleteProject(project.id)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab Groups */}
+        <TabsContent value="groups">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Groupes</CardTitle>
+                  <CardDescription>{filteredGroups.length} groupe(s)</CardDescription>
+                </div>
+                <Dialog open={isAddGroupOpen} onOpenChange={setIsAddGroupOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nouveau groupe
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Créer un groupe</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label>Nom</Label>
+                        <Input
+                          value={newGroup.name}
+                          onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={newGroup.description}
+                          onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsAddGroupOpen(false)}>
+                        Annuler
+                      </Button>
+                      <Button onClick={handleCreateGroup}>Créer</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {groupsLoading ? (
+                <p className="text-center py-8 text-muted-foreground">Chargement...</p>
+              ) : filteredGroups.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">Aucun groupe</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredGroups.map((group) => (
+                      <TableRow key={group.id}>
+                        <TableCell className="font-medium">{group.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{group.description || '-'}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteGroup(group.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab Themes */}
+        <TabsContent value="themes">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Thèmes</CardTitle>
+                  <CardDescription>{filteredThemes.length} thème(s)</CardDescription>
+                </div>
+                <Dialog open={isAddThemeOpen} onOpenChange={setIsAddThemeOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nouveau thème
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Créer un thème</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label>Nom</Label>
+                        <Input
+                          value={newTheme.name}
+                          onChange={(e) => setNewTheme({ ...newTheme, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Couleur</Label>
+                        <Input
+                          type="color"
+                          value={newTheme.color}
+                          onChange={(e) => setNewTheme({ ...newTheme, color: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={newTheme.description}
+                          onChange={(e) => setNewTheme({ ...newTheme, description: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsAddThemeOpen(false)}>
+                        Annuler
+                      </Button>
+                      <Button onClick={handleCreateTheme}>Créer</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {themesLoading ? (
+                <p className="text-center py-8 text-muted-foreground">Chargement...</p>
+              ) : filteredThemes.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">Aucun thème</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom</TableHead>
+                      <TableHead>Couleur</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredThemes.map((theme) => (
+                      <TableRow key={theme.id}>
+                        <TableCell className="font-medium">{theme.name}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-6 h-6 rounded border"
+                              style={{ backgroundColor: theme.color }}
+                            />
+                            <span className="text-xs text-muted-foreground">{theme.color}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{theme.description || '-'}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteTheme(theme.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

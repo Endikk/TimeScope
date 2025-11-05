@@ -1,4 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useUsers, useUserMutations } from "@/lib/hooks/use-users"
+import type { User as ApiUser, CreateUserDto } from "@/lib/api/services/users.service"
 import {
   Table,
   TableBody,
@@ -54,18 +56,31 @@ import {
   XCircle,
 } from "lucide-react"
 
-// Types
+// Types - Interface locale pour l'UI (compatible avec les données mockées)
 interface User {
   id: string
   name: string
   email: string
-  phone: string
+  phone?: string
   role: "Admin" | "Manager" | "Employee"
-  department: string
+  department?: string
   status: "active" | "inactive"
   joinDate: string
   avatar?: string
 }
+
+// Fonction de conversion ApiUser -> User local
+const apiUserToLocal = (apiUser: ApiUser): User => ({
+  id: apiUser.id,
+  name: `${apiUser.firstName} ${apiUser.lastName}`,
+  email: apiUser.email,
+  phone: "",
+  role: apiUser.role,
+  department: "",
+  status: apiUser.isActive ? "active" : "inactive",
+  joinDate: apiUser.createdAt,
+  avatar: apiUser.avatar
+})
 
 // Données exemples
 const initialUsers: User[] = [
@@ -160,6 +175,11 @@ const initialUsers: User[] = [
 ]
 
 export default function UserManagement() {
+  // Hooks API
+  const { users: apiUsers, loading: loadingUsers, error: errorUsers, refetch } = useUsers()
+  const { createUser, updateUser, deleteUser, loading: mutationLoading } = useUserMutations()
+
+  // État local
   const [users, setUsers] = useState<User[]>(initialUsers)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRole, setFilterRole] = useState<string>("all")
@@ -167,14 +187,26 @@ export default function UserManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [newUser, setNewUser] = useState<Partial<User>>({
-    name: "",
+  const [newUser, setNewUser] = useState<{
+    firstName: string
+    lastName: string
+    email: string
+    password: string
+    role: "Admin" | "Manager" | "Employee"
+  }>({
+    firstName: "",
+    lastName: "",
     email: "",
-    phone: "",
+    password: "",
     role: "Employee",
-    department: "",
-    status: "active",
   })
+
+  // Synchroniser les données de l'API avec l'état local
+  useEffect(() => {
+    if (apiUsers && apiUsers.length > 0) {
+      setUsers(apiUsers.map(apiUserToLocal))
+    }
+  }, [apiUsers])
 
   // Filtrage des utilisateurs
   const filteredUsers = users.filter(user => {
@@ -200,50 +232,84 @@ export default function UserManagement() {
   }
 
   // Fonctions de gestion
-  const handleAddUser = () => {
-    const user: User = {
-      id: (users.length + 1).toString(),
-      name: newUser.name || "",
-      email: newUser.email || "",
-      phone: newUser.phone || "",
-      role: newUser.role as "Admin" | "Manager" | "Employee" || "Employee",
-      department: newUser.department || "",
-      status: newUser.status as "active" | "inactive" || "active",
-      joinDate: new Date().toISOString().split('T')[0],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newUser.name}`
+  const handleAddUser = async () => {
+    try {
+      const createDto: CreateUserDto = {
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role
+      }
+      await createUser(createDto)
+      await refetch()
+      setIsAddDialogOpen(false)
+      setNewUser({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        role: "Employee",
+      })
+    } catch (error) {
+      console.error("Erreur lors de la création de l'utilisateur:", error)
+      alert("Erreur lors de la création de l'utilisateur")
     }
-    setUsers([...users, user])
-    setIsAddDialogOpen(false)
-    setNewUser({
-      name: "",
-      email: "",
-      phone: "",
-      role: "Employee",
-      department: "",
-      status: "active",
-    })
   }
 
-  const handleEditUser = () => {
+  const handleEditUser = async () => {
     if (selectedUser) {
-      setUsers(users.map(u => u.id === selectedUser.id ? selectedUser : u))
-      setIsEditDialogOpen(false)
-      setSelectedUser(null)
+      try {
+        const [firstName, ...lastNameParts] = selectedUser.name.split(' ')
+        const lastName = lastNameParts.join(' ')
+
+        await updateUser(selectedUser.id, {
+          firstName,
+          lastName,
+          email: selectedUser.email,
+          isActive: selectedUser.status === "active"
+        })
+        await refetch()
+        setIsEditDialogOpen(false)
+        setSelectedUser(null)
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'utilisateur:", error)
+        alert("Erreur lors de la mise à jour de l'utilisateur")
+      }
     }
   }
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
-      setUsers(users.filter(u => u.id !== userId))
+      try {
+        await deleteUser(userId)
+        await refetch()
+      } catch (error) {
+        console.error("Erreur lors de la suppression de l'utilisateur:", error)
+        alert("Erreur lors de la suppression de l'utilisateur")
+      }
     }
   }
 
-  const handleToggleStatus = (userId: string) => {
-    setUsers(users.map(u => 
-      u.id === userId 
-        ? { ...u, status: u.status === "active" ? "inactive" : "active" }
-        : u
-    ))
+  const handleToggleStatus = async (userId: string) => {
+    const user = users.find(u => u.id === userId)
+    if (user) {
+      try {
+        const [firstName, ...lastNameParts] = user.name.split(' ')
+        const lastName = lastNameParts.join(' ')
+
+        await updateUser(userId, {
+          firstName,
+          lastName,
+          email: user.email,
+          isActive: user.status === "inactive"
+        })
+        await refetch()
+      } catch (error) {
+        console.error("Erreur lors du changement de statut:", error)
+        alert("Erreur lors du changement de statut")
+      }
+    }
   }
 
   const getRoleBadgeVariant = (role: string) => {
@@ -257,6 +323,30 @@ export default function UserManagement() {
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
+  }
+
+  // État de chargement ou d'erreur
+  if (loadingUsers) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-lg text-muted-foreground">Chargement des utilisateurs...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (errorUsers) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-lg text-red-500 mb-4">{errorUsers}</p>
+            <Button onClick={refetch}>Réessayer</Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -381,12 +471,21 @@ export default function UserManagement() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="name">Nom complet</Label>
+                    <Label htmlFor="firstName">Prénom</Label>
                     <Input
-                      id="name"
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                      placeholder="Jean Dupont"
+                      id="firstName"
+                      value={newUser.firstName}
+                      onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                      placeholder="Jean"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="lastName">Nom</Label>
+                    <Input
+                      id="lastName"
+                      value={newUser.lastName}
+                      onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                      placeholder="Dupont"
                     />
                   </div>
                   <div className="grid gap-2">
@@ -400,28 +499,20 @@ export default function UserManagement() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="phone">Téléphone</Label>
+                    <Label htmlFor="password">Mot de passe</Label>
                     <Input
-                      id="phone"
-                      value={newUser.phone}
-                      onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                      placeholder="+33 6 12 34 56 78"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="department">Département</Label>
-                    <Input
-                      id="department"
-                      value={newUser.department}
-                      onChange={(e) => setNewUser({...newUser, department: e.target.value})}
-                      placeholder="IT, Marketing, Sales..."
+                      id="password"
+                      type="password"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                      placeholder="********"
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="role">Rôle</Label>
-                    <Select 
-                      value={newUser.role} 
-                      onValueChange={(value) => setNewUser({...newUser, role: value as User["role"]})}
+                    <Select
+                      value={newUser.role}
+                      onValueChange={(value) => setNewUser({...newUser, role: value as "Admin" | "Manager" | "Employee"})}
                     >
                       <SelectTrigger>
                         <SelectValue />

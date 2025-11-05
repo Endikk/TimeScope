@@ -62,32 +62,6 @@ export default function LoginVideoSection() {
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/20" style={{ zIndex: 2 }} />
-
-      {/* Content */}
-      <div className="relative z-10 flex flex-col justify-center items-start px-16 py-12 text-white w-full">
-        <div className="max-w-xl">
-          <h1 className="text-6xl font-heading font-bold mb-6 text-white drop-shadow-lg">
-            TimeScope
-          </h1>
-          <p className="text-2xl mb-8 text-white/90 font-body">
-            Gérez votre temps efficacement
-          </p>
-          <div className="space-y-4 text-lg text-white/80 font-body">
-            <div className="flex items-center gap-4">
-              <div className="w-3 h-3 bg-white/70 rounded-full flex-shrink-0" />
-              <span>Suivi du temps en temps réel</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-3 h-3 bg-white/70 rounded-full flex-shrink-0" />
-              <span>Rapports détaillés et analyses</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-3 h-3 bg-white/70 rounded-full flex-shrink-0" />
-              <span>Gestion d'équipe simplifiée</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

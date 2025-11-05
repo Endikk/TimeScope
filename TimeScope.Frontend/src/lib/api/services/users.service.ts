@@ -5,11 +5,13 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
+  passwordHash: string;
   avatar?: string;
   role: 'Admin' | 'Manager' | 'Employee';
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
+  isDeleted: boolean;
 }
 
 export interface CreateUserDto {
@@ -17,13 +19,14 @@ export interface CreateUserDto {
   lastName: string;
   email: string;
   password: string;
-  avatar?: string;
   role: 'Admin' | 'Manager' | 'Employee';
 }
 
-export interface UpdateUserDto extends Partial<Omit<CreateUserDto, 'password'>> {
-  id: string;
-  password?: string;
+export interface UpdateUserDto {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  isActive?: boolean;
 }
 
 class UsersService {

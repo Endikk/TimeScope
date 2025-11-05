@@ -8,12 +8,12 @@ namespace TimeScope.API.Controllers;
 [Route("api/[controller]")]
 public class TasksController : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ITimeUnitOfWork _timeUow;
     private readonly ILogger<TasksController> _logger;
 
-    public TasksController(IUnitOfWork unitOfWork, ILogger<TasksController> logger)
+    public TasksController(ITimeUnitOfWork timeUow, ILogger<TasksController> logger)
     {
-        _unitOfWork = unitOfWork;
+        _timeUow = timeUow;
         _logger = logger;
     }
 
@@ -22,12 +22,12 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var tasks = await _unitOfWork.Tasks.GetAllAsync();
+            var tasks = await _timeUow.Tasks.GetAllAsync();
             return Ok(tasks);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving tasks");
+            _logger.LogError(ex, "Error retrieving tasks from Time database");
             return StatusCode(500, "Internal server error");
         }
     }
@@ -37,7 +37,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+            var task = await _timeUow.Tasks.GetByIdAsync(id);
 
             if (task == null)
             {
@@ -64,14 +64,14 @@ public class TasksController : ControllerBase
             }
 
             task.Id = Guid.NewGuid();
-            var createdTask = await _unitOfWork.Tasks.AddAsync(task);
-            await _unitOfWork.SaveChangesAsync();
+            var createdTask = await _timeUow.Tasks.AddAsync(task);
+            await _timeUow.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating task");
+            _logger.LogError(ex, "Error creating task in Time database");
             return StatusCode(500, "Internal server error");
         }
     }
@@ -86,20 +86,20 @@ public class TasksController : ControllerBase
                 return BadRequest("ID mismatch");
             }
 
-            var existingTask = await _unitOfWork.Tasks.GetByIdAsync(id);
+            var existingTask = await _timeUow.Tasks.GetByIdAsync(id);
             if (existingTask == null)
             {
                 return NotFound($"Task with ID {id} not found");
             }
 
-            await _unitOfWork.Tasks.UpdateAsync(task);
-            await _unitOfWork.SaveChangesAsync();
+            await _timeUow.Tasks.UpdateAsync(task);
+            await _timeUow.SaveChangesAsync();
 
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating task {TaskId}", id);
+            _logger.LogError(ex, "Error updating task {TaskId} in Time database", id);
             return StatusCode(500, "Internal server error");
         }
     }
@@ -109,20 +109,20 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+            var task = await _timeUow.Tasks.GetByIdAsync(id);
             if (task == null)
             {
                 return NotFound($"Task with ID {id} not found");
             }
 
-            await _unitOfWork.Tasks.DeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
+            await _timeUow.Tasks.DeleteAsync(id);
+            await _timeUow.SaveChangesAsync();
 
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting task {TaskId}", id);
+            _logger.LogError(ex, "Error deleting task {TaskId} from Time database", id);
             return StatusCode(500, "Internal server error");
         }
     }

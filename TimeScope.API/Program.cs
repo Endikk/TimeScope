@@ -18,16 +18,38 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Configure JSON serialization to use camelCase for property names
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure Database
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Configure Multiple Databases
+// Admin Database - Users, Roles, Settings
+builder.Services.AddDbContext<AdminDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("AdminConnection")));
 
-// Register Unit of Work and Repositories
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+// Projects Database - Projects, Groups, Themes
+builder.Services.AddDbContext<ProjectsDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ProjectsConnection")));
+
+// Time Database - Tasks, Time Entries
+builder.Services.AddDbContext<TimeDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("TimeConnection")));
+
+// Reports Database - Analytics, Logs, Audit
+builder.Services.AddDbContext<ReportsDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ReportsConnection")));
+
+// Register Specialized Unit of Work for each database
+builder.Services.AddScoped<IAdminUnitOfWork, AdminUnitOfWork>();
+builder.Services.AddScoped<IProjectsUnitOfWork, ProjectsUnitOfWork>();
+builder.Services.AddScoped<ITimeUnitOfWork, TimeUnitOfWork>();
+
+// Note: Legacy IUnitOfWork is deprecated - use specialized UnitOfWork instead
 
 // Configure AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

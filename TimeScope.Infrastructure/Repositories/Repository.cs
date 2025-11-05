@@ -2,16 +2,15 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
-using TimeScope.Infrastructure.Data;
 
 namespace TimeScope.Infrastructure.Repositories;
 
 public class Repository<T> : IRepository<T> where T : BaseEntity
 {
-    protected readonly ApplicationDbContext _context;
+    protected readonly DbContext _context;
     protected readonly DbSet<T> _dbSet;
 
-    public Repository(ApplicationDbContext context)
+    public Repository(DbContext context)
     {
         _context = context;
         _dbSet = context.Set<T>();

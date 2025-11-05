@@ -1,0 +1,136 @@
+import axiosInstance from '../axios.config';
+
+// Interfaces
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  groupId?: string;
+  createdAt: string;
+  updatedAt?: string;
+  isDeleted: boolean;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt?: string;
+  isDeleted: boolean;
+}
+
+export interface Theme {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+  groupId?: string;
+  projectId?: string;
+  createdAt: string;
+  updatedAt?: string;
+  isDeleted: boolean;
+}
+
+// DTOs
+export interface CreateProjectDto {
+  name: string;
+  description?: string;
+  groupId?: string;
+}
+
+export interface UpdateProjectDto {
+  name?: string;
+  description?: string;
+  groupId?: string;
+}
+
+export interface CreateGroupDto {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateGroupDto {
+  name?: string;
+  description?: string;
+}
+
+export interface CreateThemeDto {
+  name: string;
+  color: string;
+  description?: string;
+  groupId?: string;
+  projectId?: string;
+}
+
+export interface UpdateThemeDto {
+  name?: string;
+  color?: string;
+  description?: string;
+  groupId?: string;
+  projectId?: string;
+}
+
+// Service
+class ProjectsService {
+  private readonly endpoint = '/projects';
+
+  // Projects
+  async getAllProjects(): Promise<Project[]> {
+    const response = await axiosInstance.get<Project[]>(this.endpoint);
+    return response.data;
+  }
+
+  async createProject(project: CreateProjectDto): Promise<Project> {
+    const response = await axiosInstance.post<Project>(this.endpoint, project);
+    return response.data;
+  }
+
+  async updateProject(id: string, project: UpdateProjectDto): Promise<void> {
+    await axiosInstance.put(`${this.endpoint}/${id}`, project);
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    await axiosInstance.delete(`${this.endpoint}/${id}`);
+  }
+
+  // Groups
+  async getAllGroups(): Promise<Group[]> {
+    const response = await axiosInstance.get<Group[]>(`${this.endpoint}/groups`);
+    return response.data;
+  }
+
+  async createGroup(group: CreateGroupDto): Promise<Group> {
+    const response = await axiosInstance.post<Group>(`${this.endpoint}/groups`, group);
+    return response.data;
+  }
+
+  async updateGroup(id: string, group: UpdateGroupDto): Promise<void> {
+    await axiosInstance.put(`${this.endpoint}/groups/${id}`, group);
+  }
+
+  async deleteGroup(id: string): Promise<void> {
+    await axiosInstance.delete(`${this.endpoint}/groups/${id}`);
+  }
+
+  // Themes
+  async getAllThemes(): Promise<Theme[]> {
+    const response = await axiosInstance.get<Theme[]>(`${this.endpoint}/themes`);
+    return response.data;
+  }
+
+  async createTheme(theme: CreateThemeDto): Promise<Theme> {
+    const response = await axiosInstance.post<Theme>(`${this.endpoint}/themes`, theme);
+    return response.data;
+  }
+
+  async updateTheme(id: string, theme: UpdateThemeDto): Promise<void> {
+    await axiosInstance.put(`${this.endpoint}/themes/${id}`, theme);
+  }
+
+  async deleteTheme(id: string): Promise<void> {
+    await axiosInstance.delete(`${this.endpoint}/themes/${id}`);
+  }
+}
+
+export const projectsService = new ProjectsService();
