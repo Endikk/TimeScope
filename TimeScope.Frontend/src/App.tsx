@@ -13,27 +13,53 @@ import ReportsPage from "@/pages/admin/reports"
 import SettingsPage from "@/pages/admin/settings"
 import MonitoringPage from "@/pages/admin/monitoring"
 import { MainLayout } from "@/components/layout/MainLayout"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { useAuth } from "@/contexts/AuthContext"
 import './App.css'
 
 function App() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route element={<MainLayout />}>
+      {/* Route publique */}
+      <Route 
+        path="/login" 
+        element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage />} 
+      />
+      
+      {/* Redirection de la racine */}
+      <Route 
+        path="/" 
+        element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} 
+      />
+
+      {/* Routes protégées - Tous les utilisateurs authentifiés */}
+      <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/home" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/timesheet" element={<TimesheetPage />} />
         <Route path="/contact" element={<ContactPage />} />
+      </Route>
+
+      {/* Routes Admin - Réservées aux Admin et Manager */}
+      <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager']}><MainLayout /></ProtectedRoute>}>
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/reports" element={<ReportsPage />} />
+        <Route path="/admin/monitoring" element={<MonitoringPage />} />
+      </Route>
+
+      {/* Routes Admin - Réservées uniquement aux Admin */}
+      <Route element={<ProtectedRoute allowedRoles={['Admin']}><MainLayout /></ProtectedRoute>}>
         <Route path="/admin/user_management" element={<UserManagementPage />} />
         <Route path="/admin/projects" element={<ProjectsManagementPage />} />
         <Route path="/admin/tasks" element={<TasksManagementPage />} />
         <Route path="/admin/database-maintenance" element={<DatabaseMaintenancePage />} />
-        <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/settings" element={<SettingsPage />} />
-        <Route path="/admin/monitoring" element={<MonitoringPage />} />
       </Route>
+
+      {/* Route par défaut pour les chemins non trouvés */}
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   )
 }

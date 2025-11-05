@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
 
@@ -6,26 +7,29 @@ namespace TimeScope.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] // Tous les endpoints nécessitent une authentification
 public class UsersController : ControllerBase
 {
-    private readonly IAdminUnitOfWork _adminUow;
+    private readonly IUserService _userService;
     private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IAdminUnitOfWork adminUow, ILogger<UsersController> logger)
+    public UsersController(IUserService userService, ILogger<UsersController> logger)
     {
-        _adminUow = adminUow;
+        _userService = userService;
         _logger = logger;
     }
 
     /// <summary>
     /// Récupère tous les utilisateurs depuis la base Admin
+    /// Accessible par Admin et Manager
     /// </summary>
     [HttpGet]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<IEnumerable<User>>> GetUsers()
     {
         try
         {
-            var users = await _adminUow.Users.GetAllAsync();
+            var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
         catch (Exception ex)
@@ -37,13 +41,14 @@ public class UsersController : ControllerBase
 
     /// <summary>
     /// Récupère un utilisateur par son ID depuis la base Admin
+    /// Accessible par tous les utilisateurs authentifiés
     /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<User>> GetUser(Guid id)
     {
         try
         {
-            var user = await _adminUow.Users.GetByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(id);
 
             if (user == null)
             {
@@ -61,28 +66,33 @@ public class UsersController : ControllerBase
 
     /// <summary>
     /// Crée un nouvel utilisateur dans la base Admin
+    /// Accessible uniquement par Admin
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<User>> CreateUser([FromBody] CreateUserDto dto)
     {
         try
         {
-            var user = new User
+            var command = new CreateUserCommand
             {
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PasswordHash = dto.Password, // TODO: Hash the password properly
-                Role = dto.Role,
-                IsActive = true
+                Password = dto.Password,
+                Role = dto.Role.ToString()
             };
 
-            await _adminUow.Users.AddAsync(user);
-            await _adminUow.SaveChangesAsync();
+            var user = await _userService.CreateUserAsync(command);
 
             _logger.LogInformation("User {UserId} created successfully in Admin database", user.Id);
 
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while creating user");
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -93,30 +103,37 @@ public class UsersController : ControllerBase
 
     /// <summary>
     /// Met à jour un utilisateur existant dans la base Admin
+    /// Accessible par Admin et Manager
     /// </summary>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto dto)
     {
         try
         {
-            var user = await _adminUow.Users.GetByIdAsync(id);
-
-            if (user == null)
+            var command = new UpdateUserCommand
             {
-                return NotFound($"User with ID {id} not found");
-            }
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                IsActive = dto.IsActive
+            };
 
-            user.FirstName = dto.FirstName ?? user.FirstName;
-            user.LastName = dto.LastName ?? user.LastName;
-            user.Email = dto.Email ?? user.Email;
-            user.IsActive = dto.IsActive ?? user.IsActive;
-
-            await _adminUow.Users.UpdateAsync(user);
-            await _adminUow.SaveChangesAsync();
+            await _userService.UpdateUserAsync(id, command);
 
             _logger.LogInformation("User {UserId} updated successfully in Admin database", id);
 
             return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while updating user {UserId}", id);
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -127,14 +144,20 @@ public class UsersController : ControllerBase
 
     /// <summary>
     /// Supprime (soft delete) un utilisateur de la base Admin
+    /// Accessible uniquement par Admin
     /// </summary>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteUser(Guid id)
     {
         try
         {
-            await _adminUow.Users.DeleteAsync(id);
-            await _adminUow.SaveChangesAsync();
+            var deleted = await _userService.DeleteUserAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound($"User with ID {id} not found");
+            }
 
             _logger.LogInformation("User {UserId} deleted successfully from Admin database", id);
 

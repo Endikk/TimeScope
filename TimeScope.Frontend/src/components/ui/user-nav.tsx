@@ -1,6 +1,7 @@
 "use client";
 import { LayoutGrid, LogOut, User } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,8 +20,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 export function UserNav() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  // Générer les initiales de l'utilisateur
+  const getInitials = () => {
+    if (!user) return "TS";
+    return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+  };
+
+  // Couleur du badge selon le rôle
+  const getRoleBadgeVariant = () => {
+    if (!user) return "secondary";
+    switch (user.role) {
+      case "Admin":
+        return "destructive";
+      case "Manager":
+        return "default";
+      default:
+        return "secondary";
+    }
+  };
+
   return (
     <DropdownMenu>
       <TooltipProvider disableHoverableContent>
@@ -32,8 +61,8 @@ export function UserNav() {
                 className="relative h-8 w-8 rounded-full"
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="" alt="Avatar" />
-                  <AvatarFallback className="bg-transparent">JD</AvatarFallback>
+                  <AvatarImage src={user?.avatar} alt="Avatar" />
+                  <AvatarFallback className="bg-transparent">{getInitials()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -45,10 +74,17 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">John Doe</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              john.doe@timescope.com
+            <p className="text-sm font-medium leading-none">
+              {user ? `${user.firstName} ${user.lastName}` : "Utilisateur"}
             </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user?.email || "email@example.com"}
+            </p>
+            {user && (
+              <Badge variant={getRoleBadgeVariant() as any} className="w-fit mt-1">
+                {user.role}
+              </Badge>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -67,7 +103,7 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="hover:cursor-pointer" onClick={() => {}}>
+        <DropdownMenuItem className="hover:cursor-pointer" onClick={handleLogout}>
           <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
           Déconnexion
         </DropdownMenuItem>

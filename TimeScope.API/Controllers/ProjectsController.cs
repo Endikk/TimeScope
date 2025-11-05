@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
 
@@ -6,13 +7,19 @@ namespace TimeScope.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] // Tous les utilisateurs authentifiés peuvent accéder aux projets
 public class ProjectsController : ControllerBase
 {
+    private readonly IProjectService _projectService;
     private readonly IProjectsUnitOfWork _projectsUow;
     private readonly ILogger<ProjectsController> _logger;
 
-    public ProjectsController(IProjectsUnitOfWork projectsUow, ILogger<ProjectsController> logger)
+    public ProjectsController(
+        IProjectService projectService,
+        IProjectsUnitOfWork projectsUow,
+        ILogger<ProjectsController> logger)
     {
+        _projectService = projectService;
         _projectsUow = projectsUow;
         _logger = logger;
     }
@@ -25,7 +32,7 @@ public class ProjectsController : ControllerBase
     {
         try
         {
-            var projects = await _projectsUow.Projects.GetAllAsync();
+            var projects = await _projectService.GetAllProjectsAsync();
             return Ok(projects);
         }
         catch (Exception ex)
@@ -43,7 +50,7 @@ public class ProjectsController : ControllerBase
     {
         try
         {
-            var groups = await _projectsUow.Groups.GetAllAsync();
+            var groups = await _projectService.GetAllGroupsAsync();
             return Ok(groups);
         }
         catch (Exception ex)
@@ -61,7 +68,7 @@ public class ProjectsController : ControllerBase
     {
         try
         {
-            var themes = await _projectsUow.Themes.GetAllAsync();
+            var themes = await _projectService.GetAllThemesAsync();
             return Ok(themes);
         }
         catch (Exception ex)
@@ -79,19 +86,23 @@ public class ProjectsController : ControllerBase
     {
         try
         {
-            var project = new Project
+            var command = new CreateProjectCommand
             {
                 Name = dto.Name,
                 Description = dto.Description,
                 GroupId = dto.GroupId
             };
 
-            await _projectsUow.Projects.AddAsync(project);
-            await _projectsUow.SaveChangesAsync();
+            var project = await _projectService.CreateProjectAsync(command);
 
             _logger.LogInformation("Project {ProjectId} created successfully in Projects database", project.Id);
 
             return CreatedAtAction(nameof(GetProjects), new { id = project.Id }, project);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while creating project");
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -108,18 +119,22 @@ public class ProjectsController : ControllerBase
     {
         try
         {
-            var group = new Group
+            var command = new CreateGroupCommand
             {
                 Name = dto.Name,
                 Description = dto.Description
             };
 
-            await _projectsUow.Groups.AddAsync(group);
-            await _projectsUow.SaveChangesAsync();
+            var group = await _projectService.CreateGroupAsync(command);
 
             _logger.LogInformation("Group {GroupId} created successfully in Projects database", group.Id);
 
             return CreatedAtAction(nameof(GetGroups), new { id = group.Id }, group);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while creating group");
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -136,7 +151,7 @@ public class ProjectsController : ControllerBase
     {
         try
         {
-            var theme = new Theme
+            var command = new CreateThemeCommand
             {
                 Name = dto.Name,
                 Color = dto.Color,
@@ -145,12 +160,16 @@ public class ProjectsController : ControllerBase
                 ProjectId = dto.ProjectId
             };
 
-            await _projectsUow.Themes.AddAsync(theme);
-            await _projectsUow.SaveChangesAsync();
+            var theme = await _projectService.CreateThemeAsync(command);
 
             _logger.LogInformation("Theme {ThemeId} created successfully in Projects database", theme.Id);
 
             return CreatedAtAction(nameof(GetThemes), new { id = theme.Id }, theme);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while creating theme");
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {

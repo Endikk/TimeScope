@@ -9,6 +9,7 @@ namespace TimeScope.Core.Interfaces;
 public interface IAdminUnitOfWork : IDisposable
 {
     IRepository<User> Users { get; }
+    IRepository<AppSetting> AppSettings { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);
@@ -38,6 +39,19 @@ public interface ITimeUnitOfWork : IDisposable
 {
     IRepository<WorkTask> Tasks { get; }
     IRepository<TimeEntry> TimeEntries { get; }
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task BeginTransactionAsync(CancellationToken cancellationToken = default);
+    Task CommitTransactionAsync(CancellationToken cancellationToken = default);
+    Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Unit of Work pour la base de données Reports
+/// Gère les opérations sur les logs d'audit
+/// </summary>
+public interface IReportsUnitOfWork : IDisposable
+{
+    IRepository<AuditLog> AuditLogs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

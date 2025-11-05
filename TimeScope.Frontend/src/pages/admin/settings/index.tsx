@@ -41,14 +41,14 @@ import { useSettings, useCategories, useSettingMutations } from '@/lib/hooks/use
 import { AppSetting, CreateSettingDto, UpdateSettingDto } from '@/lib/api/services';
 
 export default function SettingsPageAPI() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingSetting, setEditingSetting] = useState<AppSetting | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const { settings, loading, refetch } = useSettings({
-    category: selectedCategory || undefined
+    category: selectedCategory === 'all' ? undefined : selectedCategory
   });
   const { categories } = useCategories();
   const { createSetting, updateSetting, deleteSetting, resetToDefaults, loading: mutating } = useSettingMutations();
@@ -289,7 +289,7 @@ export default function SettingsPageAPI() {
                   <SelectValue placeholder="Toutes les catégories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes</SelectItem>
+                  <SelectItem value="all">Toutes</SelectItem>
                   {(categories || []).map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
@@ -298,6 +298,7 @@ export default function SettingsPageAPI() {
                 </SelectContent>
               </Select>
             </div>
+
           </div>
         </CardContent>
       </Card>

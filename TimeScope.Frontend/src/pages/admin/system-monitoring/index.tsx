@@ -29,9 +29,9 @@ import { format } from 'date-fns';
 
 export default function SystemMonitoringPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const { metrics, loading: metricsLoading, refetch: refetchMetrics } = useSystemMetrics(autoRefresh, 5000);
-  const { info, loading: infoLoading, refetch: refetchInfo } = useSystemInfo();
-  const { health, loading: healthLoading, refetch: refetchHealth } = useHealthStatus(autoRefresh, 10000);
+  const { metrics, loading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useSystemMetrics(autoRefresh, 5000);
+  const { info, loading: infoLoading, error: infoError, refetch: refetchInfo } = useSystemInfo();
+  const { health, loading: healthLoading, error: healthError, refetch: refetchHealth } = useHealthStatus(autoRefresh, 10000);
   const { logs, refetch: refetchLogs } = useLogs(50);
   const { forceGC, loading: gcLoading } = useGarbageCollection();
 
@@ -81,6 +81,33 @@ export default function SystemMonitoringPage() {
           <RefreshCw className="w-12 h-12 animate-spin mx-auto text-primary" />
           <p className="text-muted-foreground">Chargement des données de monitoring...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (metricsError || infoError || healthError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Card className="max-w-md border-red-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="w-6 h-6" />
+              Erreur de chargement
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Une erreur s'est produite lors du chargement des données de monitoring :
+            </p>
+            {metricsError && <p className="text-sm text-red-600">• Métriques : {metricsError}</p>}
+            {infoError && <p className="text-sm text-red-600">• Informations système : {infoError}</p>}
+            {healthError && <p className="text-sm text-red-600">• État de santé : {healthError}</p>}
+            <Button onClick={handleRefreshAll} className="w-full">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

@@ -289,14 +289,14 @@ export default function TasksManagementPage() {
                     <div className="grid gap-2">
                       <Label htmlFor="assignee">Assigné à</Label>
                       <Select
-                        value={formData.assigneeId}
-                        onValueChange={(value) => setFormData({ ...formData, assigneeId: value })}
+                        value={formData.assigneeId || 'unassigned'}
+                        onValueChange={(value) => setFormData({ ...formData, assigneeId: value === 'unassigned' ? '' : value })}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Non assigné" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Non assigné</SelectItem>
+                          <SelectItem value="unassigned">Non assigné</SelectItem>
                           {users.map((user) => (
                             <SelectItem key={user.id} value={user.id}>
                               {user.firstName} {user.lastName}
@@ -626,14 +626,14 @@ export default function TasksManagementPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="edit-assignee">Assigné à</Label>
                     <Select
-                      value={formData.assigneeId}
-                      onValueChange={(value) => setFormData({ ...formData, assigneeId: value })}
+                      value={formData.assigneeId || 'unassigned'}
+                      onValueChange={(value) => setFormData({ ...formData, assigneeId: value === 'unassigned' ? '' : value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Non assigné</SelectItem>
+                        <SelectItem value="unassigned">Non assigné</SelectItem>
                         {users.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             {user.firstName} {user.lastName}

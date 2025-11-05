@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,11 +10,12 @@ import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
 
 export default function LoginForm() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
 
@@ -22,18 +24,24 @@ export default function LoginForm() {
     setError('');
     setIsLoading(true);
 
-    if (!formData.username || !formData.password) {
+    if (!formData.email || !formData.password) {
       setError('Veuillez remplir tous les champs');
       setIsLoading(false);
       return;
     }
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      localStorage.setItem('auth_token', 'dummy_token');
+      await login({
+        email: formData.email,
+        password: formData.password
+      });
+      
+      // Redirection vers la page d'accueil après connexion réussie
       navigate('/home');
-    } catch (err) {
-      setError('Identifiants incorrects. Veuillez réessayer.');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.message || 'Identifiants incorrects. Veuillez réessayer.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -61,18 +69,18 @@ export default function LoginForm() {
           )}
 
           <div className="space-y-1">
-            <Label htmlFor="username" className="font-body font-semibold text-gray-800 text-xs">
-              Email ou nom d'utilisateur
+            <Label htmlFor="email" className="font-body font-semibold text-gray-800 text-xs">
+              Email
             </Label>
             <Input
-              id="username"
-              type="text"
+              id="email"
+              type="email"
               placeholder="john.doe@timescope.com"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               disabled={isLoading}
               className="h-9 text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-              autoComplete="username"
+              autoComplete="email"
               required
             />
           </div>

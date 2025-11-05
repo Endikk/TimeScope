@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
 
@@ -19,14 +20,15 @@ public class CreateTaskDto
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] // Tous les utilisateurs authentifiés peuvent accéder aux tâches
 public class TasksController : ControllerBase
 {
-    private readonly ITimeUnitOfWork _timeUow;
+    private readonly ITaskService _taskService;
     private readonly ILogger<TasksController> _logger;
 
-    public TasksController(ITimeUnitOfWork timeUow, ILogger<TasksController> logger)
+    public TasksController(ITaskService taskService, ILogger<TasksController> logger)
     {
-        _timeUow = timeUow;
+        _taskService = taskService;
         _logger = logger;
     }
 
@@ -35,7 +37,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var tasks = await _timeUow.Tasks.GetAllAsync();
+            var tasks = await _taskService.GetAllTasksAsync();
             return Ok(tasks);
         }
         catch (Exception ex)
@@ -50,7 +52,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var task = await _timeUow.Tasks.GetByIdAsync(id);
+            var task = await _taskService.GetTaskByIdAsync(id);
 
             if (task == null)
             {
@@ -76,75 +78,28 @@ public class TasksController : ControllerBase
                 return BadRequest(ModelState);
             }
 
-            // Parse ProjectId
-            if (!Guid.TryParse(dto.ProjectId, out var projectId))
+            // Conversion du DTO vers Command
+            var command = new CreateTaskCommand
             {
-                return BadRequest("Invalid ProjectId format");
-            }
-
-            // Parse AssigneeId if provided
-            Guid? assigneeId = null;
-            if (!string.IsNullOrEmpty(dto.AssigneeId))
-            {
-                if (Guid.TryParse(dto.AssigneeId, out var parsedAssigneeId))
-                {
-                    assigneeId = parsedAssigneeId;
-                }
-            }
-
-            // Parse Status
-            if (!Enum.TryParse<Core.Entities.TaskStatus>(dto.Status, true, out var status))
-            {
-                return BadRequest("Invalid Status");
-            }
-
-            // Parse Precision
-            if (!Enum.TryParse<TaskPrecision>(dto.Precision, true, out var precision))
-            {
-                return BadRequest("Invalid Precision");
-            }
-
-            // Parse Priority
-            if (!Enum.TryParse<TaskPriority>(dto.Priority, true, out var priority))
-            {
-                return BadRequest("Invalid Priority");
-            }
-
-            // Parse DueDate if provided
-            DateTime? dueDate = null;
-            if (!string.IsNullOrEmpty(dto.DueDate))
-            {
-                if (DateTime.TryParse(dto.DueDate, out var parsedDueDate))
-                {
-                    dueDate = parsedDueDate;
-                }
-            }
-
-            // Parse EstimatedTime
-            if (!TimeSpan.TryParse(dto.EstimatedTime, out var estimatedTime))
-            {
-                estimatedTime = TimeSpan.Zero;
-            }
-
-            var task = new WorkTask
-            {
-                Id = Guid.NewGuid(),
                 Name = dto.Name,
                 Description = dto.Description,
-                ProjectId = projectId,
-                AssigneeId = assigneeId,
-                Status = status,
-                Precision = precision,
-                Priority = priority,
-                DueDate = dueDate,
-                EstimatedTime = estimatedTime,
-                ActualTime = TimeSpan.Zero
+                ProjectId = dto.ProjectId,
+                AssigneeId = dto.AssigneeId,
+                Status = dto.Status,
+                Precision = dto.Precision,
+                Priority = dto.Priority,
+                DueDate = dto.DueDate,
+                EstimatedTime = dto.EstimatedTime
             };
 
-            var createdTask = await _timeUow.Tasks.AddAsync(task);
-            await _timeUow.SaveChangesAsync();
+            var createdTask = await _taskService.CreateTaskAsync(command);
 
             return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while creating task");
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -158,77 +113,33 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var existingTask = await _timeUow.Tasks.GetByIdAsync(id);
-            if (existingTask == null)
+            // Conversion du DTO vers Command
+            var command = new UpdateTaskCommand
             {
-                return NotFound($"Task with ID {id} not found");
-            }
+                Name = dto.Name,
+                Description = dto.Description,
+                ProjectId = dto.ProjectId,
+                AssigneeId = dto.AssigneeId,
+                Status = dto.Status,
+                Precision = dto.Precision,
+                Priority = dto.Priority,
+                DueDate = dto.DueDate,
+                EstimatedTime = dto.EstimatedTime
+            };
 
-            // Parse ProjectId
-            if (!Guid.TryParse(dto.ProjectId, out var projectId))
-            {
-                return BadRequest("Invalid ProjectId format");
-            }
-
-            // Parse AssigneeId if provided
-            Guid? assigneeId = null;
-            if (!string.IsNullOrEmpty(dto.AssigneeId))
-            {
-                if (Guid.TryParse(dto.AssigneeId, out var parsedAssigneeId))
-                {
-                    assigneeId = parsedAssigneeId;
-                }
-            }
-
-            // Parse Status
-            if (!Enum.TryParse<Core.Entities.TaskStatus>(dto.Status, true, out var status))
-            {
-                return BadRequest("Invalid Status");
-            }
-
-            // Parse Precision
-            if (!Enum.TryParse<TaskPrecision>(dto.Precision, true, out var precision))
-            {
-                return BadRequest("Invalid Precision");
-            }
-
-            // Parse Priority
-            if (!Enum.TryParse<TaskPriority>(dto.Priority, true, out var priority))
-            {
-                return BadRequest("Invalid Priority");
-            }
-
-            // Parse DueDate if provided
-            DateTime? dueDate = null;
-            if (!string.IsNullOrEmpty(dto.DueDate))
-            {
-                if (DateTime.TryParse(dto.DueDate, out var parsedDueDate))
-                {
-                    dueDate = parsedDueDate;
-                }
-            }
-
-            // Parse EstimatedTime
-            if (!TimeSpan.TryParse(dto.EstimatedTime, out var estimatedTime))
-            {
-                estimatedTime = TimeSpan.Zero;
-            }
-
-            // Update task properties
-            existingTask.Name = dto.Name;
-            existingTask.Description = dto.Description;
-            existingTask.ProjectId = projectId;
-            existingTask.AssigneeId = assigneeId;
-            existingTask.Status = status;
-            existingTask.Precision = precision;
-            existingTask.Priority = priority;
-            existingTask.DueDate = dueDate;
-            existingTask.EstimatedTime = estimatedTime;
-
-            await _timeUow.Tasks.UpdateAsync(existingTask);
-            await _timeUow.SaveChangesAsync();
+            await _taskService.UpdateTaskAsync(id, command);
 
             return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Task {TaskId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while updating task {TaskId}", id);
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -242,14 +153,12 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var task = await _timeUow.Tasks.GetByIdAsync(id);
-            if (task == null)
+            var deleted = await _taskService.DeleteTaskAsync(id);
+            
+            if (!deleted)
             {
                 return NotFound($"Task with ID {id} not found");
             }
-
-            await _timeUow.Tasks.DeleteAsync(id);
-            await _timeUow.SaveChangesAsync();
 
             return NoContent();
         }
@@ -265,7 +174,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var tasks = await _timeUow.Tasks.GetAllAsync();
+            var tasks = await _taskService.GetAllTasksAsync();
             var projectTasks = tasks.Where(t => t.ProjectId == projectId).ToList();
             return Ok(projectTasks);
         }
@@ -281,7 +190,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var tasks = await _timeUow.Tasks.GetAllAsync();
+            var tasks = await _taskService.GetAllTasksAsync();
             var userTasks = tasks.Where(t => t.AssigneeId == userId).ToList();
             return Ok(userTasks);
         }
@@ -302,7 +211,7 @@ public class TasksController : ControllerBase
                 return BadRequest($"Invalid status: {status}");
             }
 
-            var tasks = await _timeUow.Tasks.GetAllAsync();
+            var tasks = await _taskService.GetAllTasksAsync();
             var statusTasks = tasks.Where(t => t.Status == taskStatus).ToList();
             return Ok(statusTasks);
         }

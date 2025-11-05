@@ -1,24 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using TimeScope.Core.Entities;
-using TimeScope.Infrastructure.Data;
+using TimeScope.Core.Interfaces;
 
 namespace TimeScope.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TimeEntriesController : ControllerBase
 {
-    private readonly TimeDbContext _context;
+    private readonly ITimeEntryService _timeEntryService;
     private readonly ILogger<TimeEntriesController> _logger;
 
-    public TimeEntriesController(TimeDbContext context, ILogger<TimeEntriesController> logger)
+    public TimeEntriesController(ITimeEntryService timeEntryService, ILogger<TimeEntriesController> logger)
     {
-        _context = context;
+        _timeEntryService = timeEntryService;
         _logger = logger;
     }
 
-    // GET: api/timeentries
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TimeEntryDto>>> GetAllTimeEntries(
         [FromQuery] Guid? userId = null,
@@ -28,35 +28,15 @@ public class TimeEntriesController : ControllerBase
     {
         try
         {
-            var query = _context.TimeEntries
-                .Include(te => te.Task)
-                .Where(te => !te.IsDeleted)
-                .AsQueryable();
-
-            if (userId.HasValue)
+            var filter = new TimeEntryFilter
             {
-                query = query.Where(te => te.UserId == userId.Value);
-            }
+                UserId = userId,
+                TaskId = taskId,
+                StartDate = startDate,
+                EndDate = endDate
+            };
 
-            if (taskId.HasValue)
-            {
-                query = query.Where(te => te.TaskId == taskId.Value);
-            }
-
-            if (startDate.HasValue)
-            {
-                query = query.Where(te => te.Date >= startDate.Value);
-            }
-
-            if (endDate.HasValue)
-            {
-                query = query.Where(te => te.Date <= endDate.Value);
-            }
-
-            var timeEntries = await query
-                .OrderByDescending(te => te.Date)
-                .ThenByDescending(te => te.CreatedAt)
-                .ToListAsync();
+            var timeEntries = await _timeEntryService.GetTimeEntriesAsync(filter);
 
             var result = timeEntries.Select(te => new TimeEntryDto
             {
@@ -77,15 +57,12 @@ public class TimeEntriesController : ControllerBase
         }
     }
 
-    // GET: api/timeentries/{id}
     [HttpGet("{id}")]
     public async Task<ActionResult<TimeEntryDto>> GetTimeEntry(Guid id)
     {
         try
         {
-            var timeEntry = await _context.TimeEntries
-                .Include(te => te.Task)
-                .FirstOrDefaultAsync(te => te.Id == id && !te.IsDeleted);
+            var timeEntry = await _timeEntryService.GetTimeEntryByIdAsync(id);
 
             if (timeEntry == null)
             {
@@ -111,63 +88,21 @@ public class TimeEntriesController : ControllerBase
         }
     }
 
-    // POST: api/timeentries
     [HttpPost]
     public async Task<ActionResult<TimeEntryDto>> CreateTimeEntry([FromBody] CreateTimeEntryDto dto)
     {
         try
         {
-            // Parse taskId - no validation, accept any GUID
-            var taskIdGuid = Guid.Parse(dto.TaskId);
-
-            // Parse duration (format: HH:mm:ss)
-            if (!TimeSpan.TryParse(dto.Duration, out var duration))
+            var command = new CreateTimeEntryCommand
             {
-                return BadRequest(new { message = "Invalid duration format. Expected HH:mm:ss" });
-            }
-
-            // Parse date
-            if (!DateTime.TryParse(dto.Date, out var date))
-            {
-                return BadRequest(new { message = "Invalid date format" });
-            }
-
-            // Ensure date is in UTC
-            if (date.Kind == DateTimeKind.Unspecified)
-            {
-                date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
-            }
-            else if (date.Kind == DateTimeKind.Local)
-            {
-                date = date.ToUniversalTime();
-            }
-
-            var timeEntry = new TimeEntry
-            {
-                Id = Guid.NewGuid(),
-                TaskId = taskIdGuid,
-                UserId = Guid.Parse(dto.UserId),
-                Date = date,
-                Duration = duration,
-                Notes = dto.Notes,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null,
-                IsDeleted = false
+                TaskId = dto.TaskId,
+                UserId = dto.UserId,
+                Date = dto.Date,
+                Duration = dto.Duration,
+                Notes = dto.Notes
             };
 
-            _context.TimeEntries.Add(timeEntry);
-
-            // Disable foreign key validation for this operation
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                // If foreign key fails, it's likely because task doesn't exist
-                // In this case, we'll still try to return the entry
-                _logger.LogWarning("Foreign key constraint may have failed, but entry created with TaskId: {TaskId}", taskIdGuid);
-            }
+            var timeEntry = await _timeEntryService.CreateTimeEntryAsync(command);
 
             var result = new TimeEntryDto
             {
@@ -181,6 +116,11 @@ public class TimeEntriesController : ControllerBase
 
             return CreatedAtAction(nameof(GetTimeEntry), new { id = timeEntry.Id }, result);
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while creating time entry");
+            return BadRequest(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating time entry");
@@ -188,78 +128,31 @@ public class TimeEntriesController : ControllerBase
         }
     }
 
-    // PUT: api/timeentries/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTimeEntry(Guid id, [FromBody] UpdateTimeEntryDto dto)
     {
         try
         {
-            var timeEntry = await _context.TimeEntries.FindAsync(id);
-
-            if (timeEntry == null || timeEntry.IsDeleted)
+            var command = new UpdateTimeEntryCommand
             {
-                return NotFound(new { message = "Time entry not found" });
-            }
+                Duration = dto.Duration,
+                Notes = dto.Notes,
+                Date = dto.Date
+            };
 
-            // Update task if provided
-            if (!string.IsNullOrEmpty(dto.TaskId))
-            {
-                var task = await _context.Tasks.FindAsync(Guid.Parse(dto.TaskId));
-                if (task == null || task.IsDeleted)
-                {
-                    return BadRequest(new { message = "Task not found" });
-                }
-                timeEntry.TaskId = Guid.Parse(dto.TaskId);
-            }
-
-            // Update user if provided
-            if (!string.IsNullOrEmpty(dto.UserId))
-            {
-                timeEntry.UserId = Guid.Parse(dto.UserId);
-            }
-
-            // Update date if provided
-            if (!string.IsNullOrEmpty(dto.Date))
-            {
-                if (!DateTime.TryParse(dto.Date, out var date))
-                {
-                    return BadRequest(new { message = "Invalid date format" });
-                }
-                
-                // Ensure date is in UTC
-                if (date.Kind == DateTimeKind.Unspecified)
-                {
-                    date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
-                }
-                else if (date.Kind == DateTimeKind.Local)
-                {
-                    date = date.ToUniversalTime();
-                }
-                
-                timeEntry.Date = date;
-            }
-
-            // Update duration if provided
-            if (!string.IsNullOrEmpty(dto.Duration))
-            {
-                if (!TimeSpan.TryParse(dto.Duration, out var duration))
-                {
-                    return BadRequest(new { message = "Invalid duration format. Expected HH:mm:ss" });
-                }
-                timeEntry.Duration = duration;
-            }
-
-            // Update notes
-            if (dto.Notes != null)
-            {
-                timeEntry.Notes = dto.Notes;
-            }
-
-            timeEntry.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
+            await _timeEntryService.UpdateTimeEntryAsync(id, command);
 
             return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Time entry {Id} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while updating time entry {Id}", id);
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -268,24 +161,17 @@ public class TimeEntriesController : ControllerBase
         }
     }
 
-    // DELETE: api/timeentries/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTimeEntry(Guid id)
     {
         try
         {
-            var timeEntry = await _context.TimeEntries.FindAsync(id);
+            var deleted = await _timeEntryService.DeleteTimeEntryAsync(id);
 
-            if (timeEntry == null || timeEntry.IsDeleted)
+            if (!deleted)
             {
                 return NotFound(new { message = "Time entry not found" });
             }
-
-            // Soft delete
-            timeEntry.IsDeleted = true;
-            timeEntry.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -295,62 +181,8 @@ public class TimeEntriesController : ControllerBase
             return StatusCode(500, new { message = "An error occurred while deleting the time entry" });
         }
     }
-
-    // GET: api/timeentries/statistics
-    [HttpGet("statistics")]
-    public async Task<ActionResult<TimeEntryStatistics>> GetStatistics(
-        [FromQuery] Guid? userId = null,
-        [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null)
-    {
-        try
-        {
-            var query = _context.TimeEntries
-                .Where(te => !te.IsDeleted)
-                .AsQueryable();
-
-            if (userId.HasValue)
-            {
-                query = query.Where(te => te.UserId == userId.Value);
-            }
-
-            if (startDate.HasValue)
-            {
-                query = query.Where(te => te.Date >= startDate.Value);
-            }
-
-            if (endDate.HasValue)
-            {
-                query = query.Where(te => te.Date <= endDate.Value);
-            }
-
-            var timeEntries = await query.ToListAsync();
-
-            var totalHours = timeEntries.Sum(te => te.Duration.TotalHours);
-            var totalEntries = timeEntries.Count;
-
-            var entriesByDate = timeEntries
-                .GroupBy(te => te.Date.Date)
-                .ToDictionary(g => g.Key.ToString("yyyy-MM-dd"), g => g.Count());
-
-            var statistics = new TimeEntryStatistics
-            {
-                TotalEntries = totalEntries,
-                TotalHours = totalHours,
-                EntriesByDate = entriesByDate
-            };
-
-            return Ok(statistics);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving time entry statistics");
-            return StatusCode(500, new { message = "An error occurred while retrieving statistics" });
-        }
-    }
 }
 
-// DTOs
 public class TimeEntryDto
 {
     public string Id { get; set; } = string.Empty;
@@ -372,16 +204,7 @@ public class CreateTimeEntryDto
 
 public class UpdateTimeEntryDto
 {
-    public string? TaskId { get; set; }
-    public string? UserId { get; set; }
     public string? Date { get; set; }
     public string? Duration { get; set; }
     public string? Notes { get; set; }
-}
-
-public class TimeEntryStatistics
-{
-    public int TotalEntries { get; set; }
-    public double TotalHours { get; set; }
-    public Dictionary<string, int> EntriesByDate { get; set; } = new();
 }
