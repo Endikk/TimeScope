@@ -118,10 +118,8 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
     setCurrentDate(newDate)
   }
 
-  const updateDayValue = (themeId: string, day: number, value: string) => {
-    const numValue = Math.min(1, Math.max(0, parseFloat(value) || 0))
-    // Ici on mettrait à jour la base de données
-    console.log(`Update ${themeId} day ${day}: ${numValue}`)
+  const updateDayValue = (_themeId: string, _day: number, _value: string) => {
+    // TODO: Update database with new value
   }
 
   const getCellBackground = (value: number, isWeekend: boolean, isToday: boolean) => {

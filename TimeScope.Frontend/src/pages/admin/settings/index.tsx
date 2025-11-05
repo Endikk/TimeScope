@@ -30,7 +30,6 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Settings2,
   Plus,
   Edit,
   Trash2,
@@ -156,7 +155,7 @@ export default function SettingsPageAPI() {
     );
   }
 
-  const settingsByCategory = categories.reduce((acc, category) => {
+  const settingsByCategory = (categories || []).reduce((acc, category) => {
     acc[category] = filteredSettings.filter(s => s.category === category);
     return acc;
   }, {} as Record<string, AppSetting[]>);
@@ -291,7 +290,7 @@ export default function SettingsPageAPI() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Toutes</SelectItem>
-                  {categories.map((cat) => (
+                  {(categories || []).map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
                     </SelectItem>
@@ -304,9 +303,9 @@ export default function SettingsPageAPI() {
       </Card>
 
       {/* Settings by Category */}
-      <Tabs defaultValue={categories[0] || ''} className="space-y-4">
+      <Tabs defaultValue={(categories || [])[0] || ''} className="space-y-4">
         <TabsList>
-          {categories.map((category) => (
+          {(categories || []).map((category) => (
             <TabsTrigger key={category} value={category}>
               {category}
               <Badge variant="secondary" className="ml-2">
@@ -316,7 +315,7 @@ export default function SettingsPageAPI() {
           ))}
         </TabsList>
 
-        {categories.map((category) => (
+        {(categories || []).map((category) => (
           <TabsContent key={category} value={category}>
             <Card>
               <CardHeader>

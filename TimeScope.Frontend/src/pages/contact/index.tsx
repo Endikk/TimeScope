@@ -37,12 +37,10 @@ export default function Contact() {
     },
   })
 
-  function onSubmit(data: ContactFormValues) {
-    console.log(data)
-    // Ici on pourrait envoyer les données à l'API
+  function onSubmit(_data: ContactFormValues) {
+    // TODO: Send data to API
     setIsSubmitted(true)
     
-    // Simuler l'envoi
     setTimeout(() => {
       form.reset()
       setIsSubmitted(false)

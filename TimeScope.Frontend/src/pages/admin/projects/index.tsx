@@ -44,30 +44,40 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Plus, Search, MoreHorizontal, Edit, Trash2, FolderKanban, Layers, RefreshCw } from 'lucide-react';
-import { useProjects, useGroups, useThemes, useProjectMutations, useGroupMutations, useThemeMutations } from '@/lib/hooks/use-projects';
-import type { CreateProjectDto, CreateGroupDto, CreateThemeDto } from '@/lib/api/services/projects.service';
+import { Plus, Search, MoreHorizontal, Trash2, FolderKanban, Layers, RefreshCw, ListTodo } from 'lucide-react';
+import { useProjects, useGroups, useProjectMutations, useGroupMutations } from '@/lib/hooks/use-projects';
+import { useTasks, useTaskMutations } from '@/lib/hooks/use-tasks';
+import type { CreateProjectDto, CreateGroupDto } from '@/lib/api/services/projects.service';
+import type { CreateTaskDto } from '@/lib/api/services/tasks.service';
 
 export default function ProjectsManagementPageSimple() {
   // Hooks API
   const { projects, loading: projectsLoading, error: projectsError, refetch: refetchProjects } = useProjects();
   const { groups, loading: groupsLoading, refetch: refetchGroups } = useGroups();
-  const { themes, loading: themesLoading, refetch: refetchThemes } = useThemes();
+  const { tasks, loading: tasksLoading, refetch: refetchTasks } = useTasks();
 
-  const { createProject, updateProject, deleteProject } = useProjectMutations();
+  const { createProject, deleteProject } = useProjectMutations();
   const { createGroup, deleteGroup } = useGroupMutations();
-  const { createTheme, deleteTheme } = useThemeMutations();
+  const { createTask, deleteTask } = useTaskMutations();
 
   // États locaux
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
-  const [isAddThemeOpen, setIsAddThemeOpen] = useState(false);
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
 
   // Formulaires
   const [newProject, setNewProject] = useState<CreateProjectDto>({ name: '', description: '' });
   const [newGroup, setNewGroup] = useState<CreateGroupDto>({ name: '', description: '' });
-  const [newTheme, setNewTheme] = useState<CreateThemeDto>({ name: '', color: '#3b82f6', description: '' });
+  const [newTask, setNewTask] = useState<CreateTaskDto>({
+    name: '',
+    description: '',
+    projectId: '',
+    status: 'EnAttente',
+    precision: 'Medium',
+    priority: 'Medium',
+    estimatedTime: '00:00:00'
+  });
 
   // Handlers Projects
   const handleCreateProject = async () => {
@@ -115,23 +125,35 @@ export default function ProjectsManagementPageSimple() {
     }
   };
 
-  // Handlers Themes
-  const handleCreateTheme = async () => {
+  // Handlers Tasks
+  const handleCreateTask = async () => {
     try {
-      await createTheme(newTheme);
-      await refetchThemes();
-      setIsAddThemeOpen(false);
-      setNewTheme({ name: '', color: '#3b82f6', description: '' });
+      if (!newTask.projectId) {
+        alert('Veuillez sélectionner un projet');
+        return;
+      }
+      await createTask(newTask);
+      await refetchTasks();
+      setIsAddTaskOpen(false);
+      setNewTask({
+        name: '',
+        description: '',
+        projectId: '',
+        status: 'EnAttente',
+        precision: 'Medium',
+        priority: 'Medium',
+        estimatedTime: '00:00:00'
+      });
     } catch (error) {
-      alert('Erreur lors de la création du thème');
+      alert('Erreur lors de la création de la tâche');
     }
   };
 
-  const handleDeleteTheme = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce thème ?')) {
+  const handleDeleteTask = async (id: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
       try {
-        await deleteTheme(id);
-        await refetchThemes();
+        await deleteTask(id);
+        await refetchTasks();
       } catch (error) {
         alert('Erreur lors de la suppression');
       }
@@ -139,7 +161,7 @@ export default function ProjectsManagementPageSimple() {
   };
 
   const handleRefreshAll = async () => {
-    await Promise.all([refetchProjects(), refetchGroups(), refetchThemes()]);
+    await Promise.all([refetchProjects(), refetchGroups(), refetchTasks()]);
   };
 
   // Filtrage
@@ -152,8 +174,9 @@ export default function ProjectsManagementPageSimple() {
     g.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredThemes = themes.filter(t =>
-    t.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTasks = tasks.filter(t =>
+    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (t.description && t.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   if (projectsError) {
@@ -204,11 +227,11 @@ export default function ProjectsManagementPageSimple() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Thèmes</CardTitle>
-            <Layers className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Tâches</CardTitle>
+            <ListTodo className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{themes.length}</div>
+            <div className="text-2xl font-bold">{tasks.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -233,7 +256,7 @@ export default function ProjectsManagementPageSimple() {
         <TabsList>
           <TabsTrigger value="projects">Projets</TabsTrigger>
           <TabsTrigger value="groups">Groupes</TabsTrigger>
-          <TabsTrigger value="themes">Thèmes</TabsTrigger>
+          <TabsTrigger value="tasks">Tâches</TabsTrigger>
         </TabsList>
 
         {/* Tab Projects */}
@@ -443,100 +466,149 @@ export default function ProjectsManagementPageSimple() {
           </Card>
         </TabsContent>
 
-        {/* Tab Themes */}
-        <TabsContent value="themes">
+        {/* Tab Tasks */}
+        <TabsContent value="tasks">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Thèmes</CardTitle>
-                  <CardDescription>{filteredThemes.length} thème(s)</CardDescription>
+                  <CardTitle>Tâches</CardTitle>
+                  <CardDescription>{filteredTasks.length} tâche(s)</CardDescription>
                 </div>
-                <Dialog open={isAddThemeOpen} onOpenChange={setIsAddThemeOpen}>
+                <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
                   <DialogTrigger asChild>
                     <Button>
                       <Plus className="h-4 w-4 mr-2" />
-                      Nouveau thème
+                      Nouvelle tâche
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Créer un thème</DialogTitle>
+                      <DialogTitle>Créer une tâche</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid gap-2">
-                        <Label>Nom</Label>
+                        <Label>Nom *</Label>
                         <Input
-                          value={newTheme.name}
-                          onChange={(e) => setNewTheme({ ...newTheme, name: e.target.value })}
+                          value={newTask.name}
+                          onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
+                          placeholder="Nom de la tâche"
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label>Couleur</Label>
-                        <Input
-                          type="color"
-                          value={newTheme.color}
-                          onChange={(e) => setNewTheme({ ...newTheme, color: e.target.value })}
-                        />
+                        <Label>Projet *</Label>
+                        <Select
+                          value={newTask.projectId}
+                          onValueChange={(value) => setNewTask({ ...newTask, projectId: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner un projet" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="grid gap-2">
                         <Label>Description</Label>
                         <Textarea
-                          value={newTheme.description}
-                          onChange={(e) => setNewTheme({ ...newTheme, description: e.target.value })}
+                          value={newTask.description}
+                          onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                          placeholder="Description de la tâche..."
                         />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label>Statut</Label>
+                          <Select
+                            value={newTask.status}
+                            onValueChange={(value: any) => setNewTask({ ...newTask, status: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="EnAttente">En attente</SelectItem>
+                              <SelectItem value="EnCours">En cours</SelectItem>
+                              <SelectItem value="Termine">Terminé</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Priorité</Label>
+                          <Select
+                            value={newTask.priority}
+                            onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Low">Basse</SelectItem>
+                              <SelectItem value="Medium">Moyenne</SelectItem>
+                              <SelectItem value="High">Haute</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsAddThemeOpen(false)}>
+                      <Button variant="outline" onClick={() => setIsAddTaskOpen(false)}>
                         Annuler
                       </Button>
-                      <Button onClick={handleCreateTheme}>Créer</Button>
+                      <Button onClick={handleCreateTask}>Créer</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </div>
             </CardHeader>
             <CardContent>
-              {themesLoading ? (
+              {tasksLoading ? (
                 <p className="text-center py-8 text-muted-foreground">Chargement...</p>
-              ) : filteredThemes.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">Aucun thème</p>
+              ) : filteredTasks.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">Aucune tâche</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Nom</TableHead>
-                      <TableHead>Couleur</TableHead>
-                      <TableHead>Description</TableHead>
+                      <TableHead>Projet</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Priorité</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredThemes.map((theme) => (
-                      <TableRow key={theme.id}>
-                        <TableCell className="font-medium">{theme.name}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-6 h-6 rounded border"
-                              style={{ backgroundColor: theme.color }}
-                            />
-                            <span className="text-xs text-muted-foreground">{theme.color}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">{theme.description || '-'}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteTheme(theme.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {filteredTasks.map((task) => {
+                      const project = projects.find(p => p.id === task.projectId);
+                      return (
+                        <TableRow key={task.id}>
+                          <TableCell className="font-medium">{task.name}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{project?.name || 'N/A'}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{task.status}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge>{task.priority || 'Medium'}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteTask(task.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}

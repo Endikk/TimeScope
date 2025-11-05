@@ -1,44 +1,102 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, FolderOpen, Clock, Settings, BarChart3, Database } from "lucide-react"
+import { Users, FolderOpen, Clock, Settings, BarChart3, Database, RefreshCw } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { useAdministration } from "@/lib/hooks/use-administration"
 
-export default function AdminPage() {
+export default function AdminPageAPI() {
   const navigate = useNavigate();
+  const { statistics, refetchAll } = useAdministration();
+
+  if (statistics.loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center space-y-4">
+          <RefreshCw className="w-12 h-12 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Chargement du tableau de bord...</p>
+        </div>
+      </div>
+    );
+  }
 
   const stats = [
     {
       title: "Utilisateurs actifs",
-      value: "248",
-      change: "+12%",
+      value: statistics.statistics?.activeUsers.toString() || "0",
+      total: statistics.statistics?.totalUsers.toString() || "0",
       icon: Users,
       iconBg: "bg-gradient-to-br from-purple-500 to-indigo-600",
       cardBg: "bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200"
     },
     {
       title: "Projets en cours",
-      value: "42",
-      change: "+8%",
+      value: statistics.statistics?.totalProjects.toString() || "0",
+      total: null,
       icon: FolderOpen,
       iconBg: "bg-gradient-to-br from-green-500 to-emerald-600",
       cardBg: "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
     },
     {
-      title: "Heures cette semaine",
-      value: "1,247",
-      change: "+5%",
+      title: "Entrées de temps",
+      value: statistics.statistics?.totalTimeEntries.toString() || "0",
+      total: null,
       icon: Clock,
       iconBg: "bg-gradient-to-br from-blue-500 to-cyan-600",
       cardBg: "bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200"
     },
     {
-      title: "Tâches complétées",
-      value: "186",
-      change: "+18%",
+      title: "Tâches totales",
+      value: statistics.statistics?.totalTasks.toString() || "0",
+      total: null,
       icon: BarChart3,
       iconBg: "bg-gradient-to-br from-orange-500 to-amber-600",
       cardBg: "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200"
+    }
+  ]
+
+  const quickLinks = [
+    {
+      title: "Gestion des Utilisateurs",
+      description: "Gérer les comptes et les permissions",
+      icon: Users,
+      path: "/admin/user-management",
+      gradient: "from-violet-500 to-purple-600"
+    },
+    {
+      title: "Gestion des Projets",
+      description: "Organiser les projets et les groupes",
+      icon: FolderOpen,
+      path: "/admin/projects",
+      gradient: "from-emerald-500 to-green-600"
+    },
+    {
+      title: "Rapports et Analyses",
+      description: "Statistiques et logs d'audit",
+      icon: BarChart3,
+      path: "/admin/reports",
+      gradient: "from-blue-500 to-cyan-600"
+    },
+    {
+      title: "Monitoring Système",
+      description: "Surveiller les ressources serveur",
+      icon: Database,
+      path: "/admin/system-monitoring",
+      gradient: "from-orange-500 to-red-600"
+    },
+    {
+      title: "Administration",
+      description: "Gestion des bases de données",
+      icon: Settings,
+      path: "/admin/administration",
+      gradient: "from-pink-500 to-rose-600"
+    },
+    {
+      title: "Paramètres",
+      description: "Configuration de l'application",
+      icon: Settings,
+      path: "/admin/settings",
+      gradient: "from-gray-500 to-slate-600"
     }
   ]
 
@@ -55,6 +113,10 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary">v1.0.0</Badge>
+            <Button onClick={refetchAll} variant="outline" size="sm">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Actualiser
+            </Button>
             <Button onClick={() => navigate('/admin/settings')}>
               <Settings className="mr-2 h-4 w-4" />
               Paramètres
@@ -78,155 +140,77 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <p className="text-xs text-green-600 font-semibold">
-                    {stat.change} par rapport au mois dernier
-                  </p>
+                  {stat.total && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      sur {stat.total} total
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             )
           })}
         </div>
 
-        {/* Admin Sections */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="border-2 border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-2 rounded-lg mr-2">
-                  <Users className="h-5 w-5 text-white" />
-                </div>
-                Gestion des utilisateurs
-              </CardTitle>
-              <CardDescription>
-                Gérer les comptes utilisateurs et les permissions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">248 utilisateurs actifs</p>
-                <p className="text-sm text-muted-foreground">12 nouveaux cette semaine</p>
-              </div>
-              <Button className="w-full mt-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white" onClick={() => navigate('/admin/user_management')}>
-                Gérer les utilisateurs
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-green-100 hover:border-green-300 hover:shadow-lg transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-2 rounded-lg mr-2">
-                  <FolderOpen className="h-5 w-5 text-white" />
-                </div>
-                Projets et équipes
-              </CardTitle>
-              <CardDescription>
-                Organiser les projets et configurer les équipes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">42 projets actifs</p>
-                <p className="text-sm text-muted-foreground">8 équipes configurées</p>
-              </div>
-              <Button className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white" onClick={() => navigate('/admin/projects')}>
-                Gérer les projets
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-2 rounded-lg mr-2">
-                  <Database className="h-5 w-5 text-white" />
-                </div>
-                Base de données
-              </CardTitle>
-              <CardDescription>
-                Maintenance et sauvegarde des données
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Dernière sauvegarde: Aujourd&apos;hui</p>
-                <p className="text-sm text-muted-foreground">Taille: 2.4 GB</p>
-              </div>
-              <Button className="w-full mt-4 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white" onClick={() => navigate('/admin/database-maintenance')}>
-                Maintenance DB
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-orange-100 hover:border-orange-300 hover:shadow-lg transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="bg-gradient-to-br from-orange-500 to-amber-600 p-2 rounded-lg mr-2">
-                  <BarChart3 className="h-5 w-5 text-white" />
-                </div>
-                Rapports avancés
-              </CardTitle>
-              <CardDescription>
-                Générer et consulter des rapports détaillés
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">15 rapports disponibles</p>
-                <p className="text-sm text-muted-foreground">Exportation automatique activée</p>
-              </div>
-              <Button className="w-full mt-4 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white" onClick={() => navigate('/admin/reports')}>
-                Voir les rapports
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-slate-100 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="bg-gradient-to-br from-slate-500 to-gray-600 p-2 rounded-lg mr-2">
-                  <Settings className="h-5 w-5 text-white" />
-                </div>
-                Configuration système
-              </CardTitle>
-              <CardDescription>
-                Paramètres généraux et configuration avancée
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Version: 1.0.0</p>
-                <p className="text-sm text-muted-foreground">Dernière mise à jour: 02/11/2025</p>
-              </div>
-              <Button className="w-full mt-4 bg-gradient-to-r from-slate-500 to-gray-600 hover:from-slate-600 hover:to-gray-700 text-white" onClick={() => navigate('/admin/settings')}>
-                Paramètres
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-pink-100 hover:border-pink-300 hover:shadow-lg transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="bg-gradient-to-br from-pink-500 to-rose-600 p-2 rounded-lg mr-2">
-                  <Clock className="h-5 w-5 text-white" />
-                </div>
-                Monitoring temps réel
-              </CardTitle>
-              <CardDescription>
-                Surveillance en temps réel de l&apos;activité
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">89 utilisateurs connectés</p>
-                <p className="text-sm text-muted-foreground">Serveur: En ligne</p>
-              </div>
-              <Button className="w-full mt-4 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white" onClick={() => navigate('/admin/monitoring')}>
-                Voir le monitoring
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Quick Links Grid */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Accès Rapide</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {quickLinks.map((link, index) => {
+              const IconComponent = link.icon
+              return (
+                <Card
+                  key={index}
+                  className="hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 border-2"
+                  onClick={() => navigate(link.path)}
+                >
+                  <CardHeader>
+                    <div className="flex items-center space-x-3">
+                      <div className={`bg-gradient-to-br ${link.gradient} p-3 rounded-lg`}>
+                        <IconComponent className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">{link.title}</CardTitle>
+                        <CardDescription className="text-sm mt-1">
+                          {link.description}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              )
+            })}
+          </div>
         </div>
+
+        {/* System Info */}
+        {statistics.statistics && (
+          <Card className="mt-8 bg-gradient-to-br from-slate-50 to-gray-100 border-slate-200">
+            <CardHeader>
+              <CardTitle>Informations Système</CardTitle>
+              <CardDescription>État actuel du système TimeScope</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div className="p-4 bg-white rounded-lg shadow">
+                  <div className="text-2xl font-bold text-gray-900">{statistics.statistics.totalUsers}</div>
+                  <div className="text-sm text-gray-600">Utilisateurs</div>
+                </div>
+                <div className="p-4 bg-white rounded-lg shadow">
+                  <div className="text-2xl font-bold text-gray-900">{statistics.statistics.totalProjects}</div>
+                  <div className="text-sm text-gray-600">Projets</div>
+                </div>
+                <div className="p-4 bg-white rounded-lg shadow">
+                  <div className="text-2xl font-bold text-gray-900">{statistics.statistics.totalTasks}</div>
+                  <div className="text-sm text-gray-600">Tâches</div>
+                </div>
+                <div className="p-4 bg-white rounded-lg shadow">
+                  <div className="text-2xl font-bold text-gray-900">{statistics.statistics.recentAuditLogs}</div>
+                  <div className="text-sm text-gray-600">Logs (30j)</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

@@ -4,8 +4,7 @@ export type TaskPrecision = "Low" | "Medium" | "High"
 export interface Task {
   id: string
   name: string
-  group: string
-  theme: string
+  projectId: string
   precision: TaskPrecision
   status: TaskStatus
   timeSpent: string
@@ -16,8 +15,7 @@ export interface Task {
 }
 
 export interface TaskFilters {
-  group: string
-  theme: string
+  projectId: string
   precision: string
   search: string
 }

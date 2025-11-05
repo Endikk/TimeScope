@@ -9,4 +9,5 @@ public class Project : BaseEntity
 
     // Relations
     public ICollection<Theme> Themes { get; set; } = new List<Theme>();
+    public ICollection<WorkTask> Tasks { get; set; } = new List<WorkTask>();
 }

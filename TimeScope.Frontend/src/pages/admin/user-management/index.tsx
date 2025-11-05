@@ -177,7 +177,7 @@ const initialUsers: User[] = [
 export default function UserManagement() {
   // Hooks API
   const { users: apiUsers, loading: loadingUsers, error: errorUsers, refetch } = useUsers()
-  const { createUser, updateUser, deleteUser, loading: mutationLoading } = useUserMutations()
+  const { createUser, updateUser, deleteUser } = useUserMutations()
 
   // État local
   const [users, setUsers] = useState<User[]>(initialUsers)
@@ -213,7 +213,7 @@ export default function UserManagement() {
     const matchesSearch = 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.department.toLowerCase().includes(searchTerm.toLowerCase())
+      (user.department || '').toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesRole = filterRole === "all" || user.role === filterRole
     const matchesStatus = filterStatus === "all" || user.status === filterStatus

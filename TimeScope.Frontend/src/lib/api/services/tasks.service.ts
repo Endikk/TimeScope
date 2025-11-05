@@ -4,7 +4,7 @@ import { Task } from '@/lib/types';
 export interface CreateTaskDto {
   name: string;
   description?: string;
-  themeId: string;
+  projectId: string;
   assigneeId?: string;
   status: 'EnAttente' | 'EnCours' | 'Termine';
   precision: 'Low' | 'Medium' | 'High';
@@ -75,10 +75,10 @@ class TasksService {
   }
 
   /**
-   * Récupérer les tâches par thème
+   * Récupérer les tâches par projet
    */
-  async getTasksByTheme(themeId: string): Promise<Task[]> {
-    const response = await axiosInstance.get<Task[]>(`${this.endpoint}/theme/${themeId}`);
+  async getTasksByProject(projectId: string): Promise<Task[]> {
+    const response = await axiosInstance.get<Task[]>(`${this.endpoint}/project/${projectId}`);
     return response.data;
   }
 }

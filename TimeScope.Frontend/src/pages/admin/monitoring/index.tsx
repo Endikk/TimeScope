@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 
 export default function MonitoringPage() {
-  const { metrics, health, refetchAll } = useMonitoring(true);
+  const { metrics, refetchAll } = useMonitoring(true);
   
   return (
     <div className="p-6 space-y-6">

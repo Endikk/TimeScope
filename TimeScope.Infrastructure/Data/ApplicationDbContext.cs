@@ -37,9 +37,9 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.HasOne(e => e.Theme)
-                  .WithMany(t => t.Tasks)
-                  .HasForeignKey(e => e.ThemeId)
+            entity.HasOne(e => e.Project)
+                  .WithMany(p => p.Tasks)
+                  .HasForeignKey(e => e.ProjectId)
                   .OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.Assignee)
                   .WithMany(u => u.AssignedTasks)
