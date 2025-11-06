@@ -1,0 +1,16 @@
+namespace TimeScope.Core.Entities;
+
+/// <summary>
+/// Représente un log d'audit pour tracer les actions des utilisateurs
+/// </summary>
+public class AuditLog : BaseEntity
+{
+    public string Action { get; set; } = string.Empty;
+    public string EntityType { get; set; } = string.Empty;
+    public Guid? EntityId { get; set; }
+    public Guid UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public string Details { get; set; } = string.Empty;
+    public string IpAddress { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+}
