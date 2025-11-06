@@ -5,6 +5,9 @@ public interface IMonitoringService
     SystemMetrics GetSystemMetrics();
     SystemInfo GetSystemInfo();
     HealthStatus GetHealthStatus();
+    UptimeInfo GetUptime();
+    EnvironmentInfo GetEnvironmentInfo();
+    DiagnosticsInfo GetDiagnostics();
 }
 
 public class SystemMetrics
@@ -48,4 +51,33 @@ public class HealthCheck
     public string Status { get; set; } = string.Empty;
     public string Value { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
+}
+
+public class UptimeInfo
+{
+    public TimeSpan Uptime { get; set; }
+    public string UptimeFormatted { get; set; } = string.Empty;
+    public DateTime StartTime { get; set; }
+    public DateTime CurrentTime { get; set; }
+}
+
+public class EnvironmentInfo
+{
+    public string MachineName { get; set; } = string.Empty;
+    public string OSVersion { get; set; } = string.Empty;
+    public string OSArchitecture { get; set; } = string.Empty;
+    public string ProcessArchitecture { get; set; } = string.Empty;
+    public int ProcessorCount { get; set; }
+    public string DotNetVersion { get; set; } = string.Empty;
+    public string EnvironmentName { get; set; } = string.Empty;
+}
+
+public class DiagnosticsInfo
+{
+    public int ThreadCount { get; set; }
+    public int HandleCount { get; set; }
+    public long WorkingSet { get; set; }
+    public long PrivateMemory { get; set; }
+    public long VirtualMemory { get; set; }
+    public TimeSpan TotalProcessorTime { get; set; }
 }

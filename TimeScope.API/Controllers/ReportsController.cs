@@ -27,7 +27,13 @@ public class ReportsController : ControllerBase
     {
         try
         {
-            var logs = await _reportService.GetAuditLogsAsync(limit, entityType, userId);
+            var filter = new AuditLogFilter
+            {
+                Limit = limit ?? 100,
+                EntityType = entityType,
+                UserId = userId
+            };
+            var logs = await _reportService.GetAuditLogsAsync(filter);
             return Ok(logs);
         }
         catch (Exception ex)
@@ -46,7 +52,7 @@ public class ReportsController : ControllerBase
             {
                 Action = dto.Action,
                 EntityType = dto.EntityType,
-                EntityId = dto.EntityId,
+                EntityId = dto.EntityId ?? Guid.Empty,
                 UserId = dto.UserId,
                 UserName = dto.UserName,
                 Details = dto.Details ?? string.Empty,

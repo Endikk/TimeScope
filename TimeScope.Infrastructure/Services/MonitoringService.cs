@@ -102,6 +102,48 @@ public class MonitoringService : IMonitoringService
         return status;
     }
 
+    public UptimeInfo GetUptime()
+    {
+        var uptime = DateTime.UtcNow - _startTime;
+
+        return new UptimeInfo
+        {
+            Uptime = uptime,
+            UptimeFormatted = FormatUptime(uptime),
+            StartTime = _startTime,
+            CurrentTime = DateTime.UtcNow
+        };
+    }
+
+    public EnvironmentInfo GetEnvironmentInfo()
+    {
+        return new EnvironmentInfo
+        {
+            MachineName = Environment.MachineName,
+            OSVersion = RuntimeInformation.OSDescription,
+            OSArchitecture = RuntimeInformation.OSArchitecture.ToString(),
+            ProcessArchitecture = RuntimeInformation.ProcessArchitecture.ToString(),
+            ProcessorCount = Environment.ProcessorCount,
+            DotNetVersion = RuntimeInformation.FrameworkDescription,
+            EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
+        };
+    }
+
+    public DiagnosticsInfo GetDiagnostics()
+    {
+        var process = Process.GetCurrentProcess();
+
+        return new DiagnosticsInfo
+        {
+            ThreadCount = process.Threads.Count,
+            HandleCount = process.HandleCount,
+            WorkingSet = process.WorkingSet64,
+            PrivateMemory = process.PrivateMemorySize64,
+            VirtualMemory = process.VirtualMemorySize64,
+            TotalProcessorTime = process.TotalProcessorTime
+        };
+    }
+
     #region Private Helper Methods
 
     private static double GetCpuUsage(Process process)

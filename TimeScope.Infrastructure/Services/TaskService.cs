@@ -2,7 +2,7 @@ using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
 using TaskStatus = TimeScope.Core.Entities.TaskStatus;
 
-namespace TimeScope.Core.Services;
+namespace TimeScope.Infrastructure.Services;
 
 public class TaskService : ITaskService
 {

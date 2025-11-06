@@ -2,13 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using TimeScope.API.DTOs;
 using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
-using BCrypt.Net;
 
-namespace TimeScope.API.Services;
+namespace TimeScope.Infrastructure.Services;
 
 public class AuthService : IAuthService
 {
@@ -80,17 +80,17 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<LoginResponseDto?> RefreshTokenAsync(string refreshToken)
+    public Task<LoginResponseDto?> RefreshTokenAsync(string refreshToken)
     {
         if (!_refreshTokens.TryGetValue(refreshToken, out var tokenData))
         {
-            return null;
+            return Task.FromResult<LoginResponseDto?>(null);
         }
 
         if (tokenData.ExpiresAt < DateTime.UtcNow)
         {
             _refreshTokens.Remove(refreshToken);
-            return null;
+            return Task.FromResult<LoginResponseDto?>(null);
         }
 
         // Générer un nouveau token JWT
@@ -101,7 +101,7 @@ public class AuthService : IAuthService
         _refreshTokens.Remove(refreshToken);
         _refreshTokens[newRefreshToken] = (tokenData.User, DateTime.UtcNow.AddDays(7));
 
-        return new LoginResponseDto
+        return Task.FromResult<LoginResponseDto?>(new LoginResponseDto
         {
             Token = newToken,
             RefreshToken = newRefreshToken,
@@ -115,7 +115,7 @@ public class AuthService : IAuthService
                 Role = tokenData.User.Role.ToString(),
                 IsActive = tokenData.User.IsActive
             }
-        };
+        });
     }
 
     public string GenerateJwtToken(User user)

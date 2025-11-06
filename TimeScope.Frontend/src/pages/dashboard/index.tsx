@@ -108,9 +108,9 @@ export default function DashboardPageAPI() {
   const projectHoursMap = new Map<string, number>();
   monthEntries.forEach(entry => {
     const task = tasks.find(t => t.id === entry.taskId);
-    if (task && task.group) {
-      const current = projectHoursMap.get(task.group) || 0;
-      projectHoursMap.set(task.group, current + convertDurationToHours(entry.duration));
+    if (task && task.projectId) {
+      const current = projectHoursMap.get(task.projectId) || 0;
+      projectHoursMap.set(task.projectId, current + convertDurationToHours(entry.duration));
     }
   });
 
@@ -140,7 +140,7 @@ export default function DashboardPageAPI() {
     .slice(0, 5)
     .map(entry => {
       const task = tasks.find(t => t.id === entry.taskId);
-      const groupName = task ? task.group : null;
+      const groupName = task ? task.projectId : null;
       const entryDate = new Date(entry.date);
       const now = new Date();
       const diffMs = now.getTime() - entryDate.getTime();

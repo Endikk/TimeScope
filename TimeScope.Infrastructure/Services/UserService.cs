@@ -3,7 +3,7 @@ using System.Text;
 using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
 
-namespace TimeScope.Core.Services;
+namespace TimeScope.Infrastructure.Services;
 
 public class UserService : IUserService
 {

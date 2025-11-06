@@ -3,11 +3,11 @@ using Serilog;
 using TimeScope.Core.Interfaces;
 using TimeScope.Infrastructure.Data;
 using TimeScope.Infrastructure.Repositories;
+using TimeScope.Infrastructure.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using TimeScope.API.Services;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,17 +87,17 @@ builder.Services.AddScoped<IReportsUnitOfWork, ReportsUnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Register Business Logic Services (Clean Architecture)
-builder.Services.AddScoped<ITaskService, TimeScope.Core.Services.TaskService>();
-builder.Services.AddScoped<IUserService, TimeScope.Core.Services.UserService>();
-builder.Services.AddScoped<IProjectService, TimeScope.Core.Services.ProjectService>();
-builder.Services.AddScoped<ITimeEntryService, TimeScope.Core.Services.TimeEntryService>();
-builder.Services.AddScoped<IReportService, TimeScope.Core.Services.ReportService>();
-builder.Services.AddScoped<ISettingsService, TimeScope.Core.Services.SettingsService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<ITimeEntryService, TimeEntryService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 // Register Infrastructure Services
-builder.Services.AddScoped<TimeScope.Infrastructure.Services.IMonitoringService, TimeScope.Infrastructure.Services.MonitoringService>();
-builder.Services.AddScoped<TimeScope.Infrastructure.Services.IDatabaseMaintenanceService, TimeScope.Infrastructure.Services.DatabaseMaintenanceService>();
-builder.Services.AddScoped<TimeScope.Infrastructure.Services.IAdministrationService, TimeScope.Infrastructure.Services.AdministrationService>();
+builder.Services.AddScoped<IMonitoringService, MonitoringService>();
+builder.Services.AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
+builder.Services.AddScoped<IAdministrationService, AdministrationService>();
 
 // Note: Legacy IUnitOfWork is deprecated - use specialized UnitOfWork instead
 

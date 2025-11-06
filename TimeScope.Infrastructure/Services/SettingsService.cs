@@ -1,7 +1,7 @@
 using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
 
-namespace TimeScope.Core.Services;
+namespace TimeScope.Infrastructure.Services;
 
 public class SettingsService : ISettingsService
 {

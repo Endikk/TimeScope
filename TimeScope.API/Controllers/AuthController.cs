@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TimeScope.API.DTOs;
-using TimeScope.API.Services;
+using TimeScope.Core.Interfaces;
 
 namespace TimeScope.API.Controllers;
 
