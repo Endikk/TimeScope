@@ -1,4 +1,4 @@
-import axiosInstance from '../axios.config';
+import apiClient from '../client';
 
 // Interfaces
 export interface SystemMetrics {
@@ -67,7 +67,7 @@ class MonitoringService {
    * Récupère les métriques système
    */
   async getSystemMetrics(): Promise<SystemMetrics> {
-    const response = await axiosInstance.get<SystemMetrics>(`${this.BASE_URL}/metrics`);
+    const response = await apiClient.get<SystemMetrics>(`${this.BASE_URL}/metrics`);
     return response.data;
   }
 
@@ -75,7 +75,7 @@ class MonitoringService {
    * Récupère les informations système
    */
   async getSystemInfo(): Promise<SystemInfo> {
-    const response = await axiosInstance.get<SystemInfo>(`${this.BASE_URL}/info`);
+    const response = await apiClient.get<SystemInfo>(`${this.BASE_URL}/info`);
     return response.data;
   }
 
@@ -83,7 +83,7 @@ class MonitoringService {
    * Récupère l'état de santé du système
    */
   async getHealthStatus(): Promise<HealthStatus> {
-    const response = await axiosInstance.get<HealthStatus>(`${this.BASE_URL}/health`);
+    const response = await apiClient.get<HealthStatus>(`${this.BASE_URL}/health`);
     return response.data;
   }
 
@@ -91,7 +91,7 @@ class MonitoringService {
    * Récupère les logs récents
    */
   async getLogs(limit: number = 100): Promise<LogsResponse> {
-    const response = await axiosInstance.get<LogsResponse>(`${this.BASE_URL}/logs`, {
+    const response = await apiClient.get<LogsResponse>(`${this.BASE_URL}/logs`, {
       params: { limit }
     });
     return response.data;
@@ -101,7 +101,7 @@ class MonitoringService {
    * Force le garbage collection
    */
   async forceGarbageCollection(): Promise<GarbageCollectionResult> {
-    const response = await axiosInstance.post<GarbageCollectionResult>(`${this.BASE_URL}/gc`);
+    const response = await apiClient.post<GarbageCollectionResult>(`${this.BASE_URL}/gc`);
     return response.data;
   }
 }

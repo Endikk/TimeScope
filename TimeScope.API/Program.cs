@@ -163,6 +163,23 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Initialize database with seed data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        Log.Information("Initializing databases...");
+        var authService = services.GetRequiredService<IAuthService>();
+        await TimeScope.API.SeedData.InitializeAsync(services, authService);
+        Log.Information("Databases initialized successfully");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while seeding the database");
+    }
+}
+
 try
 {
     Log.Information("Starting TimeScope API...");

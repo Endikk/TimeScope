@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { ApiError } from '@/lib/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,12 +36,36 @@ export default function LoginForm() {
         email: formData.email,
         password: formData.password
       });
-      
+
       // Redirection vers la page d'accueil après connexion réussie
       navigate('/home');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err.response?.data?.message || 'Identifiants incorrects. Veuillez réessayer.';
+
+      // Gérer les erreurs API transformées par notre client
+      const apiError = err as ApiError | Error;
+
+      let errorMessage = 'Identifiants incorrects. Veuillez réessayer.';
+
+      if ('message' in apiError) {
+        errorMessage = apiError.message;
+      }
+
+      // Messages d'erreur spécifiques selon le code
+      if ('status' in apiError) {
+        switch (apiError.status) {
+          case 401:
+            errorMessage = 'Email ou mot de passe incorrect.';
+            break;
+          case 500:
+            errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
+            break;
+          case undefined:
+            errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+            break;
+        }
+      }
+
       setError(errorMessage);
     } finally {
       setIsLoading(false);

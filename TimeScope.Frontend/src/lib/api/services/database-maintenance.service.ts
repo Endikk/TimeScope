@@ -1,4 +1,4 @@
-import axiosInstance from '../axios.config';
+import apiClient from '../client';
 
 // Interfaces
 export interface DatabaseInfo {
@@ -51,7 +51,7 @@ class DatabaseMaintenanceService {
    * Récupère les statistiques de toutes les bases de données
    */
   async getStats(): Promise<DatabaseStats> {
-    const response = await axiosInstance.get<DatabaseStats>(`${this.endpoint}/stats`);
+    const response = await apiClient.get<DatabaseStats>(`${this.endpoint}/stats`);
     return response.data;
   }
 
@@ -59,7 +59,7 @@ class DatabaseMaintenanceService {
    * Vérifie la santé de toutes les bases de données
    */
   async getHealth(): Promise<DatabaseHealth> {
-    const response = await axiosInstance.get<DatabaseHealth>(`${this.endpoint}/health`);
+    const response = await apiClient.get<DatabaseHealth>(`${this.endpoint}/health`);
     return response.data;
   }
 
@@ -67,7 +67,7 @@ class DatabaseMaintenanceService {
    * Optimise toutes les bases de données
    */
   async optimize(): Promise<OptimizationResult> {
-    const response = await axiosInstance.post<OptimizationResult>(`${this.endpoint}/optimize`);
+    const response = await apiClient.post<OptimizationResult>(`${this.endpoint}/optimize`);
     return response.data;
   }
 }

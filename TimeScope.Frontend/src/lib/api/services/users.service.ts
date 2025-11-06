@@ -1,4 +1,4 @@
-import axiosInstance from '../axios.config';
+import apiClient from '../client';
 
 export interface User {
   id: string;
@@ -36,7 +36,7 @@ class UsersService {
    * Récupérer tous les utilisateurs
    */
   async getAllUsers(): Promise<User[]> {
-    const response = await axiosInstance.get<User[]>(this.endpoint);
+    const response = await apiClient.get<User[]>(this.endpoint);
     return response.data;
   }
 
@@ -44,7 +44,7 @@ class UsersService {
    * Récupérer un utilisateur par ID
    */
   async getUserById(id: string): Promise<User> {
-    const response = await axiosInstance.get<User>(`${this.endpoint}/${id}`);
+    const response = await apiClient.get<User>(`${this.endpoint}/${id}`);
     return response.data;
   }
 
@@ -52,7 +52,7 @@ class UsersService {
    * Créer un nouvel utilisateur
    */
   async createUser(user: CreateUserDto): Promise<User> {
-    const response = await axiosInstance.post<User>(this.endpoint, user);
+    const response = await apiClient.post<User>(this.endpoint, user);
     return response.data;
   }
 
@@ -60,21 +60,21 @@ class UsersService {
    * Mettre à jour un utilisateur
    */
   async updateUser(id: string, user: UpdateUserDto): Promise<void> {
-    await axiosInstance.put(`${this.endpoint}/${id}`, { ...user, id });
+    await apiClient.put(`${this.endpoint}/${id}`, { ...user, id });
   }
 
   /**
    * Supprimer un utilisateur
    */
   async deleteUser(id: string): Promise<void> {
-    await axiosInstance.delete(`${this.endpoint}/${id}`);
+    await apiClient.delete(`${this.endpoint}/${id}`);
   }
 
   /**
    * Obtenir le profil de l'utilisateur connecté
    */
   async getCurrentUser(): Promise<User> {
-    const response = await axiosInstance.get<User>(`${this.endpoint}/me`);
+    const response = await apiClient.get<User>(`${this.endpoint}/me`);
     return response.data;
   }
 }

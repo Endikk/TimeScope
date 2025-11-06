@@ -1,4 +1,4 @@
-import axiosInstance from '../axios.config';
+import apiClient from '../client';
 
 // Interfaces
 export interface Project {
@@ -77,59 +77,59 @@ class ProjectsService {
 
   // Projects
   async getAllProjects(): Promise<Project[]> {
-    const response = await axiosInstance.get<Project[]>(this.endpoint);
+    const response = await apiClient.get<Project[]>(this.endpoint);
     return response.data;
   }
 
   async createProject(project: CreateProjectDto): Promise<Project> {
-    const response = await axiosInstance.post<Project>(this.endpoint, project);
+    const response = await apiClient.post<Project>(this.endpoint, project);
     return response.data;
   }
 
   async updateProject(id: string, project: UpdateProjectDto): Promise<void> {
-    await axiosInstance.put(`${this.endpoint}/${id}`, project);
+    await apiClient.put(`${this.endpoint}/${id}`, project);
   }
 
   async deleteProject(id: string): Promise<void> {
-    await axiosInstance.delete(`${this.endpoint}/${id}`);
+    await apiClient.delete(`${this.endpoint}/${id}`);
   }
 
   // Groups
   async getAllGroups(): Promise<Group[]> {
-    const response = await axiosInstance.get<Group[]>(`${this.endpoint}/groups`);
+    const response = await apiClient.get<Group[]>(`${this.endpoint}/groups`);
     return response.data;
   }
 
   async createGroup(group: CreateGroupDto): Promise<Group> {
-    const response = await axiosInstance.post<Group>(`${this.endpoint}/groups`, group);
+    const response = await apiClient.post<Group>(`${this.endpoint}/groups`, group);
     return response.data;
   }
 
   async updateGroup(id: string, group: UpdateGroupDto): Promise<void> {
-    await axiosInstance.put(`${this.endpoint}/groups/${id}`, group);
+    await apiClient.put(`${this.endpoint}/groups/${id}`, group);
   }
 
   async deleteGroup(id: string): Promise<void> {
-    await axiosInstance.delete(`${this.endpoint}/groups/${id}`);
+    await apiClient.delete(`${this.endpoint}/groups/${id}`);
   }
 
   // Themes
   async getAllThemes(): Promise<Theme[]> {
-    const response = await axiosInstance.get<Theme[]>(`${this.endpoint}/themes`);
+    const response = await apiClient.get<Theme[]>(`${this.endpoint}/themes`);
     return response.data;
   }
 
   async createTheme(theme: CreateThemeDto): Promise<Theme> {
-    const response = await axiosInstance.post<Theme>(`${this.endpoint}/themes`, theme);
+    const response = await apiClient.post<Theme>(`${this.endpoint}/themes`, theme);
     return response.data;
   }
 
   async updateTheme(id: string, theme: UpdateThemeDto): Promise<void> {
-    await axiosInstance.put(`${this.endpoint}/themes/${id}`, theme);
+    await apiClient.put(`${this.endpoint}/themes/${id}`, theme);
   }
 
   async deleteTheme(id: string): Promise<void> {
-    await axiosInstance.delete(`${this.endpoint}/themes/${id}`);
+    await apiClient.delete(`${this.endpoint}/themes/${id}`);
   }
 }
 
