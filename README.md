@@ -6,9 +6,9 @@ Application de gestion intelligente du temps et de productivité. TimeScope calc
 
 ```
 TimeScope/
-├── TimeScope.Frontend/      # Application Next.js 15 + React 19 + TypeScript
+├── TimeScope.Frontend/      # Application Vite 15 + React 19 + TypeScript
 │   ├── components/          # Composants UI avec shadcn/ui
-│   ├── pages/              # Pages et routing Next.js
+│   ├── pages/              # Pages et routing Vite
 │   ├── lib/                # Utilitaires et types TypeScript
 │   └── public/             # Assets statiques
 │
@@ -32,7 +32,7 @@ TimeScope/
 ## Stack Technologique
 
 ### Frontend
-- **[Next.js 15](https://nextjs.org/)** - Framework React avec App Router
+- **[Vite 15](https://nextjs.org/)** - Framework React avec Pages Router
 - **[React 19](https://react.dev/)** - Bibliothèque UI avec Server Components
 - **[TypeScript](https://www.typescriptlang.org/)** - JavaScript typé (mode strict)
 - **[TailwindCSS v4](https://tailwindcss.com/)** - Framework CSS utility-first
@@ -192,7 +192,7 @@ Pour la documentation complète de l'API, visitez http://localhost:5001/swagger
 - Architecture backend Clean Architecture
 - API REST avec .NET 8
 - Base de données PostgreSQL avec EF Core
-- Frontend Next.js avec TailwindCSS
+- Frontend Vite avec TailwindCSS
 - Composants UI avec shadcn/ui
 - Logging avec Serilog
 - Documentation API avec Swagger
