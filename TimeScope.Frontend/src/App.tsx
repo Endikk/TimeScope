@@ -14,6 +14,7 @@ import SettingsPage from "@/pages/admin/settings"
 import MonitoringPage from "@/pages/admin/monitoring"
 import { MainLayout } from "@/components/layout/MainLayout"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { useAuth } from "@/contexts/AuthContext"
 import './App.css'
 
@@ -21,7 +22,8 @@ function App() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <Routes>
+    <ErrorBoundary>
+      <Routes>
       {/* Route publique */}
       <Route 
         path="/login" 
@@ -61,6 +63,7 @@ function App() {
       {/* Route par défaut pour les chemins non trouvés */}
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
+    </ErrorBoundary>
   )
 }
 

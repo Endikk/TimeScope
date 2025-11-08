@@ -1,4 +1,4 @@
-import axios from '../axios.config';
+import apiClient from '../client';
 
 // Types
 export interface AppSetting {
@@ -39,7 +39,7 @@ class SettingsService {
     category?: string;
     isPublic?: boolean;
   }): Promise<AppSetting[]> {
-    const response = await axios.get('/settings', { params });
+    const response = await apiClient.get('/settings', { params });
     return response.data;
   }
 
@@ -47,7 +47,7 @@ class SettingsService {
    * Récupère un paramètre par sa clé
    */
   async getSettingByKey(key: string): Promise<AppSetting> {
-    const response = await axios.get(`/settings/${key}`);
+    const response = await apiClient.get(`/settings/${key}`);
     return response.data;
   }
 
@@ -55,7 +55,7 @@ class SettingsService {
    * Récupère toutes les catégories
    */
   async getCategories(): Promise<string[]> {
-    const response = await axios.get('/settings/categories');
+    const response = await apiClient.get('/settings/categories');
     return response.data;
   }
 
@@ -63,7 +63,7 @@ class SettingsService {
    * Crée un nouveau paramètre
    */
   async createSetting(setting: CreateSettingDto): Promise<AppSetting> {
-    const response = await axios.post('/settings', setting);
+    const response = await apiClient.post('/settings', setting);
     return response.data;
   }
 
@@ -71,21 +71,21 @@ class SettingsService {
    * Met à jour un paramètre existant
    */
   async updateSetting(key: string, setting: UpdateSettingDto): Promise<void> {
-    await axios.put(`/settings/${key}`, setting);
+    await apiClient.put(`/settings/${key}`, setting);
   }
 
   /**
    * Supprime un paramètre
    */
   async deleteSetting(key: string): Promise<void> {
-    await axios.delete(`/settings/${key}`);
+    await apiClient.delete(`/settings/${key}`);
   }
 
   /**
    * Réinitialise tous les paramètres aux valeurs par défaut
    */
   async resetToDefaults(): Promise<{ message: string; count: number }> {
-    const response = await axios.post('/settings/reset-defaults');
+    const response = await apiClient.post('/settings/reset-defaults');
     return response.data;
   }
 }

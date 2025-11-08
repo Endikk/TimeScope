@@ -1,44 +1,96 @@
+/**
+ * Authentication Service
+ * Handles user authentication, token management, and session operations
+ *
+ * @module services/auth
+ */
+
 import apiClient from '../client';
 
-// Types
+/**
+ * User entity representing an authenticated user
+ */
 export interface User {
+  /** Unique user identifier */
   id: string;
+  /** User's first name */
   firstName: string;
+  /** User's last name */
   lastName: string;
+  /** User's email address */
   email: string;
+  /** Optional avatar URL */
   avatar?: string;
+  /** User's role in the system */
   role: 'Admin' | 'Manager' | 'Employee';
+  /** Whether the user account is active */
   isActive: boolean;
 }
 
+/**
+ * Login credentials required for authentication
+ */
 export interface LoginCredentials {
+  /** User's email address */
   email: string;
+  /** User's password */
   password: string;
 }
 
+/**
+ * Response returned after successful login
+ */
 export interface LoginResponse {
+  /** JWT access token for API authentication */
   token: string;
+  /** Refresh token for obtaining new access tokens */
   refreshToken: string;
+  /** Authenticated user information */
   user: User;
 }
 
+/**
+ * Request payload for token refresh
+ */
 export interface RefreshTokenRequest {
+  /** Current refresh token */
   refreshToken: string;
 }
 
+/**
+ * Current user information response
+ */
 export interface CurrentUserResponse {
+  /** User ID */
   id: string;
+  /** User email */
   email: string;
+  /** User full name */
   name: string;
+  /** User role */
   role: string;
 }
 
-// Service d'authentification
+/**
+ * Authentication API Service
+ * Provides methods for user authentication and session management
+ */
 export const authApiService = {
   /**
-   * Connexion utilisateur
-   * @param credentials Email et mot de passe
-   * @returns Token JWT, refresh token et informations utilisateur
+   * Authenticates a user with email and password
+   *
+   * @param credentials - User login credentials (email and password)
+   * @returns Promise resolving to login response with tokens and user info
+   * @throws {ApiError} When authentication fails or credentials are invalid
+   *
+   * @example
+   * ```typescript
+   * const response = await authApiService.login({
+   *   email: 'user@example.com',
+   *   password: 'password123'
+   * });
+   * console.log(response.token); // JWT access token
+   * ```
    */
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const response = await apiClient.post<LoginResponse>('/auth/login', credentials);
@@ -46,9 +98,17 @@ export const authApiService = {
   },
 
   /**
-   * Rafraîchir le token JWT
-   * @param refreshToken Token de rafraîchissement
-   * @returns Nouveau token JWT et refresh token
+   * Refreshes an expired JWT access token using a refresh token
+   *
+   * @param refreshToken - Current valid refresh token
+   * @returns Promise resolving to new tokens and user info
+   * @throws {ApiError} When refresh token is invalid or expired
+   *
+   * @example
+   * ```typescript
+   * const response = await authApiService.refreshToken('refresh-token-here');
+   * localStorage.setItem('token', response.token);
+   * ```
    */
   async refreshToken(refreshToken: string): Promise<LoginResponse> {
     const response = await apiClient.post<LoginResponse>('/auth/refresh', {
@@ -58,20 +118,38 @@ export const authApiService = {
   },
 
   /**
-   * Déconnexion utilisateur
+   * Logs out the current user and invalidates the session
+   * Continues client-side logout even if API call fails
+   *
+   * @returns Promise that resolves when logout is complete
+   *
+   * @example
+   * ```typescript
+   * await authApiService.logout();
+   * localStorage.clear();
+   * navigate('/login');
+   * ```
    */
   async logout(): Promise<void> {
     try {
       await apiClient.post('/auth/logout');
     } catch (error) {
-      // On log l'erreur mais on continue la déconnexion côté client
+      // Log error but continue with client-side logout
       console.error('Logout API error:', error);
     }
   },
 
   /**
-   * Obtenir l'utilisateur actuellement connecté
-   * @returns Informations de l'utilisateur actuel
+   * Retrieves the currently authenticated user's information
+   *
+   * @returns Promise resolving to current user details
+   * @throws {ApiError} When user is not authenticated or token is invalid
+   *
+   * @example
+   * ```typescript
+   * const user = await authApiService.getCurrentUser();
+   * console.log(user.email); // user@example.com
+   * ```
    */
   async getCurrentUser(): Promise<CurrentUserResponse> {
     const response = await apiClient.get<CurrentUserResponse>('/auth/me');

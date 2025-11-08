@@ -1,4 +1,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { env } from '@/lib/config/env';
+import { apiLogger } from '@/lib/utils/logger';
+import { API_CONFIG, STORAGE_KEYS } from '@/lib/constants';
 
 // Types pour la gestion des erreurs
 export interface ApiError {
@@ -9,8 +12,8 @@ export interface ApiError {
 }
 
 // Configuration de l'API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-const API_TIMEOUT = 30000;
+const API_BASE_URL = env.VITE_API_URL;
+const API_TIMEOUT = API_CONFIG.TIMEOUT;
 
 // Créer l'instance Axios
 const apiClient: AxiosInstance = axios.create({
@@ -41,14 +44,17 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Intercepteur de requête - Ajouter le token JWT
+// Intercepteur de requête - Ajouter le token JWT et logger
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
 
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Log request in development
+    apiLogger.request(config.method?.toUpperCase() || 'GET', config.url || '', config.data);
 
     return config;
   },
@@ -59,9 +65,25 @@ apiClient.interceptors.request.use(
 
 // Intercepteur de réponse - Gérer les erreurs et le refresh token
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful response in development
+    apiLogger.response(
+      response.config.method?.toUpperCase() || 'GET',
+      response.config.url || '',
+      response.status,
+      response.data
+    );
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // Log API error
+    apiLogger.error(
+      originalRequest?.method?.toUpperCase() || 'UNKNOWN',
+      originalRequest?.url || '',
+      error
+    );
 
     // Si l'erreur n'est pas 401 ou pas de config, rejeter directement
     if (!originalRequest || error.response?.status !== 401) {
