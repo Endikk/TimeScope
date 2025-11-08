@@ -820,7 +820,7 @@ function AppSidebar({
               <LinkWithRef to="/home" className="justify-center group/logo">
                 <div className="flex items-center justify-center w-full py-2">
                   <img
-                    src="/assets/2.svg"
+                    src="/assets/images/2.svg"
                     alt="TimeScope Logo"
                     className="h-16 w-auto group-data-[collapsible=icon]:hidden transition-all duration-300 group-hover/logo:scale-105"
                   />

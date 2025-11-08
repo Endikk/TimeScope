@@ -2,7 +2,7 @@ export default function LoginHeader() {
   return (
     <div className="flex flex-col items-center mb-4">
       <img
-        src="/assets/1.svg"
+        src="/assets/images/1.svg"
         alt="TimeScope Logo"
         className="w-52 h-28 object-contain mb-2"
         onError={(e) => {
