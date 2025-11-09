@@ -15,8 +15,6 @@ export function MonthlyStats({
   selectedYear,
   setSelectedMonth,
   setSelectedYear,
-  monthlyTotal,
-  workingDays,
   monthNames
 }: MonthlyStatsProps) {
   const handlePreviousMonth = () => {
