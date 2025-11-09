@@ -32,11 +32,12 @@ export default function DashboardPageAPI() {
     return hours + (minutes / 60);
   };
 
-  // Calculate today's hours
+  // Calculate today's hours but if weekend, take message for weekend
   const today = new Date();
   const todayStr = format(today, 'yyyy-MM-dd');
   const todayEntries = timeEntries.filter(entry => entry.date.startsWith(todayStr));
   const todayHours = todayEntries.reduce((sum, entry) => sum + convertDurationToHours(entry.duration), 0);
+  const isWeekend = today.getDay() === 0 || today.getDay() === 6;
 
   // Calculate yesterday's hours for comparison
   const yesterday = subDays(today, 1);
@@ -265,10 +266,10 @@ export default function DashboardPageAPI() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="Heures aujourd'hui"
-          value={todayHours.toFixed(1) + 'h'}
+          value={isWeekend ? "C'est le week-end !" : todayHours.toFixed(1) + 'h'}
           icon={Clock}
           description="Temps enregistré"
-          trend={`${todayVsYesterdayNum > 0 ? '+' : ''}${todayVsYesterday}% vs hier`}
+          trend={yesterdayHours > 0 ? `${todayVsYesterday}% par rapport à hier` : 'Aucune donnée hier'}
           color="blue"
         />
         <StatCard
