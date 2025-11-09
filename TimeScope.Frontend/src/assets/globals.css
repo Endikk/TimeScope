@@ -49,9 +49,9 @@
   --color-primary: 211 100% 15%;
   --color-primary-hex: #0A2540;
 
-  /* Action - Vert Vif (Démarrer/Valider) #10B981 */
-  --color-action: 160 84% 39%;
-  --color-action-hex: #10B981;
+  /* Action - Bleu Profond (Actions Principales) #0A2540 */
+  --color-action: 211 100% 15%;
+  --color-action-hex: #0A2540;
 
   /* Fond - Blanc Cassé #F6F9FC */
   --color-background: 210 40% 98%;
@@ -119,7 +119,7 @@
 .dark {
   /* FocusTime Dark Mode */
   --color-primary: 211 100% 25%;
-  --color-action: 160 84% 45%;
+  --color-action: 211 100% 25%;
   --color-background: 220 39% 11%;
   --color-structure: 220 39% 20%;
   --color-text-primary: 0 0% 98%;
@@ -220,7 +220,7 @@ p, span, label, input, button, select, textarea {
 .focustime-alert { background: hsl(var(--color-alert)); color: white; }
 .focustime-warning { background: hsl(var(--color-warning)); color: white; }
 
-/* Button Base Style - FocusTime (Action = Vert #10B981) */
+/* Button Base Style - FocusTime (Action = Bleu #0A2540) */
 .focustime-button, .btn-action {
   background: hsl(var(--color-action));
   color: white;

@@ -20,7 +20,7 @@ export function PageHeader({
     <div className={`mb-8 bg-gradient-to-r ${gradient} p-6 rounded-xl border border-gray-100`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-gradient-to-br from-focustime-primary to-focustime-action rounded-xl shadow-lg">
+          <div className="p-3 bg-focustime-primary rounded-xl shadow-lg">
             <Icon className="h-8 w-8 text-white" />
           </div>
           <div>

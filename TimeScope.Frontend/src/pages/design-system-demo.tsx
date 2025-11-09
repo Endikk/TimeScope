@@ -52,9 +52,9 @@ export default function DesignSystemDemo() {
                       <span className="text-white font-bold">Action</span>
                     </div>
                     <div className="text-sm">
-                      <p className="font-semibold text-focustime-action">Vert Vif</p>
-                      <p className="text-gray-600 font-mono">#10B981</p>
-                      <p className="text-xs text-gray-500">Démarrer, Valider, Succès</p>
+                      <p className="font-semibold text-focustime-action">Bleu Profond</p>
+                      <p className="text-gray-600 font-mono">#0A2540</p>
+                      <p className="text-xs text-gray-500">Boutons d'action principaux</p>
                     </div>
                   </div>
 
@@ -193,17 +193,17 @@ export default function DesignSystemDemo() {
 
               <div className="space-y-6">
 
-                {/* Boutons Action */}
+                {/* Boutons Primary (Bleu) */}
                 <div>
-                  <h4 className="text-sm font-semibold mb-3 text-gray-700">Boutons d'Action (Vert #10B981)</h4>
+                  <h4 className="text-sm font-semibold mb-3 text-gray-700">Boutons d'Action Principaux (Bleu #0A2540)</h4>
                   <div className="flex flex-wrap gap-3">
-                    <Button className="bg-focustime-action hover:opacity-90">
+                    <Button className="bg-focustime-primary hover:opacity-90">
                       Démarrer
                     </Button>
-                    <Button className="bg-focustime-action hover:opacity-90">
+                    <Button className="bg-focustime-primary hover:opacity-90">
                       Valider
                     </Button>
-                    <Button className="bg-focustime-action hover:opacity-90">
+                    <Button className="bg-focustime-primary hover:opacity-90">
                       Enregistrer
                     </Button>
                   </div>
@@ -225,17 +225,18 @@ export default function DesignSystemDemo() {
                   </div>
                 </div>
 
-                {/* Boutons Primary */}
+                {/* Boutons Action (Bleu) - Même que Primary */}
                 <div>
-                  <h4 className="text-sm font-semibold mb-3 text-gray-700">Boutons Primaires (Bleu #0A2540)</h4>
+                  <h4 className="text-sm font-semibold mb-3 text-gray-700">Note: bg-focustime-action est maintenant identique à bg-focustime-primary (Bleu #0A2540)</h4>
                   <div className="flex flex-wrap gap-3">
-                    <Button className="bg-focustime-primary hover:opacity-90">
-                      Confirmer
+                    <Button className="bg-focustime-action hover:opacity-90">
+                      Action (Bleu)
                     </Button>
                     <Button className="bg-focustime-primary hover:opacity-90">
-                      Continuer
+                      Primary (Bleu)
                     </Button>
                   </div>
+                  <p className="text-xs text-gray-500 mt-2">Ces deux classes produisent maintenant la même couleur bleue</p>
                 </div>
 
                 {/* Boutons Warning */}

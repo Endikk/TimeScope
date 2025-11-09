@@ -289,7 +289,7 @@ export default function Contact() {
                     <Button type="button" variant="outline" onClick={() => form.reset()}>
                       Effacer
                     </Button>
-                    <Button type="submit" className="bg-focustime-action hover:opacity-90 flex items-center gap-2">
+                    <Button type="submit" className="bg-focustime-primary hover:opacity-90 flex items-center gap-2">
                       <Send className="h-4 w-4" />
                       Envoyer la demande
                     </Button>

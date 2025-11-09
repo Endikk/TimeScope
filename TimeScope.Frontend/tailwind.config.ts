@@ -19,7 +19,7 @@ export default {
         // FocusTime Design System (Direct HEX values for Tailwind)
         'focustime': {
           'primary': '#0A2540',
-          'action': '#10B981',
+          'action': '#0A2540',
           'bg': '#F6F9FC',
           'structure': '#E6EBF1',
           'text': '#32325D',
