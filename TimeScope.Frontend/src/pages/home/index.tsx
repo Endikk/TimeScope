@@ -66,6 +66,8 @@ export default function Home() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'week' | 'month'>('month')
+  const [selectedWeek, setSelectedWeek] = useState(0)
   const [localEntries, setLocalEntries] = useState<LocalTimeEntry[]>([])
   const [newEntry, setNewEntry] = useState<NewTimeEntry>({
     groupeId: '', projetId: '', themeId: '', taskId: '', heures: 0, description: ''
@@ -412,6 +414,10 @@ export default function Home() {
               monthlyTotal={monthlyTotal}
               workingDays={workingDays}
               monthNames={monthNames}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              selectedWeek={selectedWeek}
+              setSelectedWeek={setSelectedWeek}
             />
 
             <QuickActions
@@ -432,6 +438,8 @@ export default function Home() {
               getTextColorClass={getTextColorClass}
               isNonWorkingDay={isNonWorkingDay}
               getEntriesForDate={getEntriesForDate}
+              viewMode={viewMode}
+              selectedWeek={selectedWeek}
             />
           </div>
         </div>

@@ -11,6 +11,8 @@ interface CalendarGridProps {
   getTextColorClass: (hours: number) => string
   isNonWorkingDay: (year: number, month: number, day: number) => boolean
   getEntriesForDate: (date: string) => any[]
+  viewMode: 'week' | 'month'
+  selectedWeek?: number
 }
 
 export function CalendarGrid({
@@ -23,21 +25,54 @@ export function CalendarGrid({
   getIntensityClass,
   getTextColorClass,
   isNonWorkingDay,
-  getEntriesForDate
+  getEntriesForDate,
+  viewMode,
+  selectedWeek = 0
 }: CalendarGridProps) {
   const weekDays = ["Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam.", "Dim."]
   const { holidays } = useHolidays(selectedYear)
 
+  // Générer les jours de la semaine sélectionnée
+  const getWeekDays = (weekIndex: number) => {
+    const firstDay = new Date(selectedYear, selectedMonth, 1)
+    const firstDayOfWeek = (firstDay.getDay() + 6) % 7 // Lundi = 0
+
+    // Calculer le premier lundi de la grille du calendrier
+    const firstMonday = new Date(firstDay)
+    firstMonday.setDate(1 - firstDayOfWeek)
+
+    // Ajouter les semaines pour arriver à la semaine sélectionnée
+    const startOfWeek = new Date(firstMonday)
+    startOfWeek.setDate(firstMonday.getDate() + (weekIndex * 7))
+
+    const weekDays: (number | null)[] = []
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeek)
+      day.setDate(startOfWeek.getDate() + i)
+
+      // Ne garder que les jours du mois sélectionné
+      if (day.getMonth() === selectedMonth && day.getFullYear() === selectedYear) {
+        weekDays.push(day.getDate())
+      } else {
+        weekDays.push(null)
+      }
+    }
+    return weekDays
+  }
+
+  // Choisir les jours à afficher selon le mode
+  const daysToDisplay = viewMode === 'week' ? getWeekDays(selectedWeek) : monthDays
+
   return (
     <div className="mt-4">
-      <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden">
+      <div className={`grid ${viewMode === 'week' ? 'grid-cols-7' : 'grid-cols-7'} gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden`}>
         {weekDays.map((day) => (
           <div key={day} className="bg-gray-50 text-center text-xs font-medium text-gray-700 py-3">
             {day}
           </div>
         ))}
 
-        {monthDays.map((day, index) => {
+        {daysToDisplay.map((day, index) => {
           if (!day) {
             return <div key={index} className="bg-white min-h-[100px]"></div>
           }
