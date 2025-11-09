@@ -81,6 +81,9 @@
   --sidebar-border: 220 13% 91%;
   --sidebar-ring: 239 84% 67%;
   --sidebar: hsl(0 0% 98%);
+
+  /* Custom shadow variables */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .dark {

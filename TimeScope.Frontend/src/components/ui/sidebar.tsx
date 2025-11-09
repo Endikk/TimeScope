@@ -392,7 +392,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent",
+        "flex min-h-0 flex-1 flex-col gap-2 group-data-[collapsible=icon]:overflow-hidden",
         className
       )}
       {...props}
@@ -834,7 +834,8 @@ function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="scrollbar-thin scrollbar-thumb-sidebar-border/50 scrollbar-track-transparent hover:scrollbar-thumb-sidebar-border">
+      <SidebarContent className="scrollbar-thin scrollbar-thumb-sidebar-border/50 scrollbar-track-transparent hover:scrollbar-thumb-sidebar-border flex flex-col">
+        <div className="flex-1 overflow-y-auto">
         {/* Main Navigation */}
         <SidebarGroup className="animate-in fade-in slide-in-from-left-2 duration-500">
           <SidebarGroupLabel className="group-data-[collapsible=icon]:opacity-0 transition-opacity duration-200">
@@ -980,18 +981,17 @@ function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>
+        </div>
 
-      <SidebarFooter className="animate-in fade-in duration-500 delay-500">
-        <div className="p-3 text-center border-t border-sidebar-border/30 bg-gradient-to-t from-sidebar-accent/5 to-transparent backdrop-blur-sm">
-          <p className="text-xs text-sidebar-foreground/60 font-semibold group-data-[collapsible=icon]:hidden transition-all duration-200 hover:text-sidebar-foreground/80">
+        <div className="sticky bottom-0 p-3 text-center border-t border-sidebar-border/30 bg-gradient-to-t from-sidebar-accent/5 to-transparent backdrop-blur-sm group-data-[collapsible=icon]:hidden">
+          <p className="text-xs text-sidebar-foreground/60 font-semibold transition-all duration-200 hover:text-sidebar-foreground/80">
             TimeScope v1.0
           </p>
-          <p className="text-[10px] text-sidebar-foreground/40 mt-0.5 group-data-[collapsible=icon]:hidden transition-all duration-200 hover:text-sidebar-foreground/60">
+          <p className="text-[10px] text-sidebar-foreground/40 mt-0.5 transition-all duration-200 hover:text-sidebar-foreground/60">
             © 2025 TimeScope
           </p>
         </div>
-      </SidebarFooter>
+      </SidebarContent>
       </Sidebar>
   )
 }

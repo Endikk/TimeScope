@@ -181,36 +181,6 @@ export default function AdminPageAPI() {
             })}
           </div>
         </div>
-
-        {/* System Info */}
-        {statistics.statistics && (
-          <Card className="mt-8 bg-gradient-to-br from-slate-50 to-gray-100 border-slate-200">
-            <CardHeader>
-              <CardTitle>Informations Système</CardTitle>
-              <CardDescription>État actuel du système TimeScope</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="p-4 bg-white rounded-lg shadow">
-                  <div className="text-2xl font-bold text-gray-900">{statistics.statistics.totalUsers}</div>
-                  <div className="text-sm text-gray-600">Utilisateurs</div>
-                </div>
-                <div className="p-4 bg-white rounded-lg shadow">
-                  <div className="text-2xl font-bold text-gray-900">{statistics.statistics.totalProjects}</div>
-                  <div className="text-sm text-gray-600">Projets</div>
-                </div>
-                <div className="p-4 bg-white rounded-lg shadow">
-                  <div className="text-2xl font-bold text-gray-900">{statistics.statistics.totalTasks}</div>
-                  <div className="text-sm text-gray-600">Tâches</div>
-                </div>
-                <div className="p-4 bg-white rounded-lg shadow">
-                  <div className="text-2xl font-bold text-gray-900">{statistics.statistics.recentAuditLogs}</div>
-                  <div className="text-sm text-gray-600">Logs (30j)</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   )

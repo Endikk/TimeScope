@@ -1,6 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, Timer, Activity, Target } from "lucide-react"
 
 interface MonthlyStatsProps {
   selectedMonth: number
@@ -21,58 +19,80 @@ export function MonthlyStats({
   workingDays,
   monthNames
 }: MonthlyStatsProps) {
+  const handlePreviousMonth = () => {
+    if (selectedMonth === 0) {
+      setSelectedMonth(11)
+      setSelectedYear(selectedYear - 1)
+    } else {
+      setSelectedMonth(selectedMonth - 1)
+    }
+  }
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 11) {
+      setSelectedMonth(0)
+      setSelectedYear(selectedYear + 1)
+    } else {
+      setSelectedMonth(selectedMonth + 1)
+    }
+  }
+
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            <CardTitle>Vue Mensuelle - {monthNames[selectedMonth]} {selectedYear}</CardTitle>
-          </div>
-          <div className="flex gap-3">
-            <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {monthNames.map((month, index) => (
-                  <SelectItem key={index} value={index.toString()}>{month}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2024">2024</SelectItem>
-                <SelectItem value="2025">2025</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="mb-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handlePreviousMonth}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Mois précédent"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={handleNextMonth}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Mois suivant"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-3 gap-6 mb-6">
-          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <Timer className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-blue-900">{monthlyTotal.toFixed(1)}h</div>
-            <div className="text-sm text-blue-600 font-medium">Total du mois</div>
-          </div>
-          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <Activity className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-green-900">{workingDays}</div>
-            <div className="text-sm text-green-600 font-medium">Jours travaillés</div>
-          </div>
-          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <Target className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-purple-900">
-              {workingDays > 0 ? (monthlyTotal / workingDays).toFixed(1) : 0}h
-            </div>
-            <div className="text-sm text-purple-600 font-medium">Moyenne/jour</div>
-          </div>
+
+        <h2 className="text-xl font-semibold inline-flex items-center">
+          <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+            <SelectTrigger className="w-auto border-none shadow-none text-xl font-semibold hover:bg-gray-100 p-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {monthNames.map((month, index) => (
+                <SelectItem key={index} value={index.toString()}>{month}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+            <SelectTrigger className="w-auto border-none shadow-none text-xl font-semibold hover:bg-gray-100 p-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 5 }, (_, i) => selectedYear - 2 + i).map((year) => (
+                <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </h2>
+
+        <div className="flex items-center gap-3">
+          <button className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+            Semaine
+          </button>
+          <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+            Mois
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
