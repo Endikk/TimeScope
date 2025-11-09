@@ -48,6 +48,7 @@ public static class SeedData
 
         Console.WriteLine("🌱 Seeding Admin database...");
 
+        // Utiliser BCrypt directement pour hash les passwords
         // Créer un utilisateur admin par défaut
         var adminUser = new User
         {
@@ -55,7 +56,7 @@ public static class SeedData
             FirstName = "Admin",
             LastName = "TimeScope",
             Email = "admin@timescope.com",
-            PasswordHash = authService.HashPassword("Admin123!"),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!", 12),
             Role = UserRole.Admin,
             IsActive = true,
             Avatar = null,
@@ -70,7 +71,7 @@ public static class SeedData
             FirstName = "Marie",
             LastName = "Dupont",
             Email = "marie.dupont@timescope.com",
-            PasswordHash = authService.HashPassword("Manager123!"),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Manager123!", 12),
             Role = UserRole.Manager,
             IsActive = true,
             Avatar = null,
@@ -85,7 +86,7 @@ public static class SeedData
             FirstName = "Jean",
             LastName = "Martin",
             Email = "jean.martin@timescope.com",
-            PasswordHash = authService.HashPassword("Employee123!"),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Employee123!", 12),
             Role = UserRole.Employee,
             IsActive = true,
             Avatar = null,

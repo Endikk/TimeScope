@@ -194,11 +194,9 @@ export default function Home() {
       return
     }
 
-    const userId = "00000000-0000-0000-0000-000000000001"
-    
     const createDto: CreateTimeEntryDto = {
       taskId: newEntry.taskId,
-      userId: userId,
+      // userId removed - automatically assigned from authenticated user
       date: selectedDate,
       duration: convertHoursToDuration(newEntry.heures),
       notes: newEntry.description
@@ -230,12 +228,10 @@ export default function Home() {
   const handleEditEntry = async () => {
     if (!editingEntry) return
 
-    const userId = "00000000-0000-0000-0000-000000000001"
-    
     const updateDto: UpdateTimeEntryDto = {
       id: editingEntry.id,
       taskId: editFormData.taskId,
-      userId: userId,
+      // userId removed - automatically assigned from authenticated user
       date: editingEntry.date,
       duration: convertHoursToDuration(editFormData.heures),
       notes: editFormData.description
@@ -274,32 +270,30 @@ export default function Home() {
       alert("Veuillez sélectionner une date d'abord")
       return
     }
-    
+
     const currentDate = new Date(selectedDate)
     const previousDay = new Date(currentDate)
     previousDay.setDate(currentDate.getDate() - 1)
     const previousDayStr = previousDay.toISOString().split('T')[0]
-    
+
     const previousEntries = localEntries.filter(entry => entry.date === previousDayStr)
-    
+
     if (previousEntries.length === 0) {
       alert("Aucune entrée trouvée pour le jour précédent")
       return
     }
 
-    const userId = "00000000-0000-0000-0000-000000000001"
-    
     for (const entry of previousEntries) {
       const createDto: CreateTimeEntryDto = {
         taskId: entry.taskId,
-        userId: userId,
+        // userId removed - automatically assigned from authenticated user
         date: selectedDate,
         duration: convertHoursToDuration(entry.heures),
         notes: entry.description
       }
       await createTimeEntry(createDto)
     }
-    
+
     await refetchEntries()
     alert(`${previousEntries.length} entrée(s) copiée(s) depuis le jour précédent`)
   }

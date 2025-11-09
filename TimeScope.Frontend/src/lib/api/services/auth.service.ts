@@ -10,8 +10,12 @@ import apiClient from '../client';
 /**
  * User entity representing an authenticated user
  */
+/**
+ * User entity - Matches backend UserDto
+ * Note: This should match TimeScope.Core.Interfaces.IAuthService.UserDto
+ */
 export interface User {
-  /** Unique user identifier */
+  /** Unique user identifier (Guid from backend, serialized as string) */
   id: string;
   /** User's first name */
   firstName: string;
@@ -21,7 +25,7 @@ export interface User {
   email: string;
   /** Optional avatar URL */
   avatar?: string;
-  /** User's role in the system */
+  /** User's role in the system - matches backend UserRole enum */
   role: 'Admin' | 'Manager' | 'Employee';
   /** Whether the user account is active */
   isActive: boolean;

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -15,25 +16,29 @@ public class AuthService : IAuthService
     private readonly IAdminUnitOfWork _adminUow;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
-    private readonly Dictionary<string, (User User, DateTime ExpiresAt)> _refreshTokens = new();
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AuthService(
         IAdminUnitOfWork adminUow,
         IConfiguration configuration,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IPasswordHasher passwordHasher,
+        IHttpContextAccessor httpContextAccessor)
     {
         _adminUow = adminUow;
         _configuration = configuration;
         _logger = logger;
+        _passwordHasher = passwordHasher;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
     {
         try
         {
-            // Récupérer tous les utilisateurs et filtrer par email
-            var users = await _adminUow.Users.GetAllAsync();
-            var user = users.FirstOrDefault(u => u.Email.ToLower() == loginDto.Email.ToLower());
+            // Récupérer l'utilisateur par email (optimisé - requête DB directe)
+            var user = await _adminUow.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDto.Email.ToLower());
 
             if (user == null || !user.IsActive)
             {
@@ -41,8 +46,8 @@ public class AuthService : IAuthService
                 return null;
             }
 
-            // Vérifier le mot de passe
-            if (!VerifyPassword(loginDto.Password, user.PasswordHash))
+            // Vérifier le mot de passe avec BCrypt
+            if (!_passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash))
             {
                 _logger.LogWarning("Invalid password for email: {Email}", loginDto.Email);
                 return null;
@@ -50,17 +55,26 @@ public class AuthService : IAuthService
 
             // Générer les tokens
             var token = GenerateJwtToken(user);
-            var refreshToken = GenerateRefreshToken();
+            var refreshTokenValue = GenerateRefreshToken();
 
-            // Stocker le refresh token (en production, utiliser une base de données)
-            _refreshTokens[refreshToken] = (user, DateTime.UtcNow.AddDays(7));
+            // Créer et stocker le refresh token en base de données
+            var refreshToken = new RefreshToken
+            {
+                Token = refreshTokenValue,
+                UserId = user.Id,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                CreatedByIp = GetIpAddress()
+            };
+
+            await _adminUow.RefreshTokens.AddAsync(refreshToken);
+            await _adminUow.SaveChangesAsync();
 
             _logger.LogInformation("User {Email} logged in successfully", user.Email);
 
             return new LoginResponseDto
             {
                 Token = token,
-                RefreshToken = refreshToken,
+                RefreshToken = refreshTokenValue,
                 User = new UserDto
                 {
                     Id = user.Id,
@@ -80,42 +94,66 @@ public class AuthService : IAuthService
         }
     }
 
-    public Task<LoginResponseDto?> RefreshTokenAsync(string refreshToken)
+    public async Task<LoginResponseDto?> RefreshTokenAsync(string refreshTokenValue)
     {
-        if (!_refreshTokens.TryGetValue(refreshToken, out var tokenData))
+        // Trouver le refresh token en base de données
+        var refreshTokens = await _adminUow.RefreshTokens.FindAsync(rt => rt.Token == refreshTokenValue);
+        var refreshToken = refreshTokens.FirstOrDefault();
+
+        if (refreshToken == null || !refreshToken.IsActive)
         {
-            return Task.FromResult<LoginResponseDto?>(null);
+            _logger.LogWarning("Invalid or expired refresh token");
+            return null;
         }
 
-        if (tokenData.ExpiresAt < DateTime.UtcNow)
+        // Récupérer l'utilisateur
+        var user = await _adminUow.Users.GetByIdAsync(refreshToken.UserId);
+        if (user == null || !user.IsActive)
         {
-            _refreshTokens.Remove(refreshToken);
-            return Task.FromResult<LoginResponseDto?>(null);
+            _logger.LogWarning("User not found or inactive for refresh token");
+            return null;
         }
 
-        // Générer un nouveau token JWT
-        var newToken = GenerateJwtToken(tokenData.User);
-        var newRefreshToken = GenerateRefreshToken();
+        // Révoquer l'ancien token
+        refreshToken.RevokedAt = DateTime.UtcNow;
+        refreshToken.RevokedByIp = GetIpAddress();
+        refreshToken.ReasonRevoked = "Replaced by new token";
 
-        // Remplacer l'ancien refresh token
-        _refreshTokens.Remove(refreshToken);
-        _refreshTokens[newRefreshToken] = (tokenData.User, DateTime.UtcNow.AddDays(7));
+        // Générer un nouveau token JWT et refresh token
+        var newJwtToken = GenerateJwtToken(user);
+        var newRefreshTokenValue = GenerateRefreshToken();
 
-        return Task.FromResult<LoginResponseDto?>(new LoginResponseDto
+        var newRefreshToken = new RefreshToken
         {
-            Token = newToken,
-            RefreshToken = newRefreshToken,
+            Token = newRefreshTokenValue,
+            UserId = user.Id,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedByIp = GetIpAddress()
+        };
+
+        refreshToken.ReplacedByToken = newRefreshTokenValue;
+
+        await _adminUow.RefreshTokens.AddAsync(newRefreshToken);
+        await _adminUow.RefreshTokens.UpdateAsync(refreshToken);
+        await _adminUow.SaveChangesAsync();
+
+        _logger.LogInformation("Refresh token renewed for user {Email}", user.Email);
+
+        return new LoginResponseDto
+        {
+            Token = newJwtToken,
+            RefreshToken = newRefreshTokenValue,
             User = new UserDto
             {
-                Id = tokenData.User.Id,
-                FirstName = tokenData.User.FirstName,
-                LastName = tokenData.User.LastName,
-                Email = tokenData.User.Email,
-                Avatar = tokenData.User.Avatar,
-                Role = tokenData.User.Role.ToString(),
-                IsActive = tokenData.User.IsActive
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Avatar = user.Avatar,
+                Role = user.Role.ToString(),
+                IsActive = user.IsActive
             }
-        });
+        };
     }
 
     public string GenerateJwtToken(User user)
@@ -143,7 +181,7 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
@@ -151,20 +189,20 @@ public class AuthService : IAuthService
         return Convert.ToBase64String(randomNumber);
     }
 
-    public string HashPassword(string password)
+    private string? GetIpAddress()
     {
-        return BCrypt.Net.BCrypt.HashPassword(password, BCrypt.Net.BCrypt.GenerateSalt(12));
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext == null) return null;
+
+        // Try to get IP from X-Forwarded-For header (if behind a proxy)
+        var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(forwardedFor))
+        {
+            return forwardedFor.Split(',').FirstOrDefault()?.Trim();
+        }
+
+        // Otherwise get the remote IP address
+        return httpContext.Connection.RemoteIpAddress?.ToString();
     }
 
-    public bool VerifyPassword(string password, string passwordHash)
-    {
-        try
-        {
-            return BCrypt.Net.BCrypt.Verify(password, passwordHash);
-        }
-        catch
-        {
-            return false;
-        }
-    }
 }

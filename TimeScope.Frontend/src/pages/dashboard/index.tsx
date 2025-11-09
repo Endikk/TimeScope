@@ -66,7 +66,7 @@ export default function DashboardPageAPI() {
 
   // Completed tasks this month - using dueDate instead of endDate
   const completedTasksThisMonth = tasks.filter(task => {
-    if (task.status !== 'Terminé' || !task.dueDate) return false;
+    if (task.status !== 'Termine' || !task.dueDate) return false;
     const taskDate = new Date(task.dueDate);
     return taskDate >= monthStart && taskDate <= monthEnd;
   }).length;
@@ -124,10 +124,10 @@ export default function DashboardPageAPI() {
       color: colors[index] || colors[colors.length - 1]
     }));
 
-  // Task completion data - using French status values
-  const completedTasks = tasks.filter(t => t.status === 'Terminé').length;
-  const inProgressTasks = tasks.filter(t => t.status === 'En cours').length;
-  const todoTasks = tasks.filter(t => t.status === 'En attente').length;
+  // Task completion data - using backend enum values
+  const completedTasks = tasks.filter(t => t.status === 'Termine').length;
+  const inProgressTasks = tasks.filter(t => t.status === 'EnCours').length;
+  const todoTasks = tasks.filter(t => t.status === 'EnAttente').length;
 
   const taskCompletionData = [
     { status: 'Terminé', value: completedTasks, color: '#6366F1' },

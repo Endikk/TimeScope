@@ -50,6 +50,11 @@ public class TimeEntriesController : ControllerBase
 
             return Ok(result);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized access while retrieving time entries");
+            return Unauthorized(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving time entries");
@@ -81,6 +86,11 @@ public class TimeEntriesController : ControllerBase
 
             return Ok(result);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized access to time entry {Id}", id);
+            return Unauthorized(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving time entry {Id}", id);
@@ -96,7 +106,7 @@ public class TimeEntriesController : ControllerBase
             var command = new CreateTimeEntryCommand
             {
                 TaskId = dto.TaskId,
-                UserId = dto.UserId,
+                UserId = "", // Sera ignoré, le service utilise l'utilisateur authentifié
                 Date = dto.Date,
                 Duration = dto.Duration,
                 Notes = dto.Notes
@@ -115,6 +125,11 @@ public class TimeEntriesController : ControllerBase
             };
 
             return CreatedAtAction(nameof(GetTimeEntry), new { id = timeEntry.Id }, result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized access while creating time entry");
+            return Unauthorized(new { message = ex.Message });
         }
         catch (ArgumentException ex)
         {
@@ -143,6 +158,11 @@ public class TimeEntriesController : ControllerBase
             await _timeEntryService.UpdateTimeEntryAsync(id, command);
 
             return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized access while updating time entry {Id}", id);
+            return Unauthorized(new { message = ex.Message });
         }
         catch (KeyNotFoundException ex)
         {
@@ -175,6 +195,11 @@ public class TimeEntriesController : ControllerBase
 
             return NoContent();
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized access while deleting time entry {Id}", id);
+            return Unauthorized(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting time entry {Id}", id);
@@ -196,7 +221,7 @@ public class TimeEntryDto
 public class CreateTimeEntryDto
 {
     public string TaskId { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
+    // UserId removed - automatically assigned from authenticated user
     public string Date { get; set; } = string.Empty;
     public string Duration { get; set; } = string.Empty;
     public string? Notes { get; set; }

@@ -13,7 +13,7 @@ export interface TimeEntry {
 
 export interface CreateTimeEntryDto {
   taskId: string;
-  userId: string;
+  // userId removed - automatically assigned from authenticated user
   date: string;
   duration: string; // Format: "HH:mm:ss"
   notes?: string;

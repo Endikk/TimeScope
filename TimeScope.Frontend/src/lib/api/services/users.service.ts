@@ -5,13 +5,11 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  passwordHash: string;
   avatar?: string;
   role: 'Admin' | 'Manager' | 'Employee';
   isActive: boolean;
-  createdAt: string;
-  updatedAt?: string;
-  isDeleted: boolean;
+  // Internal fields - not exposed in API responses
+  // createdAt, updatedAt, isDeleted are managed server-side
 }
 
 export interface CreateUserDto {
