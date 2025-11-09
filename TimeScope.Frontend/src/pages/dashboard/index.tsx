@@ -275,16 +275,16 @@ export default function DashboardPageAPI() {
           title="Heures cette semaine"
           value={weekHours.toFixed(1) + 'h'}
           icon={Calendar}
-          description="Sur 40h prévues"
-          trend={`${((weekHours / 40) * 100).toFixed(0)}% complété`}
+          description="Sur 35h prévues"
+          trend={`${((weekHours / 35) * 100).toFixed(0)}% complété`}
           color="cyan"
         />
         <StatCard
           title="Heures ce mois"
           value={monthHours.toFixed(1) + 'h'}
           icon={Activity}
-          description="Sur 160h prévues"
-          trend={`${((monthHours / 160) * 100).toFixed(0)}% complété`}
+          description="Sur 140h prévues"
+          trend={`${((monthHours / 140) * 100).toFixed(0)}% complété`}
           color="purple"
         />
         <StatCard

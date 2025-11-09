@@ -44,10 +44,10 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Plus, Search, MoreHorizontal, Trash2, FolderKanban, Layers, RefreshCw, ListTodo, Edit } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Trash2, FolderKanban, Layers, RefreshCw, ListTodo } from 'lucide-react';
 import { useProjects, useGroups, useProjectMutations, useGroupMutations } from '@/lib/hooks/use-projects';
 import { useTasks, useTaskMutations } from '@/lib/hooks/use-tasks';
-import type { CreateProjectDto, CreateGroupDto, Project, UpdateProjectDto } from '@/lib/api/services/projects.service';
+import type { CreateProjectDto, CreateGroupDto } from '@/lib/api/services/projects.service';
 import type { CreateTaskDto } from '@/lib/api/services/tasks.service';
 
 export default function ProjectsManagementPageSimple() {
@@ -57,7 +57,6 @@ export default function ProjectsManagementPageSimple() {
   const { tasks, loading: tasksLoading, refetch: refetchTasks } = useTasks();
 
   const { createProject, deleteProject } = useProjectMutations();
-  const { updateProject } = useProjectMutations();
   const { createGroup, deleteGroup } = useGroupMutations();
   const { createTask, deleteTask } = useTaskMutations();
 
@@ -69,8 +68,6 @@ export default function ProjectsManagementPageSimple() {
 
   // Formulaires
   const [newProject, setNewProject] = useState<CreateProjectDto>({ name: '', description: '' });
-  const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [newGroup, setNewGroup] = useState<CreateGroupDto>({ name: '', description: '' });
   const [newTask, setNewTask] = useState<CreateTaskDto>({
     name: '',
@@ -102,28 +99,6 @@ export default function ProjectsManagementPageSimple() {
       } catch (error) {
         alert('Erreur lors de la suppression');
       }
-    }
-  };
-
-  const openEditProject = (project: Project) => {
-    setEditingProject(project);
-    setIsEditProjectOpen(true);
-  };
-
-  const handleUpdateProject = async () => {
-    if (!editingProject) return;
-    try {
-      const updateData: UpdateProjectDto = {
-        name: editingProject.name,
-        description: editingProject.description,
-        groupId: editingProject.groupId,
-      };
-      await updateProject(editingProject.id, updateData);
-      await refetchProjects();
-      setIsEditProjectOpen(false);
-      setEditingProject(null);
-    } catch (error) {
-      alert('Erreur lors de la mise à jour du projet');
     }
   };
 
@@ -349,57 +324,6 @@ export default function ProjectsManagementPageSimple() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-                {/* Edit Project Dialog */}
-                <Dialog open={isEditProjectOpen} onOpenChange={setIsEditProjectOpen}>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Modifier le projet</DialogTitle>
-                      <DialogDescription>Modifiez les informations du projet</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label>Nom</Label>
-                        <Input
-                          value={editingProject?.name ?? ''}
-                          onChange={(e) => editingProject && setEditingProject({ ...editingProject, name: e.target.value })}
-                          placeholder="Mon Projet"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Description</Label>
-                        <Textarea
-                          value={editingProject?.description ?? ''}
-                          onChange={(e) => editingProject && setEditingProject({ ...editingProject, description: e.target.value })}
-                          placeholder="Description du projet..."
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Groupe</Label>
-                        <Select
-                          value={editingProject?.groupId ?? ''}
-                          onValueChange={(value) => editingProject && setEditingProject({ ...editingProject, groupId: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un groupe (optionnel)" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {groups.map((group) => (
-                              <SelectItem key={group.id} value={group.id}>
-                                {group.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => { setIsEditProjectOpen(false); setEditingProject(null); }}>
-                        Annuler
-                      </Button>
-                      <Button onClick={handleUpdateProject}>Enregistrer</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
               </div>
             </CardHeader>
             <CardContent>
@@ -434,24 +358,21 @@ export default function ProjectsManagementPageSimple() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditProject(project)}
-                              title="Modifier"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteProject(project.id)}
-                              title="Supprimer"
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleDeleteProject(project.id)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}

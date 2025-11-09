@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Table,
   TableBody,
@@ -70,24 +71,24 @@ export default function AdministrationPageAPI() {
   return (
     <div className="p-8 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
-          <p className="text-muted-foreground mt-2">
-            Gestion des bases de données et opérations système
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={handleTestConnections} variant="outline" size="sm" disabled={isTestingConnections}>
-            <Database className="w-4 h-4 mr-2" />
-            Tester Connexions
-          </Button>
-          <Button onClick={refetchAll} variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualiser
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        icon={Database}
+        title="Administration"
+        description="Gestion des bases de données et opérations système"
+        gradient="from-slate-50 to-gray-100"
+        actions={
+          <>
+            <Button onClick={handleTestConnections} variant="outline" size="sm" disabled={isTestingConnections}>
+              <Database className="w-4 h-4 mr-2" />
+              Tester Connexions
+            </Button>
+            <Button onClick={refetchAll} variant="outline" size="sm">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Actualiser
+            </Button>
+          </>
+        }
+      />
 
       {/* Usage Statistics Cards */}
             {statistics.statistics && (
