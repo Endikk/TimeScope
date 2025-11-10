@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
+import { FileDown } from "lucide-react"
 
 interface MonthlyStatsProps {
   selectedMonth: number
@@ -16,6 +16,7 @@ interface MonthlyStatsPropsExtended extends MonthlyStatsProps {
   setViewMode: (mode: 'week' | 'month') => void
   selectedWeek: number
   setSelectedWeek: (week: number) => void
+  onExport?: () => void
 }
 
 export function MonthlyStats({
@@ -27,7 +28,8 @@ export function MonthlyStats({
   viewMode,
   setViewMode,
   selectedWeek,
-  setSelectedWeek
+  setSelectedWeek,
+  onExport
 }: MonthlyStatsPropsExtended) {
   // Calculer le nombre de semaines dans le mois
   const getWeeksInMonth = (year: number, month: number) => {
@@ -168,6 +170,15 @@ export function MonthlyStats({
           >
             Mois
           </button>
+          {onExport && (
+            <button
+              onClick={onExport}
+              className="px-4 py-2 text-sm border border-green-600 text-green-600 rounded-lg transition-colors flex items-center gap-2 hover:bg-green-50"
+            >
+              <FileDown className="h-4 w-4" />
+              Exporter PDF
+            </button>
+          )}
         </div>
       </div>
     </div>

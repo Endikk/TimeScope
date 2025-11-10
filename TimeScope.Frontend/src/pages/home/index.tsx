@@ -17,19 +17,25 @@ import { HomeHeader } from "@/pages/home/components/HomeHeader"
 import { MonthlyStats } from "@/pages/home/components/MonthlyStats"
 import { QuickActions } from "@/pages/home/components/QuickActions"
 import { CalendarGrid } from "@/pages/home/components/CalendarGrid"
-import { 
-  Calendar, 
-  Timer, 
-  Target, 
-  Plus, 
-  Save, 
+import { ExportDialog } from "@/pages/home/components/ExportDialog"
+import * as MultiSelectHelpers from "@/pages/home/utils/multiSelectHelpers"
+import {
+  Calendar,
+  Timer,
+  Target,
+  Plus,
+  Save,
   Trash2,
-  Building2, 
+  Building2,
   AlertCircle,
   CheckCircle,
   Edit,
   Loader2,
-  X
+  X,
+  Copy,
+  Clipboard,
+  CheckSquare,
+  Square
 } from "lucide-react"
 import { useGroups, useProjects, useThemes } from "@/lib/hooks/use-projects"
 import { useTasks } from "@/lib/hooks/use-tasks"
@@ -78,6 +84,15 @@ export default function Home() {
     groupeId: '', projetId: '', themeId: '', taskId: '', heures: 0, description: ''
   })
   const [joursFeries, setJoursFeries] = useState<Set<string>>(new Set())
+
+  // Multi-selection states
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set())
+  const [copiedEntries, setCopiedEntries] = useState<LocalTimeEntry[]>([])
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
+
+  // Export states
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  const [exportGroupId, setExportGroupId] = useState<string>('all')
 
   // API Hooks
   const { groups, loading: groupsLoading } = useGroups()
@@ -191,26 +206,51 @@ export default function Home() {
   }
 
   const addTimeEntry = async () => {
-    if (!selectedDate || !newEntry.groupeId || !newEntry.projetId || !newEntry.taskId || newEntry.heures <= 0) {
+    // Déterminer les dates cibles
+    const targetDates = selectedDates.size > 0 ? Array.from(selectedDates) : (selectedDate ? [selectedDate] : [])
+
+    if (targetDates.length === 0 || !newEntry.groupeId || !newEntry.projetId || !newEntry.taskId || newEntry.heures <= 0) {
       alert('Veuillez sélectionner une date et remplir tous les champs requis')
       return
     }
 
-    const createDto: CreateTimeEntryDto = {
-      taskId: newEntry.taskId,
-      // userId removed - automatically assigned from authenticated user
-      date: selectedDate,
-      duration: convertHoursToDuration(newEntry.heures),
-      notes: newEntry.description
+    let successCount = 0
+    let skippedCount = 0
+
+    // Ajouter l'entrée pour chaque date sélectionnée
+    for (const targetDate of targetDates) {
+      // Vérifier si c'est un jour non travaillé
+      const date = new Date(targetDate)
+      if (isNonWorkingDay(date.getFullYear(), date.getMonth(), date.getDate())) {
+        skippedCount++
+        continue
+      }
+
+      const createDto: CreateTimeEntryDto = {
+        taskId: newEntry.taskId,
+        // userId removed - automatically assigned from authenticated user
+        date: targetDate,
+        duration: convertHoursToDuration(newEntry.heures),
+        notes: newEntry.description
+      }
+
+      const result = await createTimeEntry(createDto)
+      if (result) {
+        successCount++
+      }
     }
 
-    const result = await createTimeEntry(createDto)
-    if (result) {
-      await refetchEntries()
-      setNewEntry({ groupeId: '', projetId: '', themeId: '', taskId: '', heures: 0, description: '' })
-      alert('Entrée de temps créée avec succès!')
+    await refetchEntries()
+    setNewEntry({ groupeId: '', projetId: '', themeId: '', taskId: '', heures: 0, description: '' })
+
+    if (successCount > 0) {
+      let message = `${successCount} entrée(s) créée(s) avec succès!`
+      if (skippedCount > 0) {
+        message += ` (${skippedCount} jour(s) non travaillé(s) ignoré(s))`
+      }
+      alert(message)
     } else {
-      alert('Erreur lors de la création de l\'entrée de temps')
+      alert('Erreur lors de la création des entrées de temps')
     }
   }
 
@@ -309,9 +349,9 @@ export default function Home() {
       alert("Aucune entrée précédente à répéter")
       return
     }
-    
+
     const lastEntry = localEntries[localEntries.length - 1]
-    
+
     setNewEntry({
       groupeId: lastEntry.groupeId,
       projetId: lastEntry.projetId,
@@ -320,8 +360,76 @@ export default function Home() {
       heures: lastEntry.heures,
       description: lastEntry.description
     })
-    
+
     alert("Dernière entrée chargée dans le formulaire")
+  }
+
+  // Multi-select functions
+  const handleToggleDateSelection = (dateStr: string, ctrlKey: boolean) => {
+    MultiSelectHelpers.toggleDateSelection(
+      dateStr,
+      ctrlKey,
+      isMultiSelectMode,
+      selectedDates,
+      setSelectedDates,
+      setSelectedDate
+    )
+  }
+
+  const handleCopySelectedEntries = () => {
+    MultiSelectHelpers.copySelectedEntries(
+      selectedDates,
+      localEntries,
+      setCopiedEntries
+    )
+  }
+
+  const pasteEntries = async () => {
+    if (copiedEntries.length === 0) {
+      alert("Aucune entrée dans le presse-papiers. Copiez d'abord des entrées.")
+      return
+    }
+
+    if (selectedDates.size === 0) {
+      alert("Veuillez sélectionner au moins une date de destination")
+      return
+    }
+
+    let successCount = 0
+    const targetDates = Array.from(selectedDates)
+
+    for (const targetDate of targetDates) {
+      // Vérifier si c'est un jour non travaillé
+      const date = new Date(targetDate)
+      if (isNonWorkingDay(date.getFullYear(), date.getMonth(), date.getDate())) {
+        continue
+      }
+
+      // Copier toutes les entrées pour cette date
+      for (const entry of copiedEntries) {
+        const createDto: CreateTimeEntryDto = {
+          taskId: entry.taskId,
+          date: targetDate,
+          duration: convertHoursToDuration(entry.heures),
+          notes: entry.description
+        }
+        const result = await createTimeEntry(createDto)
+        if (result) {
+          successCount++
+        }
+      }
+    }
+
+    await refetchEntries()
+    alert(`${successCount} entrée(s) collée(s) sur ${targetDates.length} date(s)`)
+  }
+
+  const handleClearSelection = () => {
+    MultiSelectHelpers.clearSelection(setSelectedDates, setSelectedDate)
+  }
+
+  const handleToggleMultiSelectMode = () => {
+    MultiSelectHelpers.toggleMultiSelectMode(isMultiSelectMode, setIsMultiSelectMode, setSelectedDates)
   }
 
   const getEntriesForDate = (date: string) => {
@@ -418,6 +526,7 @@ export default function Home() {
               setViewMode={setViewMode}
               selectedWeek={selectedWeek}
               setSelectedWeek={setSelectedWeek}
+              onExport={() => setIsExportDialogOpen(true)}
             />
 
             <QuickActions
@@ -440,7 +549,97 @@ export default function Home() {
               getEntriesForDate={getEntriesForDate}
               viewMode={viewMode}
               selectedWeek={selectedWeek}
+              selectedDates={selectedDates}
+              onDateClick={handleToggleDateSelection}
+              isMultiSelectMode={isMultiSelectMode}
             />
+
+            {/* Multi-select control panel */}
+            <div className="mt-4 border-t pt-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant={isMultiSelectMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleToggleMultiSelectMode}
+                    className={isMultiSelectMode ? "bg-green-600 hover:bg-green-700" : ""}
+                  >
+                    {isMultiSelectMode ? (
+                      <>
+                        <CheckSquare className="h-4 w-4 mr-2" />
+                        Mode Multi-sélection Activé
+                      </>
+                    ) : (
+                      <>
+                        <Square className="h-4 w-4 mr-2" />
+                        Activer Multi-sélection
+                      </>
+                    )}
+                  </Button>
+
+                  {selectedDates.size > 0 && (
+                    <>
+                      <Badge variant="secondary" className="text-sm px-3 py-1">
+                        {selectedDates.size} date{selectedDates.size > 1 ? 's' : ''} sélectionnée{selectedDates.size > 1 ? 's' : ''}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleClearSelection}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Effacer sélection
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopySelectedEntries}
+                    disabled={selectedDates.size === 0}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copier les entrées
+                    {selectedDates.size > 0 && ` (${selectedDates.size})`}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={pasteEntries}
+                    disabled={copiedEntries.length === 0 || selectedDates.size === 0}
+                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                  >
+                    <Clipboard className="h-4 w-4 mr-2" />
+                    Coller les entrées
+                    {copiedEntries.length > 0 && ` (${copiedEntries.length})`}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              {isMultiSelectMode && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Mode multi-sélection activé :</strong> Cliquez sur plusieurs dates pour les sélectionner.
+                    Vous pouvez aussi maintenir <kbd className="px-1.5 py-0.5 bg-white border border-blue-300 rounded text-xs font-mono">Ctrl</kbd> (ou <kbd className="px-1.5 py-0.5 bg-white border border-blue-300 rounded text-xs font-mono">Cmd</kbd> sur Mac) en cliquant sur les dates.
+                  </p>
+                </div>
+              )}
+
+              {copiedEntries.length > 0 && (
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    <strong>{copiedEntries.length} entrée{copiedEntries.length > 1 ? 's' : ''} dans le presse-papiers :</strong> Sélectionnez une ou plusieurs dates de destination et cliquez sur "Coller" pour dupliquer ces entrées.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -453,10 +652,25 @@ export default function Home() {
                 Nouvelle Entrée de Temps
               </CardTitle>
               <CardDescription>
-                Ajoutez une nouvelle activité pour la date sélectionnée
+                {selectedDates.size > 1 ? (
+                  <span className="text-green-600 font-semibold">
+                    L'entrée sera ajoutée sur {selectedDates.size} dates sélectionnées
+                  </span>
+                ) : selectedDate ? (
+                  `Ajoutez une nouvelle activité pour le ${new Date(selectedDate).toLocaleDateString('fr-FR')}`
+                ) : (
+                  "Sélectionnez une date dans le calendrier"
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {selectedDates.size > 1 && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    <strong>Mode multi-ajout activé :</strong> Cette entrée sera créée pour les {selectedDates.size} dates sélectionnées. Les jours non travaillés seront automatiquement ignorés.
+                  </p>
+                </div>
+              )}
               {/* Debug Info */}
               {groups.length === 0 && (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -586,25 +800,70 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Timer className="h-5 w-5 mr-2 text-primary" />
-                {selectedDate ? `Entrées du ${new Date(selectedDate).toLocaleDateString('fr-FR')}` : "Sélectionnez une date"}
+                {selectedDates.size > 1 ? (
+                  `Entrées des ${selectedDates.size} dates sélectionnées`
+                ) : selectedDate ? (
+                  `Entrées du ${new Date(selectedDate).toLocaleDateString('fr-FR')}`
+                ) : (
+                  "Sélectionnez une date"
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {!selectedDate ? (
+              {selectedDates.size === 0 && !selectedDate ? (
                 <div className="text-center py-8 text-gray-500">
                   <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>Cliquez sur une date dans le calendrier</p>
                   <p className="text-sm">pour voir et gérer les entrées</p>
                 </div>
-              ) : getEntriesForDate(selectedDate).length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>Aucune entrée pour cette date</p>
-                  <p className="text-sm">Ajoutez votre première activité !</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {getEntriesForDate(selectedDate).map((entry) => (
+              ) : (() => {
+                // Récupérer toutes les entrées des dates sélectionnées
+                const targetDates = selectedDates.size > 0 ? Array.from(selectedDates) : (selectedDate ? [selectedDate] : [])
+                const allEntries = localEntries.filter(entry => targetDates.includes(entry.date))
+                  .sort((a, b) => a.date.localeCompare(b.date)) // Trier par date
+
+                if (allEntries.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-gray-500">
+                      <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>Aucune entrée pour {selectedDates.size > 1 ? 'ces dates' : 'cette date'}</p>
+                      <p className="text-sm">Ajoutez votre première activité !</p>
+                    </div>
+                  )
+                }
+
+                // Grouper les entrées par date
+                const entriesByDate = allEntries.reduce((acc, entry) => {
+                  if (!acc[entry.date]) {
+                    acc[entry.date] = []
+                  }
+                  acc[entry.date].push(entry)
+                  return acc
+                }, {} as Record<string, typeof allEntries>)
+
+                return (
+                  <div className="space-y-4">
+                    {selectedDates.size > 1 && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <strong>{allEntries.length} entrée{allEntries.length > 1 ? 's' : ''}</strong> sur {selectedDates.size} dates sélectionnées
+                        </p>
+                      </div>
+                    )}
+                    {Object.entries(entriesByDate).map(([date, entries]) => (
+                      <div key={date} className="space-y-2">
+                        {selectedDates.size > 1 && (
+                          <div className="flex items-center gap-2 mt-4 mb-2">
+                            <Calendar className="h-4 w-4 text-blue-600" />
+                            <h3 className="font-semibold text-blue-900">
+                              {new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            </h3>
+                            <Badge variant="outline" className="text-xs">
+                              {entries.length} entrée{entries.length > 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                        )}
+                        {entries.map((entry) => (
                     <Card key={entry.id} className="border border-gray-200">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-3">
@@ -650,9 +909,12 @@ export default function Home() {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-              )}
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()}
             </CardContent>
           </Card>
         </div>
@@ -766,7 +1028,20 @@ export default function Home() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
+        {/* Export PDF Dialog */}
+        <ExportDialog
+          open={isExportDialogOpen}
+          onOpenChange={setIsExportDialogOpen}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          monthNames={monthNames}
+          groups={groups}
+          localEntries={localEntries}
+          exportGroupId={exportGroupId}
+          setExportGroupId={setExportGroupId}
+        />
+
         </div>
       </div>
     </div>

@@ -69,7 +69,7 @@ export function ProfileDropdown({
         <DropdownMenuTrigger className="relative h-9 w-9 rounded-full overflow-hidden ring-2 ring-transparent hover:ring-primary/20 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           <Avatar className="h-9 w-9">
             <AvatarImage src={user?.avatar} alt={fullName} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs">
+            <AvatarFallback className="text-blue font-semibold text-xs">
               {getInitials()}
             </AvatarFallback>
           </Avatar>
@@ -80,7 +80,7 @@ export function ProfileDropdown({
             <div className="flex items-center gap-3 p-2">
               <Avatar className="h-12 w-12 rounded-lg border-2 border-border">
                 <AvatarImage src={user?.avatar} alt={fullName} />
-                <AvatarFallback className="rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                <AvatarFallback className="rounded-lg text-blue font-semibold">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>

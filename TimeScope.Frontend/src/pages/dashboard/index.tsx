@@ -105,17 +105,19 @@ export default function DashboardPageAPI() {
 
   const monthlyData = getLast4Weeks();
 
-  // Project distribution data - simplified without projectId
+  // Project distribution data - with project names
   const projectHoursMap = new Map<string, number>();
   monthEntries.forEach(entry => {
     const task = tasks.find(t => t.id === entry.taskId);
     if (task && task.projectId) {
-      const current = projectHoursMap.get(task.projectId) || 0;
-      projectHoursMap.set(task.projectId, current + convertDurationToHours(entry.duration));
+      const project = projects.find(p => p.id === task.projectId);
+      const projectName = project ? project.name : 'Projet inconnu';
+      const current = projectHoursMap.get(projectName) || 0;
+      projectHoursMap.set(projectName, current + convertDurationToHours(entry.duration));
     }
   });
 
-  const colors = ['#6366F1', '#8B7CF6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE'];
+  const colors = ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE', '#EFF6FF'];
   const projectData: ProjectData[] = Array.from(projectHoursMap.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
@@ -131,10 +133,10 @@ export default function DashboardPageAPI() {
   const todoTasks = tasks.filter(t => t.status === 'EnAttente').length;
 
   const taskCompletionData = [
-    { status: 'Terminé', value: completedTasks, color: '#6366F1' },
-    { status: 'En cours', value: inProgressTasks, color: '#8B7CF6' },
-    { status: 'En attente', value: todoTasks, color: '#C4B5FD' }
-  ];
+    { status: 'Terminé', value: completedTasks, color: '#22C55E' },
+    { status: 'En cours', value: inProgressTasks, color: '#3B82F6' },
+    { status: 'En attente', value: todoTasks, color: '#94A3B8' }
+  ].filter(item => item.value > 0);
 
   // Recent activity from time entries
   const recentActivities = timeEntries
@@ -328,7 +330,7 @@ export default function DashboardPageAPI() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="hours" fill="var(--fp-accent)" name="Heures" />
+                <Bar dataKey="hours" fill="#3B82F6" name="Heures" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -351,9 +353,11 @@ export default function DashboardPageAPI() {
                 <Line
                   type="monotone"
                   dataKey="hours"
-                  stroke="var(--fp-accent)"
-                  strokeWidth={2}
+                  stroke="#3B82F6"
+                  strokeWidth={3}
                   name="Heures"
+                  dot={{ fill: '#3B82F6', r: 5 }}
+                  activeDot={{ r: 7 }}
                 />
               </LineChart>
             </ResponsiveContainer>

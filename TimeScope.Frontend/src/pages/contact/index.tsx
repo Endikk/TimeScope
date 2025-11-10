@@ -88,22 +88,7 @@ export default function Contact() {
             icon={MessageSquare}
             title="Demandes à l'Administration"
             description="Demandez l'ajout de nouveaux projets, activités ou templates à votre espace de travail"
-            gradient="from-indigo-50 via-purple-50 to-pink-50"
           />
-
-          {/* Types de demandes */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            {REQUEST_TYPES.map((type) => (
-              <Card key={type.value} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4 text-center">
-                  <div className={`w-12 h-12 ${type.color} rounded-lg flex items-center justify-center mx-auto mb-3`}>
-                    <type.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-sm">{type.label}</h3>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
 
           {/* Formulaire principal */}
           <Card>

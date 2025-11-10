@@ -15,7 +15,6 @@ import {
   Activity,
   Users,
   ChevronRight,
-  Crosshair,
 } from "lucide-react"
 import { Link, useLocation } from "react-router"
 
@@ -824,9 +823,11 @@ function AppSidebar({
                     alt="TimeScope Logo"
                     className="h-16 w-auto group-data-[collapsible=icon]:hidden transition-all duration-300 group-hover/logo:scale-105"
                   />
-                  <div className="hidden group-data-[collapsible=icon]:flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:rotate-3 animate-in fade-in">
-                    <Crosshair className="size-5 text-white animate-pulse" />
-                  </div>
+                  <img 
+                    src="/assets/images/3.svg"
+                    alt="TimeScope Icon"
+                    className="hidden group-data-[collapsible=icon]:flex aspect-square size-8 items-center justify-center rounded-lg  shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:rotate-3 animate-in fade-in"
+                  />
                 </div>
               </LinkWithRef>
             </SidebarMenuButton>
