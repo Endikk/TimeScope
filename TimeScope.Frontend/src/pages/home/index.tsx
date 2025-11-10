@@ -638,14 +638,7 @@ export default function Home() {
                 )}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {selectedDates.size > 1 && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm text-green-800">
-                    <strong>Mode multi-ajout activé :</strong> Cette entrée sera créée pour les {selectedDates.size} dates sélectionnées. Les jours non travaillés seront automatiquement ignorés.
-                  </p>
-                </div>
-              )}
+            <CardContent className="space-y-4 mt-4">
               {/* Debug Info */}
               {groups.length === 0 && (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
