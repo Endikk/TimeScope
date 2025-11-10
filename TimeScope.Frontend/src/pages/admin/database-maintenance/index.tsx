@@ -15,29 +15,13 @@ import {
   CheckCircle2,
   AlertTriangle,
   Activity,
-  XCircle,
-  Zap
+  XCircle
 } from 'lucide-react';
-import { useDatabaseStats, useDatabaseHealth, useDatabaseMaintenance } from '@/lib/hooks/use-database-maintenance';
+import { useDatabaseStats, useDatabaseHealth } from '@/lib/hooks/use-database-maintenance';
 
 export default function DatabaseMaintenancePageAPI() {
   const { stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useDatabaseStats();
   const { health, loading: healthLoading, error: healthError, refetch: refetchHealth } = useDatabaseHealth();
-  const { optimize, loading: optimizing } = useDatabaseMaintenance();
-
-  const [lastOptimization, setLastOptimization] = useState<string | null>(null);
-
-  const handleOptimize = async () => {
-    try {
-      const result = await optimize();
-      setLastOptimization(new Date().toLocaleString('fr-FR'));
-      alert(`Optimisation réussie: ${result.message}`);
-      // Recharger les stats après optimisation
-      await refetchStats();
-    } catch (error) {
-      alert('Erreur lors de l\'optimisation');
-    }
-  };
 
   const handleRefresh = async () => {
     await Promise.all([refetchStats(), refetchHealth()]);
@@ -294,50 +278,6 @@ export default function DatabaseMaintenancePageAPI() {
           </Card>
         </div>
       )}
-
-      {/* Optimization */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-yellow-500" />
-            Optimisation
-          </CardTitle>
-          <CardDescription>
-            Optimise les bases de données pour améliorer les performances
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Exécute ANALYZE sur toutes les bases pour mettre à jour les statistiques du query planner
-              </p>
-              {lastOptimization && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Dernière optimisation: {lastOptimization}
-                </p>
-              )}
-            </div>
-            <Button
-              onClick={handleOptimize}
-              disabled={optimizing}
-              className="ml-4"
-            >
-              {optimizing ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Optimisation...
-                </>
-              ) : (
-                <>
-                  <Zap className="h-4 w-4 mr-2" />
-                  Optimiser
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
