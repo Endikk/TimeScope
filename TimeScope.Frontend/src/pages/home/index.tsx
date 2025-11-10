@@ -479,6 +479,36 @@ export default function Home() {
 
             <QuickActions
               onExport={() => setIsExportDialogOpen(true)}
+              onGoToToday={() => {
+                const today = new Date()
+                const y = today.getFullYear()
+                const m = today.getMonth()
+
+                // Set visible month/year to today
+                setSelectedYear(y)
+                setSelectedMonth(m)
+
+                // Also set the selected date so the day is highlighted
+                const todayStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+                setSelectedDate(todayStr)
+
+                // If in week view, compute the week index so the week containing today is shown
+                if (viewMode === 'week') {
+                  const firstDay = new Date(y, m, 1)
+                  const firstDayOfWeek = (firstDay.getDay() + 6) % 7 // Lundi = 0
+                  const firstMonday = new Date(firstDay)
+                  firstMonday.setDate(1 - firstDayOfWeek)
+
+                  const startOfToday = new Date(y, m, today.getDate())
+                  // normalize times
+                  firstMonday.setHours(0, 0, 0, 0)
+                  startOfToday.setHours(0, 0, 0, 0)
+
+                  const diffMs = startOfToday.getTime() - firstMonday.getTime()
+                  const weekIndex = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
+                  setSelectedWeek(weekIndex >= 0 ? weekIndex : 0)
+                }
+              }}
             />
 
             <CalendarGrid

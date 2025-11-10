@@ -3,13 +3,19 @@ import { FileDown } from "lucide-react"
 
 interface QuickActionsProps {
   onExport?: () => void
+  onGoToToday?: () => void
 }
 
-export function QuickActions({ onExport }: QuickActionsProps) {
+export function QuickActions({ onExport, onGoToToday }: QuickActionsProps) {
   const goToToday = () => {
+    if (onGoToToday) {
+      onGoToToday()
+      return
+    }
+
+    // Fallback behaviour if no callback provided: log the ISO date
     const today = new Date().toISOString().split('T')[0]
-    // Note: This would need to be passed up to parent or use a callback
-    console.log('Go to today:', today)
+    console.log('Go to today (no handler):', today)
   }
 
   return (
