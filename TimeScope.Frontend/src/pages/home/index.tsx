@@ -307,62 +307,11 @@ export default function Home() {
     }
   }
 
-  const copyPreviousDay = async () => {
-    if (!selectedDate) {
-      alert("Veuillez sélectionner une date d'abord")
-      return
-    }
+  
 
-    const currentDate = new Date(selectedDate)
-    const previousDay = new Date(currentDate)
-    previousDay.setDate(currentDate.getDate() - 1)
-    const previousDayStr = previousDay.toISOString().split('T')[0]
+  
 
-    const previousEntries = localEntries.filter(entry => entry.date === previousDayStr)
-
-    if (previousEntries.length === 0) {
-      alert("Aucune entrée trouvée pour le jour précédent")
-      return
-    }
-
-    for (const entry of previousEntries) {
-      const createDto: CreateTimeEntryDto = {
-        taskId: entry.taskId,
-        // userId removed - automatically assigned from authenticated user
-        date: selectedDate,
-        duration: convertHoursToDuration(entry.heures),
-        notes: entry.description
-      }
-      await createTimeEntry(createDto)
-    }
-
-    await refetchEntries()
-    alert(`${previousEntries.length} entrée(s) copiée(s) depuis le jour précédent`)
-  }
-
-  const applyQuickTemplate = () => {
-    alert("Template de journée type: Veuillez d'abord créer vos projets et tâches dans l'administration")
-  }
-
-  const repeatLastEntry = () => {
-    if (localEntries.length === 0) {
-      alert("Aucune entrée précédente à répéter")
-      return
-    }
-
-    const lastEntry = localEntries[localEntries.length - 1]
-
-    setNewEntry({
-      groupeId: lastEntry.groupeId,
-      projetId: lastEntry.projetId,
-      themeId: '', // No longer used
-      taskId: lastEntry.taskId,
-      heures: lastEntry.heures,
-      description: lastEntry.description
-    })
-
-    alert("Dernière entrée chargée dans le formulaire")
-  }
+  
 
   // Multi-select functions
   const handleToggleDateSelection = (dateStr: string, ctrlKey: boolean) => {
@@ -526,14 +475,10 @@ export default function Home() {
               setViewMode={setViewMode}
               selectedWeek={selectedWeek}
               setSelectedWeek={setSelectedWeek}
-              onExport={() => setIsExportDialogOpen(true)}
             />
 
             <QuickActions
-              selectedDate={selectedDate}
-              copyPreviousDay={copyPreviousDay}
-              repeatLastEntry={repeatLastEntry}
-              applyQuickTemplate={applyQuickTemplate}
+              onExport={() => setIsExportDialogOpen(true)}
             />
 
             <CalendarGrid

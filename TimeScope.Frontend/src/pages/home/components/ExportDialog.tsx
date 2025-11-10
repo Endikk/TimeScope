@@ -115,13 +115,11 @@ export function ExportDialog({
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h4 className="font-semibold text-blue-900 mb-2">Le PDF contiendra :</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Logo et nom de l'application (TimeScope)</li>
               <li>• Période : {monthNames[selectedMonth]} {selectedYear}</li>
               <li>• Total des heures travaillées</li>
               <li>• Nombre de jours travaillés</li>
               <li>• Détail de toutes les entrées par date</li>
               <li>• Groupes, projets, tâches et descriptions</li>
-              <li>• Design aux couleurs de TimeScope</li>
             </ul>
           </div>
         </div>

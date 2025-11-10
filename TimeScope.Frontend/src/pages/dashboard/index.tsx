@@ -280,7 +280,7 @@ export default function DashboardPageAPI() {
           icon={Calendar}
           description="Sur 35h prévues"
           trend={`${((weekHours / 35) * 100).toFixed(0)}% complété`}
-          color="cyan"
+          color="blue"
         />
         <StatCard
           title="Heures ce mois"
@@ -288,14 +288,14 @@ export default function DashboardPageAPI() {
           icon={Activity}
           description="Sur 140h prévues"
           trend={`${((monthHours / 140) * 100).toFixed(0)}% complété`}
-          color="purple"
+          color="blue"
         />
         <StatCard
           title="Projets actifs"
           value={projects.length}
           icon={FolderKanban}
           description="En cours"
-          color="orange"
+          color="blue"
         />
         <StatCard
           title="Tâches terminées"
@@ -303,14 +303,14 @@ export default function DashboardPageAPI() {
           icon={TrendingUp}
           description="Ce mois-ci"
           trend={`${completedTasks} au total`}
-          color="green"
+          color="blue"
         />
         <StatCard
           title="Membres d'équipe"
           value={users.length}
           icon={Users}
           description="Actifs"
-          color="pink"
+          color="blue"
         />
       </div>
 
