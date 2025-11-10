@@ -5,9 +5,9 @@ export default function LoginVideoSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const videos = [
-    "/assets/Vidéo_promo_1.mp4",
-    "/assets/Vidéo_promo_2.mp4",
-    "/assets/Vidéo_promo_3.mp4"
+    "/assets/videos/Vidéo_promo_1.mp4",
+    "/assets/videos/Vidéo_promo_2.mp4",
+    "/assets/videos/Vidéo_promo_3.mp4"
   ];
 
   useEffect(() => {

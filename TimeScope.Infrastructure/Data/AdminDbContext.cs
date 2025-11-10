@@ -15,6 +15,7 @@ public class AdminDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +52,28 @@ public class AdminDbContext : DbContext
             entity.Property(e => e.DataType).IsRequired().HasMaxLength(50);
             entity.HasIndex(e => e.Key).IsUnique();
             entity.HasIndex(e => e.Category);
+        });
+
+        // Configure RefreshToken
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("RefreshTokens", "admin");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Token).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.ExpiresAt).IsRequired();
+            entity.Property(e => e.CreatedByIp).HasMaxLength(45); // IPv6 max length
+            entity.Property(e => e.RevokedByIp).HasMaxLength(45);
+            entity.Property(e => e.ReplacedByToken).HasMaxLength(500);
+            entity.Property(e => e.ReasonRevoked).HasMaxLength(200);
+
+            // Indexes for performance
+            entity.HasIndex(e => e.Token).IsUnique();
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ExpiresAt);
+
+            // Foreign key relationship (navigation ignored to avoid cross-db issues)
+            entity.Ignore(e => e.User);
         });
     }
 }

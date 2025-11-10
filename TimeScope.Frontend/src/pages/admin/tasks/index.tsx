@@ -156,9 +156,9 @@ export default function TasksManagementPage() {
   // Statistics
   const stats = {
     total: tasks.length,
-    enCours: tasks.filter(t => t.status === 'En cours').length,
-    termine: tasks.filter(t => t.status === 'Terminé').length,
-    enAttente: tasks.filter(t => t.status === 'En attente').length,
+    enCours: tasks.filter(t => t.status === 'EnCours').length,
+    termine: tasks.filter(t => t.status === 'Termine').length,
+    enAttente: tasks.filter(t => t.status === 'EnAttente').length,
   };
 
   const getStatusBadge = (status: string) => {

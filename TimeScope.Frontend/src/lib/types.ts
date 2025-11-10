@@ -1,5 +1,7 @@
-export type TaskStatus = "En cours" | "Terminé" | "En attente"
+// Task Status - Aligned with backend enums
+export type TaskStatus = "EnAttente" | "EnCours" | "Termine"
 export type TaskPrecision = "Low" | "Medium" | "High"
+export type TaskPriority = "Low" | "Medium" | "High"
 
 export interface Task {
   id: string
@@ -8,10 +10,13 @@ export interface Task {
   precision: TaskPrecision
   status: TaskStatus
   timeSpent: string
-  assignee: string
-  priority?: "Low" | "Medium" | "High"
+  assigneeId?: string // Changed from 'assignee: string' to match backend
+  assignee?: string // Display name for UI (populated from backend)
+  priority?: TaskPriority
   dueDate?: string
   description?: string
+  estimatedTime?: string
+  actualTime?: string
 }
 
 export interface TaskFilters {

@@ -1,4 +1,4 @@
-import axiosInstance from '../axios.config';
+import apiClient from '../client';
 
 export interface TimeEntry {
   id: string;
@@ -13,7 +13,7 @@ export interface TimeEntry {
 
 export interface CreateTimeEntryDto {
   taskId: string;
-  userId: string;
+  // userId removed - automatically assigned from authenticated user
   date: string;
   duration: string; // Format: "HH:mm:ss"
   notes?: string;
@@ -30,7 +30,7 @@ class TimeEntriesService {
    * Récupérer toutes les entrées de temps
    */
   async getAllTimeEntries(): Promise<TimeEntry[]> {
-    const response = await axiosInstance.get<TimeEntry[]>(this.endpoint);
+    const response = await apiClient.get<TimeEntry[]>(this.endpoint);
     return response.data;
   }
 
@@ -38,7 +38,7 @@ class TimeEntriesService {
    * Récupérer une entrée de temps par ID
    */
   async getTimeEntryById(id: string): Promise<TimeEntry> {
-    const response = await axiosInstance.get<TimeEntry>(`${this.endpoint}/${id}`);
+    const response = await apiClient.get<TimeEntry>(`${this.endpoint}/${id}`);
     return response.data;
   }
 
@@ -46,7 +46,7 @@ class TimeEntriesService {
    * Créer une nouvelle entrée de temps
    */
   async createTimeEntry(timeEntry: CreateTimeEntryDto): Promise<TimeEntry> {
-    const response = await axiosInstance.post<TimeEntry>(this.endpoint, timeEntry);
+    const response = await apiClient.post<TimeEntry>(this.endpoint, timeEntry);
     return response.data;
   }
 
@@ -54,21 +54,21 @@ class TimeEntriesService {
    * Mettre à jour une entrée de temps
    */
   async updateTimeEntry(id: string, timeEntry: UpdateTimeEntryDto): Promise<void> {
-    await axiosInstance.put(`${this.endpoint}/${id}`, { ...timeEntry, id });
+    await apiClient.put(`${this.endpoint}/${id}`, { ...timeEntry, id });
   }
 
   /**
    * Supprimer une entrée de temps
    */
   async deleteTimeEntry(id: string): Promise<void> {
-    await axiosInstance.delete(`${this.endpoint}/${id}`);
+    await apiClient.delete(`${this.endpoint}/${id}`);
   }
 
   /**
    * Récupérer les entrées de temps par utilisateur
    */
   async getTimeEntriesByUser(userId: string): Promise<TimeEntry[]> {
-    const response = await axiosInstance.get<TimeEntry[]>(`${this.endpoint}/user/${userId}`);
+    const response = await apiClient.get<TimeEntry[]>(`${this.endpoint}/user/${userId}`);
     return response.data;
   }
 
@@ -76,7 +76,7 @@ class TimeEntriesService {
    * Récupérer les entrées de temps par tâche
    */
   async getTimeEntriesByTask(taskId: string): Promise<TimeEntry[]> {
-    const response = await axiosInstance.get<TimeEntry[]>(`${this.endpoint}/task/${taskId}`);
+    const response = await apiClient.get<TimeEntry[]>(`${this.endpoint}/task/${taskId}`);
     return response.data;
   }
 
@@ -84,7 +84,7 @@ class TimeEntriesService {
    * Récupérer les entrées de temps par période
    */
   async getTimeEntriesByDateRange(startDate: string, endDate: string): Promise<TimeEntry[]> {
-    const response = await axiosInstance.get<TimeEntry[]>(
+    const response = await apiClient.get<TimeEntry[]>(
       `${this.endpoint}/range?startDate=${startDate}&endDate=${endDate}`
     );
     return response.data;

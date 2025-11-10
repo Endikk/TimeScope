@@ -4,6 +4,8 @@ using TimeScope.Core.Interfaces;
 using TimeScope.Infrastructure.Data;
 using TimeScope.Infrastructure.Repositories;
 using TimeScope.Infrastructure.Services;
+using TimeScope.Infrastructure.Security;
+using TimeScope.API.Middleware;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -23,6 +25,8 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
+builder.Services.AddHttpContextAccessor(); // Required for IpAddress tracking in AuthService
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -83,7 +87,9 @@ builder.Services.AddScoped<IProjectsUnitOfWork, ProjectsUnitOfWork>();
 builder.Services.AddScoped<ITimeUnitOfWork, TimeUnitOfWork>();
 builder.Services.AddScoped<IReportsUnitOfWork, ReportsUnitOfWork>();
 
-// Register Auth Service
+// Register Security Services
+builder.Services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Register Business Logic Services (Clean Architecture)
@@ -156,12 +162,32 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Global exception handling (must be first in pipeline)
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Initialize database with seed data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        Log.Information("Initializing databases...");
+        var authService = services.GetRequiredService<IAuthService>();
+        await TimeScope.API.SeedData.InitializeAsync(services, authService);
+        Log.Information("Databases initialized successfully");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while seeding the database");
+    }
+}
 
 try
 {

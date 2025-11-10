@@ -10,6 +10,7 @@ public interface IAdminUnitOfWork : IDisposable
 {
     IRepository<User> Users { get; }
     IRepository<AppSetting> AppSettings { get; }
+    IRepository<RefreshToken> RefreshTokens { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

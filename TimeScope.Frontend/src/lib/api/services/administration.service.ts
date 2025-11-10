@@ -1,4 +1,4 @@
-import axiosInstance from '../axios.config';
+import apiClient from '../client';
 
 // Interfaces
 export interface DatabaseSummary {
@@ -66,7 +66,7 @@ class AdministrationService {
    * Récupère un résumé de toutes les bases de données
    */
   async getDatabasesSummary(): Promise<DatabasesSummary> {
-    const response = await axiosInstance.get<DatabasesSummary>(`${this.BASE_URL}/databases/summary`);
+    const response = await apiClient.get<DatabasesSummary>(`${this.BASE_URL}/databases/summary`);
     return response.data;
   }
 
@@ -74,7 +74,7 @@ class AdministrationService {
    * Teste les connexions aux bases de données
    */
   async testDatabaseConnections(): Promise<ConnectionTestResult> {
-    const response = await axiosInstance.get<ConnectionTestResult>(`${this.BASE_URL}/databases/test-connections`);
+    const response = await apiClient.get<ConnectionTestResult>(`${this.BASE_URL}/databases/test-connections`);
     return response.data;
   }
 
@@ -82,7 +82,7 @@ class AdministrationService {
    * Nettoie les données supprimées (soft delete)
    */
   async cleanupSoftDeleted(): Promise<CleanupResult> {
-    const response = await axiosInstance.post<CleanupResult>(`${this.BASE_URL}/cleanup/soft-deleted`);
+    const response = await apiClient.post<CleanupResult>(`${this.BASE_URL}/cleanup/soft-deleted`);
     return response.data;
   }
 
@@ -90,7 +90,7 @@ class AdministrationService {
    * Récupère les statistiques d'utilisation du système
    */
   async getUsageStatistics(): Promise<UsageStatistics> {
-    const response = await axiosInstance.get<UsageStatistics>(`${this.BASE_URL}/usage/statistics`);
+    const response = await apiClient.get<UsageStatistics>(`${this.BASE_URL}/usage/statistics`);
     return response.data;
   }
 
@@ -98,7 +98,7 @@ class AdministrationService {
    * Exporte les données système
    */
   async exportSystemData(): Promise<ExportResult> {
-    const response = await axiosInstance.get<ExportResult>(`${this.BASE_URL}/export/system-data`);
+    const response = await apiClient.get<ExportResult>(`${this.BASE_URL}/export/system-data`);
     return response.data;
   }
 }

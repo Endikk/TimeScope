@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Table,
   TableBody,
@@ -224,29 +225,26 @@ export default function TimesheetPage() {
         <div className="max-w-7xl mx-auto space-y-6 p-6">
 
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                <FileSpreadsheet className="h-8 w-8 text-primary" />
-                Feuilles de Temps
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Gérez et exportez vos feuilles de temps
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleExportCSV}>
-                <Download className="h-4 w-4 mr-2" />
-                Exporter CSV
-              </Button>
-              {selectedEntries.length > 0 && (
-                <Button variant="destructive" onClick={handleBulkDelete}>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Supprimer ({selectedEntries.length})
+          <PageHeader
+            icon={FileSpreadsheet}
+            title="Feuilles de Temps"
+            description="Gérez et exportez vos feuilles de temps"
+            gradient="from-blue-50 to-cyan-50"
+            actions={
+              <>
+                <Button variant="outline" onClick={handleExportCSV}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter CSV
                 </Button>
-              )}
-            </div>
-          </div>
+                {selectedEntries.length > 0 && (
+                  <Button className="bg-focustime-alert hover:opacity-90" onClick={handleBulkDelete}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer ({selectedEntries.length})
+                  </Button>
+                )}
+              </>
+            }
+          />
 
           {/* Statistics */}
           <div className="grid gap-4 md:grid-cols-4">

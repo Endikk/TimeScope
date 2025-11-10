@@ -1,4 +1,4 @@
-import axios from '../axios.config';
+import apiClient from '../client';
 
 // Types
 export interface AuditLog {
@@ -61,7 +61,7 @@ class ReportsService {
     entityType?: string;
     userId?: string;
   }): Promise<AuditLog[]> {
-    const response = await axios.get('/reports/audit-logs', { params });
+    const response = await apiClient.get('/reports/audit-logs', { params });
     return response.data;
   }
 
@@ -69,7 +69,7 @@ class ReportsService {
    * Crée un nouveau log d'audit
    */
   async createAuditLog(log: CreateAuditLogDto): Promise<AuditLog> {
-    const response = await axios.post('/reports/audit-logs', log);
+    const response = await apiClient.post('/reports/audit-logs', log);
     return response.data;
   }
 
@@ -80,7 +80,7 @@ class ReportsService {
     startDate?: string;
     endDate?: string;
   }): Promise<ReportStatistics> {
-    const response = await axios.get('/reports/statistics', { params });
+    const response = await apiClient.get('/reports/statistics', { params });
     return response.data;
   }
 
@@ -88,7 +88,7 @@ class ReportsService {
    * Récupère le résumé d'activité
    */
   async getActivitySummary(days: number = 7): Promise<ActivitySummary[]> {
-    const response = await axios.get('/reports/activity', {
+    const response = await apiClient.get('/reports/activity', {
       params: { days }
     });
     return response.data;
@@ -101,7 +101,7 @@ class ReportsService {
     limit?: number;
     days?: number;
   }): Promise<UserActivity[]> {
-    const response = await axios.get('/reports/top-users', { params });
+    const response = await apiClient.get('/reports/top-users', { params });
     return response.data;
   }
 }

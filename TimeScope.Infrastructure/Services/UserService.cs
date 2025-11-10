@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using TimeScope.Core.Entities;
 using TimeScope.Core.Interfaces;
 
@@ -8,10 +6,12 @@ namespace TimeScope.Infrastructure.Services;
 public class UserService : IUserService
 {
     private readonly IAdminUnitOfWork _adminUow;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public UserService(IAdminUnitOfWork adminUow)
+    public UserService(IAdminUnitOfWork adminUow, IPasswordHasher passwordHasher)
     {
         _adminUow = adminUow;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<User> CreateUserAsync(CreateUserCommand command)
@@ -30,8 +30,8 @@ public class UserService : IUserService
             throw new ArgumentException("Last name is required");
         }
 
-        // Logique métier : hash du password
-        var passwordHash = HashPassword(command.Password);
+        // Logique métier : hash du password avec BCrypt
+        var passwordHash = _passwordHasher.HashPassword(command.Password);
 
         // Parse UserRole from string
         if (!Enum.TryParse<UserRole>(command.Role, true, out var userRole))
@@ -147,14 +147,6 @@ public class UserService : IUserService
         }
     }
 
-    private static string HashPassword(string password)
-    {
-        // Utilisation de SHA256 pour le hashing (à remplacer par BCrypt/PBKDF2 en production)
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(password);
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
-    }
 
     #endregion
 }

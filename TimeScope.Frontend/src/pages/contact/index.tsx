@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/layout/PageHeader"
 import { REQUEST_TYPES } from "@/pages/contact/components/RequestTypeCards"
 import { contactFormSchema, ContactFormValues, PRIORITY_LEVELS } from "@/lib/types/form"
 import { CURRENT_USER } from "@/lib/config/user"
@@ -83,17 +84,12 @@ export default function Contact() {
         <div className="max-w-4xl mx-auto space-y-6 p-6">
           
           {/* Header */}
-          <div className="mb-8 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-6 rounded-xl border border-indigo-100">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg shadow-lg">
-                <MessageSquare className="h-8 w-8 text-white" />
-              </div>
-              Demandes à l&apos;Administration
-            </h1>
-            <p className="text-gray-700 font-medium">
-              Demandez l&apos;ajout de nouveaux projets, activités ou templates à votre espace de travail
-            </p>
-          </div>
+          <PageHeader
+            icon={MessageSquare}
+            title="Demandes à l'Administration"
+            description="Demandez l'ajout de nouveaux projets, activités ou templates à votre espace de travail"
+            gradient="from-indigo-50 via-purple-50 to-pink-50"
+          />
 
           {/* Types de demandes */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -293,7 +289,7 @@ export default function Contact() {
                     <Button type="button" variant="outline" onClick={() => form.reset()}>
                       Effacer
                     </Button>
-                    <Button type="submit" className="flex items-center gap-2">
+                    <Button type="submit" className="bg-focustime-primary hover:opacity-90 flex items-center gap-2">
                       <Send className="h-4 w-4" />
                       Envoyer la demande
                     </Button>

@@ -9,17 +9,23 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'heading': ['Space Mono', 'monospace'],
-        'body': ['Work Sans', 'sans-serif'],
-        'sans': ['Work Sans', 'sans-serif'],
-        'mono': ['Space Mono', 'monospace'],
+        'heading': ['Poppins', 'sans-serif'],
+        'body': ['Inter', 'sans-serif'],
+        'sans': ['Inter', 'sans-serif'],
+        'poppins': ['Poppins', 'sans-serif'],
+        'inter': ['Inter', 'sans-serif'],
       },
       colors: {
-        // TimeScope Design System
-        'fp': {
-          'bg': 'var(--fp-bg)',
-          'text': 'var(--fp-text)',
-          'accent': 'var(--fp-accent)',
+        // FocusTime Design System (Direct HEX values for Tailwind)
+        'focustime': {
+          'primary': '#0A2540',
+          'action': '#0A2540',
+          'bg': '#F6F9FC',
+          'structure': '#E6EBF1',
+          'text': '#32325D',
+          'text-secondary': '#6B7C93',
+          'alert': '#EF4444',
+          'warning': '#F59E0B',
         },
         // Tailwind CSS Variables
         border: "hsl(var(--border))",
@@ -60,6 +66,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        'xs': 'var(--shadow-xs)',
       },
     },
   },

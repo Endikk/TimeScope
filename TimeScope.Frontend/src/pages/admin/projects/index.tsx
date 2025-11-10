@@ -254,8 +254,8 @@ export default function ProjectsManagementPageSimple() {
       {/* Tabs */}
       <Tabs defaultValue="projects" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="groups">Sociétés</TabsTrigger>
           <TabsTrigger value="projects">Projets</TabsTrigger>
-          <TabsTrigger value="groups">Groupes</TabsTrigger>
           <TabsTrigger value="tasks">Tâches</TabsTrigger>
         </TabsList>
 

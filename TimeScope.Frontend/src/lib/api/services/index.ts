@@ -1,4 +1,5 @@
 // Export tous les services pour un import facile
+export { authApiService, tokenStorage } from './auth.service';
 export { tasksService } from './tasks.service';
 export { usersService } from './users.service';
 export { timeEntriesService } from './timeentries.service';
@@ -10,6 +11,7 @@ export { monitoringService } from './monitoring.service';
 export { administrationService } from './administration.service';
 
 // Export des types
+export type { User as AuthUser, LoginCredentials, LoginResponse } from './auth.service';
 export type { CreateTaskDto, UpdateTaskDto } from './tasks.service';
 export type { User, CreateUserDto, UpdateUserDto } from './users.service';
 export type { TimeEntry, CreateTimeEntryDto, UpdateTimeEntryDto } from './timeentries.service';

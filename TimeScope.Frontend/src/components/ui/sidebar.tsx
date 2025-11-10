@@ -5,30 +5,23 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import {
   PanelLeftIcon,
-  ChevronUp,
   Home,
   Presentation,
   MessageSquare,
   Settings,
-  User,
   FolderKanban,
   Database,
   FileText,
   Activity,
   Users,
-  LogOut,
-  Bell,
-  Palette,
-  Shield,
-  Moon,
-  Sun,
   ChevronRight,
   Crosshair,
 } from "lucide-react"
 import { Link, useLocation } from "react-router"
 
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/lib/hooks/use-mobile"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -46,17 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Badge } from "@/components/ui/badge"
 // Note: External sidebar toggle state (zustand) was removed from AppSidebar to avoid conflicts
 // with the internal SidebarProvider state and layout gap handling.
 
@@ -409,7 +392,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent",
+        "flex min-h-0 flex-1 flex-col gap-2 group-data-[collapsible=icon]:overflow-hidden",
         className
       )}
       {...props}
@@ -814,39 +797,35 @@ function AppSidebar({
 }) {
   const location = useLocation()
   const { state } = useSidebar()
-  const [theme, setTheme] = React.useState<"light" | "dark">("light")
-
-  // Mock user data - replace with actual user data from your auth context
-  const user = {
-    name: "John Doe",
-    email: "john.doe@timescope.com",
-    role: "Administrator",
-    avatar: "",
-    status: "online" as "online" | "away" | "busy" | "offline",
-  }
+  const { hasRole } = useAuth()
 
   // Check if a menu item is active
   const isActive = (url: string) => {
     return location.pathname === url
   }
 
-  // Toggle theme
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"))
-    // Add actual theme switching logic here
-  }
+  // Check if user has admin access
+  const isAdmin = hasRole(["Admin"])
 
   return (
-      <Sidebar collapsible="icon" variant={variant} side={side} className="relative h-full">
-        <SidebarHeader>
+      <Sidebar collapsible="icon" variant={variant} side={side} className="relative h-full overflow-hidden">
+        <SidebarHeader className="transition-all duration-300">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <LinkWithRef to="/home" className="justify-center">
-                <div className="flex items-center justify-center w-full">
-                  <img src="/assets/2.svg" alt="Time Management Logo" className="h-16 w-auto group-data-[collapsible=icon]:hidden" />
-                  <div className="hidden group-data-[collapsible=icon]:flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
-                    <Crosshair className="size-5 text-white" />
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="hover:bg-transparent active:scale-95 transition-transform duration-200"
+            >
+              <LinkWithRef to="/home" className="justify-center group/logo">
+                <div className="flex items-center justify-center w-full py-2">
+                  <img
+                    src="/assets/images/2.svg"
+                    alt="TimeScope Logo"
+                    className="h-16 w-auto group-data-[collapsible=icon]:hidden transition-all duration-300 group-hover/logo:scale-105"
+                  />
+                  <div className="hidden group-data-[collapsible=icon]:flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:rotate-3 animate-in fade-in">
+                    <Crosshair className="size-5 text-white animate-pulse" />
                   </div>
                 </div>
               </LinkWithRef>
@@ -855,20 +834,36 @@ function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="scrollbar-thin scrollbar-thumb-sidebar-border/50 scrollbar-track-transparent hover:scrollbar-thumb-sidebar-border flex flex-col">
+        <div className="flex-1 overflow-y-auto">
         {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+        <SidebarGroup className="animate-in fade-in slide-in-from-left-2 duration-500">
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:opacity-0 transition-opacity duration-200">
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+              {mainMenuItems.map((item, index) => (
+                <SidebarMenuItem
+                  key={item.title}
+                  className="animate-in fade-in slide-in-from-left-1 duration-300"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                    className="group/item relative overflow-hidden"
+                  >
                     <LinkWithRef to={item.url}>
-                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
-                        <item.icon className="size-4" />
+                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
+                        <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
                       </div>
-                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                      <span className="group-data-[collapsible=icon]:hidden font-medium">{item.title}</span>
+                      {/* Active indicator */}
+                      {isActive(item.url) && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1 duration-200" />
+                      )}
                     </LinkWithRef>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -877,21 +872,24 @@ function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Admin Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Administration</SidebarGroupLabel>
+        {/* Admin Section - Only visible for Admin users */}
+        {isAdmin && (
+        <SidebarGroup className="animate-in fade-in slide-in-from-left-2 duration-500 delay-150">
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:opacity-0 transition-opacity duration-200">
+            Administration
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {adminMenuItems.map((item) => (
                 state === "collapsed" ? (
                   // When collapsed, clicking the Admin icon should navigate directly to /admin
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild tooltip={item.title} className="group/item">
                       <LinkWithRef to="/admin">
-                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
-                          <item.icon className="size-4" />
+                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
+                          <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
                         </div>
-                        <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                        <span className="group-data-[collapsible=icon]:hidden font-medium">{item.title}</span>
                       </LinkWithRef>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -903,25 +901,36 @@ function AppSidebar({
                   >
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
-                            <item.icon className="size-4" />
+                        <SidebarMenuButton className="group/item">
+                          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
+                            <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
                           </div>
-                          <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                          <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                          <span className="group-data-[collapsible=icon]:hidden font-medium">{item.title}</span>
+                          <ChevronRight className="ml-auto transition-transform duration-300 ease-out group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
-                      <CollapsibleContent>
+                      <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-top-1 data-[state=open]:slide-in-from-top-1 duration-300">
                         <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
+                          {item.items.map((subItem, subIndex) => (
+                            <SidebarMenuSubItem
+                              key={subItem.title}
+                              className="animate-in fade-in slide-in-from-left-1 duration-200"
+                              style={{ animationDelay: `${subIndex * 30}ms` }}
+                            >
                               <SidebarMenuSubButton
                                 asChild
                                 isActive={isActive(subItem.url)}
+                                className="group/subitem relative"
                               >
                                 <LinkWithRef to={subItem.url}>
-                                  {subItem.icon && <subItem.icon className="mr-2 h-4 w-4" />}
+                                  {subItem.icon && (
+                                    <subItem.icon className="mr-2 h-4 w-4 group-hover/subitem:scale-110 transition-transform duration-200" />
+                                  )}
                                   <span>{subItem.title}</span>
+                                  {/* Active indicator for subitems */}
+                                  {isActive(subItem.url) && (
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-r-full" />
+                                  )}
                                 </LinkWithRef>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
@@ -935,20 +944,36 @@ function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        )}
 
         {/* Support Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Support</SidebarGroupLabel>
+        <SidebarGroup className="animate-in fade-in slide-in-from-left-2 duration-500 delay-300">
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:opacity-0 transition-opacity duration-200">
+            Support
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {supportMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+              {supportMenuItems.map((item, index) => (
+                <SidebarMenuItem
+                  key={item.title}
+                  className="animate-in fade-in slide-in-from-left-1 duration-300"
+                  style={{ animationDelay: `${index * 50 + 300}ms` }}
+                >
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                    className="group/item relative overflow-hidden"
+                  >
                     <LinkWithRef to={item.url}>
-                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
-                        <item.icon className="size-4" />
+                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
+                        <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
                       </div>
-                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                      <span className="group-data-[collapsible=icon]:hidden font-medium">{item.title}</span>
+                      {/* Active indicator */}
+                      {isActive(item.url) && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1 duration-200" />
+                      )}
                     </LinkWithRef>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -956,127 +981,17 @@ function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>
+        </div>
 
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-colors"
-                >
-                  <div className="relative">
-                    <Avatar className="h-8 w-8 rounded-lg border-2 border-sidebar-border">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    {/* Status indicator */}
-                    <span
-                      className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-sidebar ${
-                        user.status === "online"
-                          ? "bg-green-500"
-                          : user.status === "away"
-                          ? "bg-yellow-500"
-                          : user.status === "busy"
-                          ? "bg-red-500"
-                          : "bg-gray-400"
-                      }`}
-                    />
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{user.name}</span>
-                    <span className="truncate text-xs text-sidebar-foreground/70">
-                      {user.email}
-                    </span>
-                  </div>
-                  <ChevronUp className="ml-auto size-4 transition-transform duration-200" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg"
-                side={state === "collapsed" ? "right" : "bottom"}
-                align="end"
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-2 p-2">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12 rounded-lg border-2 border-border">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback className="rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-                          {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col space-y-1 flex-1">
-                        <p className="text-sm font-semibold leading-none">{user.name}</p>
-                        <p className="text-xs text-muted-foreground leading-none">
-                          {user.email}
-                        </p>
-                        <Badge variant="secondary" className="w-fit text-xs mt-1">
-                          <Shield className="mr-1 h-3 w-3" />
-                          {user.role}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <Link to="/profile" className="block">
-                  <DropdownMenuItem className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Mon Profil</span>
-                  </DropdownMenuItem>
-                </Link>
-                <Link to="/settings" className="block">
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Paramètres</span>
-                  </DropdownMenuItem>
-                </Link>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Bell className="mr-2 h-4 w-4" />
-                  <span>Notifications</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Palette className="mr-2 h-4 w-4" />
-                  <span>Préférences</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" onClick={toggleTheme}>
-                  {theme === "light" ? (
-                    <>
-                      <Moon className="mr-2 h-4 w-4" />
-                      <span>Mode Sombre</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sun className="mr-2 h-4 w-4" />
-                      <span>Mode Clair</span>
-                    </>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Déconnexion</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+        <div className="sticky bottom-0 p-3 text-center border-t border-sidebar-border/30 bg-gradient-to-t from-sidebar-accent/5 to-transparent backdrop-blur-sm group-data-[collapsible=icon]:hidden">
+          <p className="text-xs text-sidebar-foreground/60 font-semibold transition-all duration-200 hover:text-sidebar-foreground/80">
+            TimeScope v1.0
+          </p>
+          <p className="text-[10px] text-sidebar-foreground/40 mt-0.5 transition-all duration-200 hover:text-sidebar-foreground/60">
+            © 2025 TimeScope
+          </p>
+        </div>
+      </SidebarContent>
       </Sidebar>
   )
 }

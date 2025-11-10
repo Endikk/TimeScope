@@ -78,7 +78,7 @@ const apiUserToLocal = (apiUser: ApiUser): User => ({
   role: apiUser.role,
   department: "",
   status: apiUser.isActive ? "active" : "inactive",
-  joinDate: apiUser.createdAt,
+  joinDate: new Date().toISOString(), // Backend doesn't expose createdAt in UserDto
   avatar: apiUser.avatar
 })
 

@@ -10,7 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { useLocation } from "react-router"
-import { UserNav } from "@/components/ui/user-nav"
+import { ProfileDropdown } from "@/components/ui/profile-dropdown"
 
 export function MainLayout() {
   const location = useLocation()
@@ -38,20 +38,25 @@ export function MainLayout() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4 flex-1">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
+        <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ease-in-out group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 shadow-sm hover:shadow-md">
+          <div className="flex items-center gap-3 px-4 flex-1 animate-in fade-in slide-in-from-top-2 duration-500">
+            <SidebarTrigger className="-ml-1 hover:bg-accent/50 rounded-md transition-all duration-200 hover:scale-105 active:scale-95" />
+            <Separator orientation="vertical" className="mr-2 h-4 bg-border/50" />
             <Breadcrumb>
               <BreadcrumbList>
                 {breadcrumbs.map((crumb, index) => (
-                  <div key={crumb.path} className="flex items-center gap-2">
-                    {index > 0 && <BreadcrumbSeparator />}
+                  <div key={crumb.path} className="flex items-center gap-2 animate-in fade-in slide-in-from-left-1 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                    {index > 0 && <BreadcrumbSeparator className="text-muted-foreground/50" />}
                     <BreadcrumbItem>
                       {index === breadcrumbs.length - 1 ? (
-                        <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                        <BreadcrumbPage className="font-semibold text-foreground bg-accent/30 px-2 py-1 rounded-md">
+                          {crumb.label}
+                        </BreadcrumbPage>
                       ) : (
-                        <BreadcrumbLink href={crumb.path}>
+                        <BreadcrumbLink
+                          href={crumb.path}
+                          className="transition-all duration-200 hover:text-foreground hover:bg-accent/50 px-2 py-1 rounded-md hover:scale-105"
+                        >
                           {crumb.label}
                         </BreadcrumbLink>
                       )}
@@ -61,8 +66,8 @@ export function MainLayout() {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <div className="flex items-center gap-2 px-4">
-            <UserNav />
+          <div className="flex items-center gap-3 px-4 animate-in fade-in slide-in-from-right-2 duration-500">
+            <ProfileDropdown variant="header" align="end" />
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

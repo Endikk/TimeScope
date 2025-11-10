@@ -6,17 +6,24 @@ namespace TimeScope.Infrastructure.Services;
 public class TimeEntryService : ITimeEntryService
 {
     private readonly ITimeUnitOfWork _timeUow;
+    private readonly ICurrentUserService _currentUserService;
 
-    public TimeEntryService(ITimeUnitOfWork timeUow)
+    public TimeEntryService(ITimeUnitOfWork timeUow, ICurrentUserService currentUserService)
     {
         _timeUow = timeUow;
+        _currentUserService = currentUserService;
     }
 
     public async Task<TimeEntry> CreateTimeEntryAsync(CreateTimeEntryCommand command)
     {
+        // Sécurité: Utiliser l'utilisateur authentifié au lieu de celui fourni dans la requête
+        if (!_currentUserService.UserId.HasValue)
+        {
+            throw new UnauthorizedAccessException("User must be authenticated");
+        }
+
         // Parsing et validation
         var taskId = ParseGuid(command.TaskId, "TaskId");
-        var userId = ParseGuid(command.UserId, "UserId");
         var duration = ParseTimeSpan(command.Duration, "Duration");
         var date = ParseDateTime(command.Date);
 
@@ -33,7 +40,7 @@ public class TimeEntryService : ITimeEntryService
         {
             Id = Guid.NewGuid(),
             TaskId = taskId,
-            UserId = userId,
+            UserId = _currentUserService.UserId.Value, // Force l'utilisateur connecté
             Date = date,
             Duration = duration,
             Notes = command.Notes?.Trim(),
@@ -49,11 +56,23 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<TimeEntry> UpdateTimeEntryAsync(Guid id, UpdateTimeEntryCommand command)
     {
+        // Sécurité: Vérifier l'authentification
+        if (!_currentUserService.UserId.HasValue)
+        {
+            throw new UnauthorizedAccessException("User must be authenticated");
+        }
+
         var timeEntry = await _timeUow.TimeEntries.GetByIdAsync(id);
 
         if (timeEntry == null || timeEntry.IsDeleted)
         {
             throw new KeyNotFoundException($"Time entry with ID {id} not found");
+        }
+
+        // Sécurité: Vérifier que l'utilisateur est propriétaire (sauf Admin)
+        if (timeEntry.UserId != _currentUserService.UserId.Value && !_currentUserService.IsAdmin)
+        {
+            throw new UnauthorizedAccessException("You can only update your own time entries");
         }
 
         // Mise à jour conditionnelle
@@ -88,11 +107,23 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<bool> DeleteTimeEntryAsync(Guid id)
     {
+        // Sécurité: Vérifier l'authentification
+        if (!_currentUserService.UserId.HasValue)
+        {
+            throw new UnauthorizedAccessException("User must be authenticated");
+        }
+
         var timeEntry = await _timeUow.TimeEntries.GetByIdAsync(id);
 
         if (timeEntry == null || timeEntry.IsDeleted)
         {
             return false;
+        }
+
+        // Sécurité: Vérifier que l'utilisateur est propriétaire (sauf Admin)
+        if (timeEntry.UserId != _currentUserService.UserId.Value && !_currentUserService.IsAdmin)
+        {
+            throw new UnauthorizedAccessException("You can only delete your own time entries");
         }
 
         // Soft delete
@@ -107,11 +138,23 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<TimeEntry?> GetTimeEntryByIdAsync(Guid id)
     {
+        // Sécurité: Vérifier l'authentification
+        if (!_currentUserService.UserId.HasValue)
+        {
+            throw new UnauthorizedAccessException("User must be authenticated");
+        }
+
         var timeEntry = await _timeUow.TimeEntries.GetByIdAsync(id);
-        
+
         if (timeEntry != null && timeEntry.IsDeleted)
         {
             return null;
+        }
+
+        // Sécurité: Vérifier que l'utilisateur est propriétaire (sauf Admin)
+        if (timeEntry != null && timeEntry.UserId != _currentUserService.UserId.Value && !_currentUserService.IsAdmin)
+        {
+            throw new UnauthorizedAccessException("You can only view your own time entries");
         }
 
         return timeEntry;
@@ -119,13 +162,25 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<IEnumerable<TimeEntry>> GetTimeEntriesAsync(TimeEntryFilter filter)
     {
+        // Sécurité: Vérifier l'authentification
+        if (!_currentUserService.UserId.HasValue)
+        {
+            throw new UnauthorizedAccessException("User must be authenticated");
+        }
+
         // Logique métier : filtrage
         var allEntries = await _timeUow.TimeEntries.GetAllAsync();
 
         var query = allEntries.Where(te => !te.IsDeleted);
 
-        if (filter.UserId.HasValue)
+        // Sécurité: FORCER le filtrage par utilisateur courant (sauf Admin qui peut tout voir)
+        if (!_currentUserService.IsAdmin)
         {
+            query = query.Where(te => te.UserId == _currentUserService.UserId.Value);
+        }
+        else if (filter.UserId.HasValue)
+        {
+            // Admin peut filtrer par utilisateur spécifique
             query = query.Where(te => te.UserId == filter.UserId.Value);
         }
 

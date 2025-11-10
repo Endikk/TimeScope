@@ -1,34 +1,36 @@
 
 @import "tw-animate-css";
 
-/* Font Face Declarations */
+/* Font Face Declarations - FocusTime Design System */
+/* Poppins - Pour les titres et accentuation */
 @font-face {
-  font-family: 'Space Mono';
-  src: url('/assets/Space_Mono/SpaceMono-Regular.ttf') format('truetype');
-  font-weight: 400;
+  font-family: 'Poppins';
+  src: url('/assets/fonts/Poppins/Poppins-SemiBold.ttf') format('truetype');
+  font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Space Mono';
-  src: url('/assets/Space_Mono/SpaceMono-Bold.ttf') format('truetype');
+  font-family: 'Poppins';
+  src: url('/assets/fonts/Poppins/Poppins-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
+/* Inter - Pour l'interface et le corps de texte */
 @font-face {
-  font-family: 'Work Sans';
-  src: url('/assets/Work_Sans/WorkSans-VariableFont_wght.ttf') format('truetype');
+  font-family: 'Inter';
+  src: url('/assets/fonts/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Work Sans';
-  src: url('/assets/Work_Sans/WorkSans-Italic-VariableFont_wght.ttf') format('truetype');
+  font-family: 'Inter';
+  src: url('/assets/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;
@@ -40,83 +42,119 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TimeScope Design System Variables */
+/* FocusTime Design System Variables */
 :root {
-  /* Primary Color System */
-  --fp-bg: #FFFFFF;
-  --fp-text: #1F2937;
-  --fp-accent: #6366F1;
-  
+  /* === Palette de Couleurs FocusTime === */
+  /* Primaire - Bleu Profond (Confiance) #0A2540 */
+  --color-primary: 211 100% 15%;
+  --color-primary-hex: #0A2540;
+
+  /* Action - Bleu Profond (Actions Principales) #0A2540 */
+  --color-action: 211 100% 15%;
+  --color-action-hex: #0A2540;
+
+  /* Fond - Blanc Cassé #F6F9FC */
+  --color-background: 210 40% 98%;
+  --color-background-hex: #F6F9FC;
+
+  /* Structure - Gris Clair #E6EBF1 */
+  --color-structure: 214 23% 92%;
+  --color-structure-hex: #E6EBF1;
+
+  /* Texte - Gris Foncé #32325D */
+  --color-text-primary: 240 29% 28%;
+  --color-text-primary-hex: #32325D;
+
+  /* Texte Secondaire - Gris Moyen #6B7C93 */
+  --color-text-secondary: 214 16% 50%;
+  --color-text-secondary-hex: #6B7C93;
+
+  /* Alertes - Rouge (Stop) #EF4444 */
+  --color-alert: 0 84% 60%;
+  --color-alert-hex: #EF4444;
+
+  /* Avertissements - Orange #F59E0B */
+  --color-warning: 38 92% 50%;
+  --color-warning-hex: #F59E0B;
+
   /* Font Families */
-  --font-heading: 'Space Mono', monospace;
-  --font-body: 'Work Sans', sans-serif;
-  
-  /* Tailwind CSS Variables (adapted to use our color system) */
-  --background: 0 0% 100%;
-  --foreground: 220 39% 11%;
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Tailwind CSS Variables (adapted to FocusTime color system) */
+  --background: var(--color-background);
+  --foreground: var(--color-text-primary);
   --card: 0 0% 100%;
-  --card-foreground: 220 39% 11%;
+  --card-foreground: var(--color-text-primary);
   --popover: 0 0% 100%;
-  --popover-foreground: 220 39% 11%;
-  --primary: 239 84% 67%;
+  --popover-foreground: var(--color-text-primary);
+  --primary: var(--color-primary);
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 14.3% 95.9%;
-  --secondary-foreground: 220 39% 11%;
-  --muted: 220 14.3% 95.9%;
-  --muted-foreground: 220 8.9% 46.1%;
-  --accent: 239 84% 67%;
+  --secondary: var(--color-structure);
+  --secondary-foreground: var(--color-text-primary);
+  --muted: var(--color-structure);
+  --muted-foreground: var(--color-text-secondary);
+  --accent: var(--color-action);
   --accent-foreground: 0 0% 100%;
-  --destructive: 0 84.2% 60.2%;
+  --destructive: var(--color-alert);
   --destructive-foreground: 0 0% 98%;
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 239 84% 67%;
+  --border: var(--color-structure);
+  --input: var(--color-structure);
+  --ring: var(--color-action);
   --radius: 0.5rem;
-  --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 220 39% 11%;
-  --sidebar-primary: 239 84% 67%;
+  --sidebar-background: var(--color-background);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-primary);
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 14.3% 95.9%;
-  --sidebar-accent-foreground: 220 39% 11%;
-  --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 239 84% 67%;
-  --sidebar: hsl(0 0% 98%);
+  --sidebar-accent: var(--color-structure);
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-structure);
+  --sidebar-ring: var(--color-action);
+  --sidebar: hsl(var(--color-background));
+
+  /* Custom shadow variables */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .dark {
-  /* Dark mode with adapted colors */
-  --fp-bg: #1F2937;
-  --fp-text: #FFFFFF;
-  --fp-accent: #818CF8;
-  
-  --background: 220 39% 11%;
-  --foreground: 0 0% 98%;
-  --card: 220 39% 11%;
-  --card-foreground: 0 0% 98%;
-  --popover: 220 39% 11%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 239 84% 80%;
-  --primary-foreground: 220 39% 11%;
-  --secondary: 220 39% 15%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 220 39% 15%;
-  --muted-foreground: 220 5% 65%;
-  --accent: 239 84% 80%;
-  --accent-foreground: 220 39% 11%;
-  --destructive: 0 62.8% 30.6%;
+  /* FocusTime Dark Mode */
+  --color-primary: 211 100% 25%;
+  --color-action: 211 100% 25%;
+  --color-background: 220 39% 11%;
+  --color-structure: 220 39% 20%;
+  --color-text-primary: 0 0% 98%;
+  --color-text-secondary: 220 5% 65%;
+  --color-alert: 0 84% 60%;
+  --color-warning: 38 92% 55%;
+
+  --background: var(--color-background);
+  --foreground: var(--color-text-primary);
+  --card: var(--color-background);
+  --card-foreground: var(--color-text-primary);
+  --popover: var(--color-background);
+  --popover-foreground: var(--color-text-primary);
+  --primary: var(--color-primary);
+  --primary-foreground: 0 0% 98%;
+  --secondary: var(--color-structure);
+  --secondary-foreground: var(--color-text-primary);
+  --muted: var(--color-structure);
+  --muted-foreground: var(--color-text-secondary);
+  --accent: var(--color-action);
+  --accent-foreground: 0 0% 98%;
+  --destructive: var(--color-alert);
   --destructive-foreground: 0 0% 98%;
-  --border: 220 39% 20%;
-  --input: 220 39% 20%;
-  --ring: 239 84% 80%;
-  --sidebar-background: 220 39% 15%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 239 84% 80%;
-  --sidebar-primary-foreground: 220 39% 11%;
-  --sidebar-accent: 220 39% 20%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-border: 220 39% 20%;
-  --sidebar-ring: 239 84% 80%;
-  --sidebar: hsl(220 39% 15%);
+  --border: var(--color-structure);
+  --input: var(--color-structure);
+  --ring: var(--color-action);
+  --sidebar-background: var(--color-structure);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-action);
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: var(--color-structure);
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-structure);
+  --sidebar-ring: var(--color-action);
+  --sidebar: hsl(var(--color-structure));
 }
 
 /* Base Styles */
@@ -125,39 +163,92 @@
 }
 
 body {
-  background: var(--fp-bg);
-  color: var(--fp-text);
+  background: hsl(var(--color-background));
+  color: hsl(var(--color-text-primary));
   font-family: var(--font-body);
   line-height: 1.6;
   margin: 0;
   padding: 0;
 }
 
-/* Typography System */
+/* FocusTime Typography System - Standardisé */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: 700;
+  font-weight: 600; /* Poppins SemiBold par défaut */
   line-height: 1.2;
   margin: 0 0 1rem 0;
+  color: hsl(var(--color-primary));
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.75rem; }
-h4 { font-size: 1.5rem; }
-h5 { font-size: 1.25rem; }
-h6 { font-size: 1rem; }
+/* Tailles de titres uniformes pour toutes les pages */
+h1 {
+  font-size: 2.5rem; /* 40px */
+  font-weight: 700; /* Bold pour h1 */
+}
+h2 {
+  font-size: 2rem; /* 32px */
+  font-weight: 600; /* SemiBold */
+}
+h3 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 600; /* SemiBold */
+}
+h4 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600; /* SemiBold */
+}
+h5 {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 600; /* SemiBold */
+}
+h6 {
+  font-size: 1rem; /* 16px */
+  font-weight: 600; /* SemiBold */
+}
 
-/* Utility Classes */
-.fp-bg { background: var(--fp-bg); }
-.fp-text { color: var(--fp-text); }
-.fp-accent { background: var(--fp-accent); color: var(--fp-bg); }
-.fp-accent-text { color: var(--fp-accent); }
+/* Corps de texte - Inter */
+p, span, label, input, button, select, textarea {
+  font-family: var(--font-body);
+}
 
-/* Button Base Style */
-.fp-button {
-  background: var(--fp-accent);
-  color: var(--fp-bg);
+/* Utility Classes - FocusTime */
+.focustime-bg { background: hsl(var(--color-background)); }
+.focustime-text { color: hsl(var(--color-text-primary)); }
+.focustime-text-secondary { color: hsl(var(--color-text-secondary)); }
+.focustime-primary { background: hsl(var(--color-primary)); color: white; }
+.focustime-action { background: hsl(var(--color-action)); color: white; }
+.focustime-alert { background: hsl(var(--color-alert)); color: white; }
+.focustime-warning { background: hsl(var(--color-warning)); color: white; }
+
+/* Button Base Style - FocusTime (Action = Bleu #0A2540) */
+.focustime-button, .btn-action {
+  background: hsl(var(--color-action));
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 500; /* Inter Medium */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.focustime-button:hover, .btn-action:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.focustime-button:disabled, .btn-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Button Stop - Rouge #EF4444 */
+.btn-stop {
+  background: hsl(var(--color-alert));
+  color: white;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
@@ -165,17 +256,31 @@ h6 { font-size: 1rem; }
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 1rem;
 }
 
-.fp-button:hover {
+.btn-stop:hover {
   opacity: 0.9;
   transform: translateY(-1px);
 }
 
-.fp-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
+/* Button Primary - Bleu Profond #0A2540 */
+.btn-primary {
+  background: hsl(var(--color-primary));
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 @theme inline {

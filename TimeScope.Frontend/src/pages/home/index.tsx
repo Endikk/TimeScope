@@ -194,11 +194,9 @@ export default function Home() {
       return
     }
 
-    const userId = "00000000-0000-0000-0000-000000000001"
-    
     const createDto: CreateTimeEntryDto = {
       taskId: newEntry.taskId,
-      userId: userId,
+      // userId removed - automatically assigned from authenticated user
       date: selectedDate,
       duration: convertHoursToDuration(newEntry.heures),
       notes: newEntry.description
@@ -230,12 +228,10 @@ export default function Home() {
   const handleEditEntry = async () => {
     if (!editingEntry) return
 
-    const userId = "00000000-0000-0000-0000-000000000001"
-    
     const updateDto: UpdateTimeEntryDto = {
       id: editingEntry.id,
       taskId: editFormData.taskId,
-      userId: userId,
+      // userId removed - automatically assigned from authenticated user
       date: editingEntry.date,
       duration: convertHoursToDuration(editFormData.heures),
       notes: editFormData.description
@@ -274,32 +270,30 @@ export default function Home() {
       alert("Veuillez sélectionner une date d'abord")
       return
     }
-    
+
     const currentDate = new Date(selectedDate)
     const previousDay = new Date(currentDate)
     previousDay.setDate(currentDate.getDate() - 1)
     const previousDayStr = previousDay.toISOString().split('T')[0]
-    
+
     const previousEntries = localEntries.filter(entry => entry.date === previousDayStr)
-    
+
     if (previousEntries.length === 0) {
       alert("Aucune entrée trouvée pour le jour précédent")
       return
     }
 
-    const userId = "00000000-0000-0000-0000-000000000001"
-    
     for (const entry of previousEntries) {
       const createDto: CreateTimeEntryDto = {
         taskId: entry.taskId,
-        userId: userId,
+        // userId removed - automatically assigned from authenticated user
         date: selectedDate,
         duration: convertHoursToDuration(entry.heures),
         notes: entry.description
       }
       await createTimeEntry(createDto)
     }
-    
+
     await refetchEntries()
     alert(`${previousEntries.length} entrée(s) copiée(s) depuis le jour précédent`)
   }
@@ -402,24 +396,24 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
-        <div className="max-w-7xl mx-auto space-y-6 p-6">
-          
+    <div className="flex flex-1 flex-col gap-6 p-6 pt-4">
+      <div className="min-h-[100vh] flex-1 md:min-h-min">
+        <div className="max-w-7xl mx-auto space-y-6">
+
           <HomeHeader />
 
-        <MonthlyStats
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          setSelectedMonth={setSelectedMonth}
-          setSelectedYear={setSelectedYear}
-          monthlyTotal={monthlyTotal}
-          workingDays={workingDays}
-          monthNames={monthNames}
-        />
+        <div className="bg-white rounded-xl border shadow-sm">
+          <div className="p-6">
+            <MonthlyStats
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              setSelectedMonth={setSelectedMonth}
+              setSelectedYear={setSelectedYear}
+              monthlyTotal={monthlyTotal}
+              workingDays={workingDays}
+              monthNames={monthNames}
+            />
 
-        <Card className="mb-6">
-          <CardContent className="pt-6">
             <QuickActions
               selectedDate={selectedDate}
               copyPreviousDay={copyPreviousDay}
@@ -437,9 +431,10 @@ export default function Home() {
               getIntensityClass={getIntensityClass}
               getTextColorClass={getTextColorClass}
               isNonWorkingDay={isNonWorkingDay}
+              getEntriesForDate={getEntriesForDate}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Formulaire de saisie */}
@@ -654,75 +649,6 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Messages d'aide */}
-        {selectedDate && getDailyTotal(selectedDate) > 8 && (
-          <Card className="mt-6 border-orange-200 bg-orange-50">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2 text-orange-800">
-                <AlertCircle className="h-5 w-5" />
-                <span className="font-medium">
-                  Attention : Vous avez saisi plus de 8h pour cette journée ({getDailyTotal(selectedDate).toFixed(1)}h total)
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {selectedDate && getDailyTotal(selectedDate) === 8 && (
-          <Card className="mt-6 border-green-200 bg-green-50">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2 text-green-800">
-                <CheckCircle className="h-5 w-5" />
-                <span className="font-medium">
-                  Parfait ! Vous avez atteint votre objectif de 8h pour cette journée.
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Légende du calendrier */}
-        <Card className="mt-6 border-accent bg-accent">
-          <CardContent className="p-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Légende du calendrier :</span>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-gray-100 rounded"></div>
-                    <span className="text-xs text-muted-foreground">0h</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-gray-200 rounded"></div>
-                    <span className="text-xs text-muted-foreground">1-2h</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-gray-300 rounded"></div>
-                    <span className="text-xs text-muted-foreground">2-4h</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-gray-400 rounded"></div>
-                    <span className="text-xs text-muted-foreground">4-6h</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-gray-500 rounded"></div>
-                    <span className="text-xs text-muted-foreground">6-8h</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-gray-600 rounded"></div>
-                    <span className="text-xs text-muted-foreground">8h+</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 pt-2 border-t">
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-gray-200 opacity-60 rounded border border-gray-300"></div>
-                  <span className="text-xs text-muted-foreground">Weekend / Jour férié (non cliquable)</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Edit Time Entry Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

@@ -32,11 +32,12 @@ export default function DashboardPageAPI() {
     return hours + (minutes / 60);
   };
 
-  // Calculate today's hours
+  // Calculate today's hours but if weekend, take message for weekend
   const today = new Date();
   const todayStr = format(today, 'yyyy-MM-dd');
   const todayEntries = timeEntries.filter(entry => entry.date.startsWith(todayStr));
   const todayHours = todayEntries.reduce((sum, entry) => sum + convertDurationToHours(entry.duration), 0);
+  const isWeekend = today.getDay() === 0 || today.getDay() === 6;
 
   // Calculate yesterday's hours for comparison
   const yesterday = subDays(today, 1);
@@ -66,7 +67,7 @@ export default function DashboardPageAPI() {
 
   // Completed tasks this month - using dueDate instead of endDate
   const completedTasksThisMonth = tasks.filter(task => {
-    if (task.status !== 'Terminé' || !task.dueDate) return false;
+    if (task.status !== 'Termine' || !task.dueDate) return false;
     const taskDate = new Date(task.dueDate);
     return taskDate >= monthStart && taskDate <= monthEnd;
   }).length;
@@ -124,10 +125,10 @@ export default function DashboardPageAPI() {
       color: colors[index] || colors[colors.length - 1]
     }));
 
-  // Task completion data - using French status values
-  const completedTasks = tasks.filter(t => t.status === 'Terminé').length;
-  const inProgressTasks = tasks.filter(t => t.status === 'En cours').length;
-  const todoTasks = tasks.filter(t => t.status === 'En attente').length;
+  // Task completion data - using backend enum values
+  const completedTasks = tasks.filter(t => t.status === 'Termine').length;
+  const inProgressTasks = tasks.filter(t => t.status === 'EnCours').length;
+  const todoTasks = tasks.filter(t => t.status === 'EnAttente').length;
 
   const taskCompletionData = [
     { status: 'Terminé', value: completedTasks, color: '#6366F1' },
@@ -265,26 +266,26 @@ export default function DashboardPageAPI() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="Heures aujourd'hui"
-          value={todayHours.toFixed(1) + 'h'}
+          value={isWeekend ? "C'est le week-end !" : todayHours.toFixed(1) + 'h'}
           icon={Clock}
           description="Temps enregistré"
-          trend={`${todayVsYesterdayNum > 0 ? '+' : ''}${todayVsYesterday}% vs hier`}
+          trend={yesterdayHours > 0 ? `${todayVsYesterday}% par rapport à hier` : 'Aucune donnée hier'}
           color="blue"
         />
         <StatCard
           title="Heures cette semaine"
           value={weekHours.toFixed(1) + 'h'}
           icon={Calendar}
-          description="Sur 40h prévues"
-          trend={`${((weekHours / 40) * 100).toFixed(0)}% complété`}
+          description="Sur 35h prévues"
+          trend={`${((weekHours / 35) * 100).toFixed(0)}% complété`}
           color="cyan"
         />
         <StatCard
           title="Heures ce mois"
           value={monthHours.toFixed(1) + 'h'}
           icon={Activity}
-          description="Sur 160h prévues"
-          trend={`${((monthHours / 160) * 100).toFixed(0)}% complété`}
+          description="Sur 140h prévues"
+          trend={`${((monthHours / 140) * 100).toFixed(0)}% complété`}
           color="purple"
         />
         <StatCard
