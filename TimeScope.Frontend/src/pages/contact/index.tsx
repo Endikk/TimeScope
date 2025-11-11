@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/layout/PageHeader"
 import { REQUEST_TYPES } from "@/pages/contact/components/RequestTypeCards"
 import { contactFormSchema, ContactFormValues, PRIORITY_LEVELS } from "@/lib/types/form"
 import { CURRENT_USER } from "@/lib/config/user"
+import { requestsService } from "@/lib/api/services/requests.service"
 import {
   Send,
   AlertTriangle,
@@ -24,7 +25,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 
 export default function Contact() {
   const [isSubmitted, setIsSubmitted] = React.useState(false)
-  
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [ticketId, setTicketId] = React.useState<string>("")
+
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -38,14 +41,41 @@ export default function Contact() {
     },
   })
 
-  function onSubmit(_data: ContactFormValues) {
-    // TODO: Send data to API
-    setIsSubmitted(true)
-    
-    setTimeout(() => {
-      form.reset()
-      setIsSubmitted(false)
-    }, 3000)
+  async function onSubmit(data: ContactFormValues) {
+    setIsSubmitting(true)
+    try {
+      const result = await requestsService.createRequest({
+        name: data.name,
+        email: data.email,
+        requestType: data.requestType,
+        title: data.title,
+        description: data.description,
+        justification: data.justification,
+        priority: data.priority,
+      })
+
+      setTicketId(result.id.substring(0, 8).toUpperCase())
+      setIsSubmitted(true)
+
+      setTimeout(() => {
+        form.reset({
+          requestType: "project" as const,
+          title: "",
+          description: "",
+          justification: "",
+          priority: "medium" as const,
+          name: CURRENT_USER.name,
+          email: CURRENT_USER.email,
+        })
+        setIsSubmitted(false)
+        setTicketId("")
+      }, 5000)
+    } catch (error) {
+      console.error("Failed to submit request:", error)
+      alert("Erreur lors de l'envoi de la demande. Veuillez réessayer.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (isSubmitted) {
@@ -67,7 +97,7 @@ export default function Contact() {
                     Vous recevrez une réponse sous 24-48h par email.
                   </p>
                   <Badge className="bg-green-100 text-green-800">
-                    Ticket #{Math.random().toString(36).substr(2, 8).toUpperCase()}
+                    Ticket #{ticketId || "PENDING"}
                   </Badge>
                 </div>
               </CardContent>
@@ -271,12 +301,21 @@ export default function Contact() {
 
                   {/* Boutons */}
                   <div className="flex justify-end space-x-4 pt-4">
-                    <Button type="button" variant="outline" onClick={() => form.reset()}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => form.reset()}
+                      disabled={isSubmitting}
+                    >
                       Effacer
                     </Button>
-                    <Button type="submit" className="bg-focustime-primary hover:opacity-90 flex items-center gap-2">
+                    <Button
+                      type="submit"
+                      className="bg-focustime-primary hover:opacity-90 flex items-center gap-2"
+                      disabled={isSubmitting}
+                    >
                       <Send className="h-4 w-4" />
-                      Envoyer la demande
+                      {isSubmitting ? "Envoi en cours..." : "Envoyer la demande"}
                     </Button>
                   </div>
                   

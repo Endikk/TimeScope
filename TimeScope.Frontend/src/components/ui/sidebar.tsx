@@ -15,6 +15,7 @@ import {
   Activity,
   Users,
   ChevronRight,
+  Inbox,
 } from "lucide-react"
 import { Link, useLocation } from "react-router"
 
@@ -784,6 +785,11 @@ const supportMenuItems = [
     title: "Contact",
     url: "/contact",
     icon: MessageSquare,
+  },
+  {
+    title: "Demandes",
+    url: "/request",
+    icon: Inbox,
   },
 ]
 
