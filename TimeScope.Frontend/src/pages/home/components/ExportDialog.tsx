@@ -71,9 +71,6 @@ export function ExportDialog({
       year: selectedYear,
       groupId: exportGroupId
     })
-
-    onOpenChange(false)
-    alert('Export PDF généré avec succès!')
   }
 
   return (

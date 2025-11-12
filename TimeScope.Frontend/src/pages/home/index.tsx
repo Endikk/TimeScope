@@ -30,7 +30,6 @@ import {
   AlertCircle,
   CheckCircle,
   Edit,
-  Loader2,
   X,
   Copy,
   Clipboard,
@@ -210,7 +209,6 @@ export default function Home() {
     const targetDates = selectedDates.size > 0 ? Array.from(selectedDates) : (selectedDate ? [selectedDate] : [])
 
     if (targetDates.length === 0 || !newEntry.groupeId || !newEntry.projetId || !newEntry.taskId || newEntry.heures <= 0) {
-      alert('Veuillez sélectionner une date et remplir tous les champs requis')
       return
     }
 
@@ -242,16 +240,6 @@ export default function Home() {
 
     await refetchEntries()
     setNewEntry({ groupeId: '', projetId: '', themeId: '', taskId: '', heures: 0, description: '' })
-
-    if (successCount > 0) {
-      let message = `${successCount} entrée(s) créée(s) avec succès!`
-      if (skippedCount > 0) {
-        message += ` (${skippedCount} jour(s) non travaillé(s) ignoré(s))`
-      }
-      alert(message)
-    } else {
-      alert('Erreur lors de la création des entrées de temps')
-    }
   }
 
   const openEditDialog = (entry: LocalTimeEntry) => {
@@ -284,7 +272,6 @@ export default function Home() {
       await refetchEntries()
       setIsEditDialogOpen(false)
       setEditingEntry(null)
-      alert('Entrée de temps modifiée avec succès!')
     }
   }
 
@@ -297,12 +284,10 @@ export default function Home() {
     }))
   }
 
-  const handleDeleteEntry = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée?')) {
+  const handleDeleteEntry = async (id: string) => {{
       const success = await deleteTimeEntry(id)
       if (success) {
         await refetchEntries()
-        alert('Entrée supprimée avec succès!')
       }
     }
   }
@@ -335,12 +320,10 @@ export default function Home() {
 
   const pasteEntries = async () => {
     if (copiedEntries.length === 0) {
-      alert("Aucune entrée dans le presse-papiers. Copiez d'abord des entrées.")
       return
     }
 
     if (selectedDates.size === 0) {
-      alert("Veuillez sélectionner au moins une date de destination")
       return
     }
 
@@ -370,7 +353,6 @@ export default function Home() {
     }
 
     await refetchEntries()
-    alert(`${successCount} entrée(s) collée(s) sur ${targetDates.length} date(s)`)
   }
 
   const handleClearSelection = () => {
@@ -435,21 +417,14 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-              <p className="mt-4 text-gray-600 font-semibold">Chargement des données...</p>
-              <div className="text-sm text-gray-500 space-y-1">
-                <p>Groupes: {groupsLoading ? '...' : `✓ ${groups.length}`}</p>
-                <p>Projets: {projectsLoading ? '...' : `✓ ${projects.length}`}</p>
-                <p>Tâches: {tasksLoading ? '...' : `✓ ${tasks.length}`}</p>
-                <p>Entrées: {entriesLoading ? '...' : `✓ ${timeEntries.length}`}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <video
+          src="/assets/videos/check.webm"
+          autoPlay
+          loop
+          muted
+          className="w-64 h-64"
+        />
       </div>
     )
   }

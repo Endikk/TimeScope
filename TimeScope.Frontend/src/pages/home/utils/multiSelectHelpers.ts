@@ -51,7 +51,6 @@ export function copySelectedEntries(
   setCopiedEntries: (entries: LocalTimeEntry[]) => void
 ): boolean {
   if (selectedDates.size === 0) {
-    alert("Veuillez sélectionner au moins une date")
     return false
   }
 
@@ -60,12 +59,10 @@ export function copySelectedEntries(
   )
 
   if (entriesToCopy.length === 0) {
-    alert("Aucune entrée trouvée pour les dates sélectionnées")
     return false
   }
 
   setCopiedEntries(entriesToCopy)
-  alert(`${entriesToCopy.length} entrée(s) copiée(s) depuis ${selectedDates.size} date(s)`)
   return true
 }
 

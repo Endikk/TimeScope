@@ -72,7 +72,6 @@ export default function Contact() {
       }, 5000)
     } catch (error) {
       console.error("Failed to submit request:", error)
-      alert("Erreur lors de l'envoi de la demande. Veuillez réessayer.")
     } finally {
       setIsSubmitting(false)
     }

@@ -253,7 +253,6 @@ export default function UserManagement() {
       })
     } catch (error) {
       console.error("Erreur lors de la création de l'utilisateur:", error)
-      alert("Erreur lors de la création de l'utilisateur")
     }
   }
 
@@ -274,19 +273,16 @@ export default function UserManagement() {
         setSelectedUser(null)
       } catch (error) {
         console.error("Erreur lors de la mise à jour de l'utilisateur:", error)
-        alert("Erreur lors de la mise à jour de l'utilisateur")
       }
     }
   }
 
-  const handleDeleteUser = async (userId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
+  const handleDeleteUser = async (userId: string) => {{
       try {
         await deleteUser(userId)
         await refetch()
       } catch (error) {
         console.error("Erreur lors de la suppression de l'utilisateur:", error)
-        alert("Erreur lors de la suppression de l'utilisateur")
       }
     }
   }
@@ -307,7 +303,6 @@ export default function UserManagement() {
         await refetch()
       } catch (error) {
         console.error("Erreur lors du changement de statut:", error)
-        alert("Erreur lors du changement de statut")
       }
     }
   }

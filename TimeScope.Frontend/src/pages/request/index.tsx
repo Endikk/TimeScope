@@ -149,7 +149,6 @@ export default function RequestsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette demande ?")) return
 
     try {
       await deleteRequest(id)

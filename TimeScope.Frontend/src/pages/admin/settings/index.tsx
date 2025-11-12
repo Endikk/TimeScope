@@ -78,7 +78,6 @@ export default function SettingsPageAPI() {
   const handleCreateSetting = async () => {
     try {
       await createSetting(newSetting);
-      alert(`Le paramètre "${newSetting.key}" a été créé avec succès.`);
       setIsCreateOpen(false);
       setNewSetting({
         key: '',
@@ -90,7 +89,6 @@ export default function SettingsPageAPI() {
       });
       refetch();
     } catch (error: any) {
-      alert(`Erreur: ${error.message || 'Impossible de créer le paramètre'}`);
     }
   };
 
@@ -99,36 +97,27 @@ export default function SettingsPageAPI() {
 
     try {
       await updateSetting(editingSetting.key, editedSetting);
-      alert(`Le paramètre "${editingSetting.key}" a été modifié avec succès.`);
       setIsEditOpen(false);
       setEditingSetting(null);
       refetch();
     } catch (error: any) {
-      alert(`Erreur: ${error.message || 'Impossible de modifier le paramètre'}`);
     }
   };
 
   const handleDeleteSetting = async (key: string) => {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer le paramètre "${key}" ?`)) return;
-
     try {
       await deleteSetting(key);
-      alert(`Le paramètre "${key}" a été supprimé avec succès.`);
       refetch();
     } catch (error: any) {
-      alert(`Erreur: ${error.message || 'Impossible de supprimer le paramètre'}`);
     }
   };
 
   const handleResetDefaults = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir réinitialiser tous les paramètres aux valeurs par défaut ? Cette action est irréversible.')) return;
 
     try {
       const result = await resetToDefaults();
-      alert(`${result.count} paramètres ont été réinitialisés aux valeurs par défaut.`);
       refetch();
     } catch (error: any) {
-      alert(`Erreur: ${error.message || 'Impossible de réinitialiser les paramètres'}`);
     }
   };
 

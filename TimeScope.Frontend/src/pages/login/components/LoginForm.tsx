@@ -73,7 +73,6 @@ export default function LoginForm() {
   };
 
   const handleForgotPassword = () => {
-    alert('Fonctionnalité de récupération de mot de passe à venir !');
   };
 
   return (

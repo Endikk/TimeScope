@@ -87,17 +87,14 @@ export default function ProjectsManagementPageSimple() {
       setIsAddProjectOpen(false);
       setNewProject({ name: '', description: '' });
     } catch (error) {
-      alert('Erreur lors de la création du projet');
     }
   };
 
-  const handleDeleteProject = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) {
+  const handleDeleteProject = async (id: string) => {{
       try {
         await deleteProject(id);
         await refetchProjects();
       } catch (error) {
-        alert('Erreur lors de la suppression');
       }
     }
   };
@@ -110,17 +107,14 @@ export default function ProjectsManagementPageSimple() {
       setIsAddGroupOpen(false);
       setNewGroup({ name: '', description: '' });
     } catch (error) {
-      alert('Erreur lors de la création du groupe');
     }
   };
 
-  const handleDeleteGroup = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) {
+  const handleDeleteGroup = async (id: string) => {{
       try {
         await deleteGroup(id);
         await refetchGroups();
       } catch (error) {
-        alert('Erreur lors de la suppression');
       }
     }
   };
@@ -129,7 +123,6 @@ export default function ProjectsManagementPageSimple() {
   const handleCreateTask = async () => {
     try {
       if (!newTask.projectId) {
-        alert('Veuillez sélectionner un projet');
         return;
       }
       await createTask(newTask);
@@ -145,17 +138,14 @@ export default function ProjectsManagementPageSimple() {
         estimatedTime: '00:00:00'
       });
     } catch (error) {
-      alert('Erreur lors de la création de la tâche');
     }
   };
 
-  const handleDeleteTask = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+  const handleDeleteTask = async (id: string) => {{
       try {
         await deleteTask(id);
         await refetchTasks();
       } catch (error) {
-        alert('Erreur lors de la suppression');
       }
     }
   };

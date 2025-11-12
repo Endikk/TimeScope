@@ -107,8 +107,7 @@ export default function TasksManagementPage() {
     await refetchTasks();
   };
 
-  const handleDeleteTask = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche?')) {
+  const handleDeleteTask = async (id: string) => {{
       await deleteTask(id);
       await refetchTasks();
     }
