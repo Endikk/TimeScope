@@ -6,6 +6,7 @@ import { useTimeEntries, useTimeEntryStats } from '@/lib/hooks/use-timeentries';
 import { useProjects } from '@/lib/hooks/use-projects';
 import { useTasks } from '@/lib/hooks/use-tasks';
 import { useUsers } from '@/lib/hooks/use-users';
+import { useHolidays, getEventsForDate } from '@/lib/hooks/use-holidays';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, subDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -21,23 +22,26 @@ interface ProjectData {
 }
 
 export default function DashboardPageAPI() {
+  const today = new Date();
   const { timeEntries, loading: entriesLoading, refetch: refetchEntries } = useTimeEntries();
   const { loading: statsLoading } = useTimeEntryStats();
   const { projects, loading: projectsLoading } = useProjects();
   const { tasks, loading: tasksLoading } = useTasks();
   const { users, loading: usersLoading } = useUsers();
+  const { holidays, loading: holidaysLoading } = useHolidays(today.getFullYear());
 
   const convertDurationToHours = (duration: string): number => {
     const [hours, minutes] = duration.split(':').map(Number);
     return hours + (minutes / 60);
   };
 
-  // Calculate today's hours but if weekend, take message for weekend
-  const today = new Date();
+  // Calculate today's hours but if weekend or holiday, show appropriate message
   const todayStr = format(today, 'yyyy-MM-dd');
   const todayEntries = timeEntries.filter(entry => entry.date.startsWith(todayStr));
   const todayHours = todayEntries.reduce((sum, entry) => sum + convertDurationToHours(entry.duration), 0);
   const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+  const todayHolidays = getEventsForDate(holidays, todayStr);
+  const isHoliday = todayHolidays.length > 0;
 
   // Calculate yesterday's hours for comparison
   const yesterday = subDays(today, 1);
@@ -169,7 +173,7 @@ export default function DashboardPageAPI() {
     refetchEntries();
   };
 
-  if (entriesLoading || statsLoading || projectsLoading || tasksLoading || usersLoading) {
+  if (entriesLoading || statsLoading || projectsLoading || tasksLoading || usersLoading || holidaysLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center space-y-4">
@@ -268,7 +272,7 @@ export default function DashboardPageAPI() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="Heures aujourd'hui"
-          value={isWeekend ? "C'est le week-end !" : todayHours.toFixed(1) + 'h'}
+          value={isHoliday ? "Férié !" : isWeekend ? "C'est le week-end !" : todayHours.toFixed(1) + 'h'}
           icon={Clock}
           description="Temps enregistré"
           trend={yesterdayHours > 0 ? `${todayVsYesterday}% par rapport à hier` : 'Aucune donnée hier'}

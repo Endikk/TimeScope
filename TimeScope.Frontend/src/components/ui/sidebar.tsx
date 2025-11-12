@@ -960,31 +960,39 @@ function AppSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {supportMenuItems.map((item, index) => (
-                <SidebarMenuItem
-                  key={item.title}
-                  className="animate-in fade-in slide-in-from-left-1 duration-300"
-                  style={{ animationDelay: `${index * 50 + 300}ms` }}
-                >
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                    className="group/item relative overflow-hidden"
+              {supportMenuItems.map((item, index) => {
+                // Filter "Demandes" menu item for Admin and Manager only
+                const isAdminOrManager = hasRole(["Admin", "Manager"])
+                if (item.url === "/request" && !isAdminOrManager) {
+                  return null
+                }
+
+                return (
+                  <SidebarMenuItem
+                    key={item.title}
+                    className="animate-in fade-in slide-in-from-left-1 duration-300"
+                    style={{ animationDelay: `${index * 50 + 300}ms` }}
                   >
-                    <LinkWithRef to={item.url}>
-                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
-                        <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
-                      </div>
-                      <span className="group-data-[collapsible=icon]:hidden font-medium">{item.title}</span>
-                      {/* Active indicator */}
-                      {isActive(item.url) && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1 duration-200" />
-                      )}
-                    </LinkWithRef>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.url)}
+                      tooltip={item.title}
+                      className="group/item relative overflow-hidden"
+                    >
+                      <LinkWithRef to={item.url}>
+                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
+                          <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
+                        </div>
+                        <span className="group-data-[collapsible=icon]:hidden font-medium">{item.title}</span>
+                        {/* Active indicator */}
+                        {isActive(item.url) && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1 duration-200" />
+                        )}
+                      </LinkWithRef>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

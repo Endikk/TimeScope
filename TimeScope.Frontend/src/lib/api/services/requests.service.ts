@@ -41,7 +41,17 @@ class RequestsService {
   private readonly baseUrl = '/requests';
 
   async createRequest(dto: CreateUserRequestDto): Promise<UserRequest> {
-    const response = await apiClient.post<UserRequest>(this.baseUrl, dto);
+    // Convert camelCase to PascalCase for backend
+    const command = {
+      Name: dto.name,
+      Email: dto.email,
+      RequestType: dto.requestType,
+      Title: dto.title,
+      Description: dto.description,
+      Justification: dto.justification,
+      Priority: dto.priority
+    };
+    const response = await apiClient.post<UserRequest>(this.baseUrl, command);
     return response.data;
   }
 
@@ -66,7 +76,13 @@ class RequestsService {
   }
 
   async updateRequestStatus(id: string, dto: UpdateRequestStatusDto): Promise<UserRequest> {
-    const response = await apiClient.patch<UserRequest>(`${this.baseUrl}/${id}/status`, dto);
+    // Convert camelCase to PascalCase for backend
+    const command = {
+      Status: dto.status,
+      AdminResponse: dto.adminResponse,
+      ReviewedBy: dto.reviewedBy
+    };
+    const response = await apiClient.patch<UserRequest>(`${this.baseUrl}/${id}/status`, command);
     return response.data;
   }
 

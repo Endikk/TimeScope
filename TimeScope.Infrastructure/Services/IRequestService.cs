@@ -13,18 +13,20 @@ public interface IRequestService
     Task DeleteRequestAsync(Guid id);
 }
 
-public record CreateUserRequestCommand(
-    string Name,
-    string Email,
-    string RequestType,
-    string Title,
-    string Description,
-    string Justification,
-    string Priority
-);
+public class CreateUserRequestCommand
+{
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string RequestType { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Justification { get; set; } = string.Empty;
+    public string Priority { get; set; } = string.Empty;
+}
 
-public record UpdateRequestStatusCommand(
-    string Status,
-    string? AdminResponse,
-    Guid? ReviewedBy
-);
+public class UpdateRequestStatusCommand
+{
+    public string Status { get; set; } = string.Empty;
+    public string? AdminResponse { get; set; }
+    public Guid? ReviewedBy { get; set; }
+}

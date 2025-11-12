@@ -25,20 +25,10 @@ public class RequestsController : ControllerBase
     /// </summary>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult<UserRequest>> CreateRequest([FromBody] CreateUserRequestDto dto)
+    public async Task<ActionResult<UserRequest>> CreateRequest([FromBody] CreateUserRequestCommand command)
     {
         try
         {
-            var command = new CreateUserRequestCommand(
-                Name: dto.Name,
-                Email: dto.Email,
-                RequestType: dto.RequestType,
-                Title: dto.Title,
-                Description: dto.Description,
-                Justification: dto.Justification,
-                Priority: dto.Priority
-            );
-
             var request = await _requestService.CreateRequestAsync(command);
 
             _logger.LogInformation("User request {RequestId} created successfully by {Email}", request.Id, request.Email);
@@ -153,20 +143,14 @@ public class RequestsController : ControllerBase
     /// </summary>
     [HttpPatch("{id}/status")]
     [Authorize(Roles = "Admin,Manager")]
-    public async Task<ActionResult<UserRequest>> UpdateRequestStatus(Guid id, [FromBody] UpdateRequestStatusDto dto)
+    public async Task<ActionResult<UserRequest>> UpdateRequestStatus(Guid id, [FromBody] UpdateRequestStatusCommand command)
     {
         try
         {
-            var command = new UpdateRequestStatusCommand(
-                Status: dto.Status,
-                AdminResponse: dto.AdminResponse,
-                ReviewedBy: dto.ReviewedBy
-            );
-
             var request = await _requestService.UpdateRequestStatusAsync(id, command);
 
             _logger.LogInformation("Request {RequestId} status updated to {Status} by {ReviewedBy}",
-                id, dto.Status, dto.ReviewedBy);
+                id, command.Status, command.ReviewedBy);
 
             return Ok(request);
         }
@@ -213,19 +197,3 @@ public class RequestsController : ControllerBase
     }
 }
 
-// DTOs pour les requêtes API
-public record CreateUserRequestDto(
-    string Name,
-    string Email,
-    string RequestType,
-    string Title,
-    string Description,
-    string Justification,
-    string Priority
-);
-
-public record UpdateRequestStatusDto(
-    string Status,
-    string? AdminResponse,
-    Guid? ReviewedBy
-);
