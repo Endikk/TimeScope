@@ -20,12 +20,12 @@ public class DatabaseMaintenanceController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("test-connections")]
-    public async Task<ActionResult> TestDatabaseConnections()
+    [HttpGet("health")]
+    public async Task<ActionResult> GetDatabaseHealth()
     {
         try
         {
-            var results = await _dbMaintenanceService.TestAllConnectionsAsync();
+            var results = await _dbMaintenanceService.GetDatabaseHealthAsync();
             return Ok(results);
         }
         catch (Exception ex)
@@ -35,12 +35,12 @@ public class DatabaseMaintenanceController : ControllerBase
         }
     }
 
-    [HttpGet("statistics")]
+    [HttpGet("stats")]
     public async Task<ActionResult> GetDatabaseStatistics()
     {
         try
         {
-            var stats = await _dbMaintenanceService.GetDatabaseStatisticsAsync();
+            var stats = await _dbMaintenanceService.GetDatabaseStatsAsync();
             return Ok(stats);
         }
         catch (Exception ex)

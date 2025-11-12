@@ -6,6 +6,7 @@ import { useTimeEntries, useTimeEntryStats } from '@/lib/hooks/use-timeentries';
 import { useProjects } from '@/lib/hooks/use-projects';
 import { useTasks } from '@/lib/hooks/use-tasks';
 import { useUsers } from '@/lib/hooks/use-users';
+import { useHolidays, getEventsForDate } from '@/lib/hooks/use-holidays';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, subDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -21,23 +22,26 @@ interface ProjectData {
 }
 
 export default function DashboardPageAPI() {
+  const today = new Date();
   const { timeEntries, loading: entriesLoading, refetch: refetchEntries } = useTimeEntries();
   const { loading: statsLoading } = useTimeEntryStats();
   const { projects, loading: projectsLoading } = useProjects();
   const { tasks, loading: tasksLoading } = useTasks();
   const { users, loading: usersLoading } = useUsers();
+  const { holidays, loading: holidaysLoading } = useHolidays(today.getFullYear());
 
   const convertDurationToHours = (duration: string): number => {
     const [hours, minutes] = duration.split(':').map(Number);
     return hours + (minutes / 60);
   };
 
-  // Calculate today's hours but if weekend, take message for weekend
-  const today = new Date();
+  // Calculate today's hours but if weekend or holiday, show appropriate message
   const todayStr = format(today, 'yyyy-MM-dd');
   const todayEntries = timeEntries.filter(entry => entry.date.startsWith(todayStr));
   const todayHours = todayEntries.reduce((sum, entry) => sum + convertDurationToHours(entry.duration), 0);
   const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+  const todayHolidays = getEventsForDate(holidays, todayStr);
+  const isHoliday = todayHolidays.length > 0;
 
   // Calculate yesterday's hours for comparison
   const yesterday = subDays(today, 1);
@@ -105,17 +109,19 @@ export default function DashboardPageAPI() {
 
   const monthlyData = getLast4Weeks();
 
-  // Project distribution data - simplified without projectId
+  // Project distribution data - with project names
   const projectHoursMap = new Map<string, number>();
   monthEntries.forEach(entry => {
     const task = tasks.find(t => t.id === entry.taskId);
     if (task && task.projectId) {
-      const current = projectHoursMap.get(task.projectId) || 0;
-      projectHoursMap.set(task.projectId, current + convertDurationToHours(entry.duration));
+      const project = projects.find(p => p.id === task.projectId);
+      const projectName = project ? project.name : 'Projet inconnu';
+      const current = projectHoursMap.get(projectName) || 0;
+      projectHoursMap.set(projectName, current + convertDurationToHours(entry.duration));
     }
   });
 
-  const colors = ['#6366F1', '#8B7CF6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE'];
+  const colors = ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE', '#EFF6FF'];
   const projectData: ProjectData[] = Array.from(projectHoursMap.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
@@ -131,10 +137,10 @@ export default function DashboardPageAPI() {
   const todoTasks = tasks.filter(t => t.status === 'EnAttente').length;
 
   const taskCompletionData = [
-    { status: 'Terminé', value: completedTasks, color: '#6366F1' },
-    { status: 'En cours', value: inProgressTasks, color: '#8B7CF6' },
-    { status: 'En attente', value: todoTasks, color: '#C4B5FD' }
-  ];
+    { status: 'Terminé', value: completedTasks, color: '#22C55E' },
+    { status: 'En cours', value: inProgressTasks, color: '#3B82F6' },
+    { status: 'En attente', value: todoTasks, color: '#94A3B8' }
+  ].filter(item => item.value > 0);
 
   // Recent activity from time entries
   const recentActivities = timeEntries
@@ -167,7 +173,7 @@ export default function DashboardPageAPI() {
     refetchEntries();
   };
 
-  if (entriesLoading || statsLoading || projectsLoading || tasksLoading || usersLoading) {
+  if (entriesLoading || statsLoading || projectsLoading || tasksLoading || usersLoading || holidaysLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center space-y-4">
@@ -266,7 +272,7 @@ export default function DashboardPageAPI() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="Heures aujourd'hui"
-          value={isWeekend ? "C'est le week-end !" : todayHours.toFixed(1) + 'h'}
+          value={isHoliday ? "Férié !" : isWeekend ? "C'est le week-end !" : todayHours.toFixed(1) + 'h'}
           icon={Clock}
           description="Temps enregistré"
           trend={yesterdayHours > 0 ? `${todayVsYesterday}% par rapport à hier` : 'Aucune donnée hier'}
@@ -278,7 +284,7 @@ export default function DashboardPageAPI() {
           icon={Calendar}
           description="Sur 35h prévues"
           trend={`${((weekHours / 35) * 100).toFixed(0)}% complété`}
-          color="cyan"
+          color="blue"
         />
         <StatCard
           title="Heures ce mois"
@@ -286,14 +292,14 @@ export default function DashboardPageAPI() {
           icon={Activity}
           description="Sur 140h prévues"
           trend={`${((monthHours / 140) * 100).toFixed(0)}% complété`}
-          color="purple"
+          color="blue"
         />
         <StatCard
           title="Projets actifs"
           value={projects.length}
           icon={FolderKanban}
           description="En cours"
-          color="orange"
+          color="blue"
         />
         <StatCard
           title="Tâches terminées"
@@ -301,14 +307,14 @@ export default function DashboardPageAPI() {
           icon={TrendingUp}
           description="Ce mois-ci"
           trend={`${completedTasks} au total`}
-          color="green"
+          color="blue"
         />
         <StatCard
           title="Membres d'équipe"
           value={users.length}
           icon={Users}
           description="Actifs"
-          color="pink"
+          color="blue"
         />
       </div>
 
@@ -328,7 +334,7 @@ export default function DashboardPageAPI() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="hours" fill="var(--fp-accent)" name="Heures" />
+                <Bar dataKey="hours" fill="#3B82F6" name="Heures" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -351,9 +357,11 @@ export default function DashboardPageAPI() {
                 <Line
                   type="monotone"
                   dataKey="hours"
-                  stroke="var(--fp-accent)"
-                  strokeWidth={2}
+                  stroke="#3B82F6"
+                  strokeWidth={3}
                   name="Heures"
+                  dot={{ fill: '#3B82F6', r: 5 }}
+                  activeDot={{ r: 7 }}
                 />
               </LineChart>
             </ResponsiveContainer>

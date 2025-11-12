@@ -19,11 +19,13 @@ public class AdminUnitOfWork : IAdminUnitOfWork
         Users = new Repository<User>(context);
         AppSettings = new Repository<AppSetting>(context);
         RefreshTokens = new Repository<RefreshToken>(context);
+        UserRequests = new Repository<UserRequest>(context);
     }
 
     public IRepository<User> Users { get; }
     public IRepository<AppSetting> AppSettings { get; }
     public IRepository<RefreshToken> RefreshTokens { get; }
+    public IRepository<UserRequest> UserRequests { get; }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

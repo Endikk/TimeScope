@@ -26,32 +26,32 @@ export default function AdminPageAPI() {
       value: statistics.statistics?.activeUsers.toString() || "0",
       total: statistics.statistics?.totalUsers.toString() || "0",
       icon: Users,
-      iconBg: "bg-gradient-to-br from-purple-500 to-indigo-600",
-      cardBg: "bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200"
+      iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
+      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
     },
     {
       title: "Projets en cours",
       value: statistics.statistics?.totalProjects.toString() || "0",
       total: null,
       icon: FolderOpen,
-      iconBg: "bg-gradient-to-br from-green-500 to-emerald-600",
-      cardBg: "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
+      iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
+      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
     },
     {
       title: "Entrées de temps",
       value: statistics.statistics?.totalTimeEntries.toString() || "0",
       total: null,
       icon: Clock,
-      iconBg: "bg-gradient-to-br from-blue-500 to-cyan-600",
-      cardBg: "bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200"
+      iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
+      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
     },
     {
       title: "Tâches totales",
       value: statistics.statistics?.totalTasks.toString() || "0",
       total: null,
       icon: BarChart3,
-      iconBg: "bg-gradient-to-br from-orange-500 to-amber-600",
-      cardBg: "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200"
+      iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
+      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
     }
   ]
 
@@ -60,43 +60,43 @@ export default function AdminPageAPI() {
       title: "Gestion des Utilisateurs",
       description: "Gérer les comptes et les permissions",
       icon: Users,
-      path: "/admin/user-management",
-      gradient: "from-violet-500 to-purple-600"
+      path: "/admin/user_management",
+      gradient: "from-blue-500 to-indigo-600"
     },
     {
       title: "Gestion des Projets",
       description: "Organiser les projets et les groupes",
       icon: FolderOpen,
       path: "/admin/projects",
-      gradient: "from-emerald-500 to-green-600"
+      gradient: "from-blue-500 to-indigo-600"
     },
     {
       title: "Rapports et Analyses",
       description: "Statistiques et logs d'audit",
       icon: BarChart3,
       path: "/admin/reports",
-      gradient: "from-blue-500 to-cyan-600"
+      gradient: "from-blue-500 to-indigo-600"
     },
     {
       title: "Monitoring Système",
       description: "Surveiller les ressources serveur",
       icon: Database,
-      path: "/admin/system-monitoring",
-      gradient: "from-orange-500 to-red-600"
+      path: "/admin/monitoring",
+      gradient: "from-blue-500 to-indigo-600"
     },
     {
       title: "Administration",
       description: "Gestion des bases de données",
       icon: Settings,
-      path: "/admin/administration",
-      gradient: "from-pink-500 to-rose-600"
+      path: "/admin/database-maintenance",
+      gradient: "from-blue-500 to-indigo-600"
     },
     {
       title: "Paramètres",
       description: "Configuration de l'application",
       icon: Settings,
       path: "/admin/settings",
-      gradient: "from-gray-500 to-slate-600"
+      gradient: "from-blue-500 to-indigo-600"
     }
   ]
 

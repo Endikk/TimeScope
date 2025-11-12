@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import HomePage from "@/pages/home"
 import ContactPage from "@/pages/contact"
+import RequestPage from "@/pages/request"
 import DashboardPage from "@/pages/dashboard"
 import TimesheetPage from "@/pages/timesheet"
 import LoginPage from "@/pages/login"
@@ -49,6 +50,7 @@ function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/monitoring" element={<MonitoringPage />} />
+        <Route path="/request" element={<RequestPage />} />
       </Route>
 
       {/* Routes Admin - Réservées uniquement aux Admin */}

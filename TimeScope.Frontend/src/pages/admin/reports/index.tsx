@@ -77,36 +77,36 @@ export default function ReportsPageAPI() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-green-900">Projets</CardTitle>
-              <FolderKanban className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium text-blue-900">Projets</CardTitle>
+              <FolderKanban className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-900">{statistics.totalProjects}</div>
-              <p className="text-xs text-green-700 mt-1">{statistics.totalGroups} groupes</p>
+              <div className="text-3xl font-bold text-blue-900">{statistics.totalProjects}</div>
+              <p className="text-xs text-blue-700 mt-1">{statistics.totalGroups} groupes</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-purple-900">Tâches</CardTitle>
-              <BarChart3 className="h-4 w-4 text-purple-600" />
+              <CardTitle className="text-sm font-medium text-blue-900">Tâches</CardTitle>
+              <BarChart3 className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-900">{statistics.totalTasks}</div>
-              <p className="text-xs text-purple-700 mt-1">{statistics.totalThemes} thèmes</p>
+              <div className="text-3xl font-bold text-blue-900">{statistics.totalTasks}</div>
+              <p className="text-xs text-blue-700 mt-1">{statistics.totalThemes} thèmes</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-orange-900">Entrées de temps</CardTitle>
-              <Clock className="h-4 w-4 text-orange-600" />
+              <CardTitle className="text-sm font-medium text-blue-900">Entrées de temps</CardTitle>
+              <Clock className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-orange-900">{statistics.totalTimeEntries}</div>
-              <p className="text-xs text-orange-700 mt-1">{statistics.totalAuditLogs} logs d'audit</p>
+              <div className="text-3xl font-bold text-blue-900">{statistics.totalTimeEntries}</div>
+              <p className="text-xs text-blue-700 mt-1">{statistics.totalAuditLogs} logs d'audit</p>
             </CardContent>
           </Card>
         </div>

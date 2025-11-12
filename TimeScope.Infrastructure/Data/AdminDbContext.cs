@@ -5,7 +5,7 @@ namespace TimeScope.Infrastructure.Data;
 
 /// <summary>
 /// DbContext pour la base de données Admin
-/// Gère: Users (utilisateurs, rôles, authentification)
+/// Gère: Users (utilisateurs, rôles, authentification), UserRequests (demandes utilisateurs)
 /// </summary>
 public class AdminDbContext : DbContext
 {
@@ -16,6 +16,7 @@ public class AdminDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<UserRequest> UserRequests => Set<UserRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,6 +75,34 @@ public class AdminDbContext : DbContext
 
             // Foreign key relationship (navigation ignored to avoid cross-db issues)
             entity.Ignore(e => e.User);
+        });
+
+        // Configure UserRequest
+        modelBuilder.Entity<UserRequest>(entity =>
+        {
+            entity.ToTable("UserRequests", "admin");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.RequestType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Description).IsRequired();
+            entity.Property(e => e.Justification).IsRequired();
+            entity.Property(e => e.Priority).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.AdminResponse).HasMaxLength(2000);
+            entity.Property(e => e.ReviewedBy);
+            entity.Property(e => e.ReviewedAt);
+
+            // Indexes for performance
+            entity.HasIndex(e => e.Email);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.Priority);
+            entity.HasIndex(e => e.RequestType);
+            entity.HasIndex(e => e.CreatedAt);
+
+            // Soft delete filter
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
     }
 }

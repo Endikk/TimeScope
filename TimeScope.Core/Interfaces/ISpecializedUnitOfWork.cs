@@ -4,13 +4,14 @@ namespace TimeScope.Core.Interfaces;
 
 /// <summary>
 /// Unit of Work pour la base de données Admin
-/// Gère les opérations sur les utilisateurs
+/// Gère les opérations sur les utilisateurs et les demandes utilisateurs
 /// </summary>
 public interface IAdminUnitOfWork : IDisposable
 {
     IRepository<User> Users { get; }
     IRepository<AppSetting> AppSettings { get; }
     IRepository<RefreshToken> RefreshTokens { get; }
+    IRepository<UserRequest> UserRequests { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

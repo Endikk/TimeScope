@@ -37,12 +37,9 @@ export default function AdministrationPageAPI() {
   };
 
   const handleCleanup = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir nettoyer les données supprimées (soft delete) ? Cette action ne peut pas être annulée.')) return;
-
     setIsCleaningUp(true);
     await cleanup.cleanup();
     setIsCleaningUp(false);
-    alert(`Nettoyage terminé!\n${cleanup.result?.totalRecordsRemoved || 0} enregistrements trouvés.`);
     refetchAll();
   };
 
@@ -50,9 +47,7 @@ export default function AdministrationPageAPI() {
     setIsExporting(true);
     try {
       await exportHook.exportData();
-      alert('Export réussi!');
     } catch (error: any) {
-      alert(`Erreur lors de l'export: ${error.message}`);
     }
     setIsExporting(false);
   };

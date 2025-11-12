@@ -151,17 +151,14 @@ export default function TimesheetPage() {
 
   const handleBulkDelete = async () => {
     if (selectedEntries.length === 0) {
-      alert('Veuillez sélectionner au moins une entrée');
       return;
     }
-
-    if (confirm(`Êtes-vous sûr de vouloir supprimer ${selectedEntries.length} entrée(s)?`)) {
+{
       for (const id of selectedEntries) {
         await deleteTimeEntry(id);
       }
       await refetchEntries();
       setSelectedEntries([]);
-      alert('Entrées supprimées avec succès!');
     }
   };
 

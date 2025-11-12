@@ -1,17 +1,21 @@
 
+import { FileDown } from "lucide-react"
+
 interface QuickActionsProps {
-  selectedDate: string | null
-  copyPreviousDay: () => void
-  repeatLastEntry: () => void
-  applyQuickTemplate: () => void
+  onExport?: () => void
+  onGoToToday?: () => void
 }
 
-export function QuickActions({
-  }: QuickActionsProps) {
+export function QuickActions({ onExport, onGoToToday }: QuickActionsProps) {
   const goToToday = () => {
+    if (onGoToToday) {
+      onGoToToday()
+      return
+    }
+
+    // Fallback behaviour if no callback provided: log the ISO date
     const today = new Date().toISOString().split('T')[0]
-    // Note: This would need to be passed up to parent or use a callback
-    console.log('Go to today:', today)
+    console.log('Go to today (no handler):', today)
   }
 
   return (
@@ -23,6 +27,15 @@ export function QuickActions({
             Aujourd'hui
           </button>
         <div className="flex items-center gap-2">
+          {onExport && (
+            <button
+              onClick={onExport}
+              className="px-4 py-2 text-sm border border-green-600 text-green-600 rounded-lg transition-colors flex items-center gap-2 hover:bg-green-50"
+            >
+              <FileDown className="h-4 w-4" />
+              Exporter PDF
+            </button>
+          )}
         </div>
       </div>
     </div>

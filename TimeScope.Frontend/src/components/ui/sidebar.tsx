@@ -15,7 +15,7 @@ import {
   Activity,
   Users,
   ChevronRight,
-  Crosshair,
+  Inbox,
 } from "lucide-react"
 import { Link, useLocation } from "react-router"
 
@@ -786,6 +786,11 @@ const supportMenuItems = [
     url: "/contact",
     icon: MessageSquare,
   },
+  {
+    title: "Demandes",
+    url: "/request",
+    icon: Inbox,
+  },
 ]
 
 function AppSidebar({
@@ -824,9 +829,11 @@ function AppSidebar({
                     alt="TimeScope Logo"
                     className="h-16 w-auto group-data-[collapsible=icon]:hidden transition-all duration-300 group-hover/logo:scale-105"
                   />
-                  <div className="hidden group-data-[collapsible=icon]:flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:rotate-3 animate-in fade-in">
-                    <Crosshair className="size-5 text-white animate-pulse" />
-                  </div>
+                  <img 
+                    src="/assets/images/3.svg"
+                    alt="TimeScope Icon"
+                    className="hidden group-data-[collapsible=icon]:flex aspect-square size-8 items-center justify-center rounded-lg  shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:rotate-3 animate-in fade-in"
+                  />
                 </div>
               </LinkWithRef>
             </SidebarMenuButton>
@@ -953,31 +960,39 @@ function AppSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {supportMenuItems.map((item, index) => (
-                <SidebarMenuItem
-                  key={item.title}
-                  className="animate-in fade-in slide-in-from-left-1 duration-300"
-                  style={{ animationDelay: `${index * 50 + 300}ms` }}
-                >
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                    className="group/item relative overflow-hidden"
+              {supportMenuItems.map((item, index) => {
+                // Filter "Demandes" menu item for Admin and Manager only
+                const isAdminOrManager = hasRole(["Admin", "Manager"])
+                if (item.url === "/request" && !isAdminOrManager) {
+                  return null
+                }
+
+                return (
+                  <SidebarMenuItem
+                    key={item.title}
+                    className="animate-in fade-in slide-in-from-left-1 duration-300"
+                    style={{ animationDelay: `${index * 50 + 300}ms` }}
                   >
-                    <LinkWithRef to={item.url}>
-                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
-                        <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
-                      </div>
-                      <span className="group-data-[collapsible=icon]:hidden font-medium">{item.title}</span>
-                      {/* Active indicator */}
-                      {isActive(item.url) && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1 duration-200" />
-                      )}
-                    </LinkWithRef>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.url)}
+                      tooltip={item.title}
+                      className="group/item relative overflow-hidden"
+                    >
+                      <LinkWithRef to={item.url}>
+                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
+                          <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
+                        </div>
+                        <span className="group-data-[collapsible=icon]:hidden font-medium">{item.title}</span>
+                        {/* Active indicator */}
+                        {isActive(item.url) && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1 duration-200" />
+                        )}
+                      </LinkWithRef>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

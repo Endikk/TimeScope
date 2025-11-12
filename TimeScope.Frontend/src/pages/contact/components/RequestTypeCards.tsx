@@ -2,10 +2,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Building2, Target, Calendar, MessageSquare } from "lucide-react"
 
 export const REQUEST_TYPES = [
-  { value: "projet", label: "Nouveau Projet", icon: Building2, color: "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-200" },
-  { value: "activite", label: "Nouvelle Activité", icon: Target, color: "bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-200" },
+  { value: "project", label: "Nouveau Projet", icon: Building2, color: "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-200" },
+  { value: "activity", label: "Nouvelle Activité", icon: Target, color: "bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-200" },
   { value: "template", label: "Nouveau Template", icon: Calendar, color: "bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg shadow-blue-200" },
-  { value: "autre", label: "Autre Demande", icon: MessageSquare, color: "bg-gradient-to-br from-orange-500 to-amber-600 shadow-lg shadow-orange-200" },
+  { value: "other", label: "Autre Demande", icon: MessageSquare, color: "bg-gradient-to-br from-orange-500 to-amber-600 shadow-lg shadow-orange-200" },
 ]
 
 export function RequestTypeCards() {

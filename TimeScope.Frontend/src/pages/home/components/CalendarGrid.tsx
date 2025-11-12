@@ -6,11 +6,16 @@ interface CalendarGridProps {
   selectedYear: number
   selectedDate: string | null
   setSelectedDate: (date: string) => void
-  getDailyTotal: (date: string) => number
-  getIntensityClass: (hours: number) => string
-  getTextColorClass: (hours: number) => string
+  getDailyTotal?: (date: string) => number
+  getIntensityClass?: (hours: number) => string
+  getTextColorClass?: (hours: number) => string
   isNonWorkingDay: (year: number, month: number, day: number) => boolean
   getEntriesForDate: (date: string) => any[]
+  viewMode: 'week' | 'month'
+  selectedWeek?: number
+  selectedDates?: Set<string>
+  onDateClick?: (dateStr: string, ctrlKey: boolean) => void
+  isMultiSelectMode?: boolean
 }
 
 export function CalendarGrid({
@@ -19,32 +24,65 @@ export function CalendarGrid({
   selectedYear,
   selectedDate,
   setSelectedDate,
-  getDailyTotal,
-  getIntensityClass,
-  getTextColorClass,
   isNonWorkingDay,
-  getEntriesForDate
+  getEntriesForDate,
+  viewMode,
+  selectedWeek = 0,
+  selectedDates = new Set(),
+  onDateClick,
+  isMultiSelectMode = false
 }: CalendarGridProps) {
   const weekDays = ["Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam.", "Dim."]
   const { holidays } = useHolidays(selectedYear)
 
+  // Générer les jours de la semaine sélectionnée
+  const getWeekDays = (weekIndex: number) => {
+    const firstDay = new Date(selectedYear, selectedMonth, 1)
+    const firstDayOfWeek = (firstDay.getDay() + 6) % 7 // Lundi = 0
+
+    // Calculer le premier lundi de la grille du calendrier
+    const firstMonday = new Date(firstDay)
+    firstMonday.setDate(1 - firstDayOfWeek)
+
+    // Ajouter les semaines pour arriver à la semaine sélectionnée
+    const startOfWeek = new Date(firstMonday)
+    startOfWeek.setDate(firstMonday.getDate() + (weekIndex * 7))
+
+    const weekDays: (number | null)[] = []
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeek)
+      day.setDate(startOfWeek.getDate() + i)
+
+      // Ne garder que les jours du mois sélectionné
+      if (day.getMonth() === selectedMonth && day.getFullYear() === selectedYear) {
+        weekDays.push(day.getDate())
+      } else {
+        weekDays.push(null)
+      }
+    }
+    return weekDays
+  }
+
+  // Choisir les jours à afficher selon le mode
+  const daysToDisplay = viewMode === 'week' ? getWeekDays(selectedWeek) : monthDays
+
   return (
     <div className="mt-4">
-      <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden">
+      <div className={`grid ${viewMode === 'week' ? 'grid-cols-7' : 'grid-cols-7'} gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden`}>
         {weekDays.map((day) => (
           <div key={day} className="bg-gray-50 text-center text-xs font-medium text-gray-700 py-3">
             {day}
           </div>
         ))}
 
-        {monthDays.map((day, index) => {
+        {daysToDisplay.map((day, index) => {
           if (!day) {
             return <div key={index} className="bg-white min-h-[100px]"></div>
           }
 
           const dateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-          const dayTotal = getDailyTotal(dateStr)
           const isSelected = selectedDate === dateStr
+          const isMultiSelected = selectedDates.has(dateStr)
           const isToday = dateStr === new Date().toISOString().split('T')[0]
           const isDisabled = isNonWorkingDay(selectedYear, selectedMonth, day)
           const events = getEventsForDate(holidays, dateStr)
@@ -55,16 +93,33 @@ export function CalendarGrid({
               key={`${selectedYear}-${selectedMonth}-${day}-${index}`}
               className={`
                 bg-white min-h-[100px] p-2 transition-all cursor-pointer relative
-                ${isSelected ? 'ring-2 ring-blue-500 ring-inset' : ''}
-                ${isToday && !isSelected ? 'ring-1 ring-blue-300 ring-inset' : ''}
+                ${isMultiSelected ? 'ring-2 ring-green-500 ring-inset bg-green-50' : ''}
+                ${isSelected && !isMultiSelected ? 'ring-2 ring-blue-500 ring-inset' : ''}
+                ${isToday && !isSelected && !isMultiSelected ? 'ring-1 ring-blue-300 ring-inset' : ''}
                 ${isDisabled ? 'bg-gray-50 opacity-50' : 'hover:bg-gray-50'}
+                ${isMultiSelectMode ? 'hover:ring-2 hover:ring-green-300' : ''}
               `}
-              onClick={() => !isDisabled && setSelectedDate(dateStr)}
+              onClick={(e) => {
+                if (!isDisabled) {
+                  if (onDateClick) {
+                    onDateClick(dateStr, e.ctrlKey || e.metaKey)
+                  } else {
+                    setSelectedDate(dateStr)
+                  }
+                }
+              }}
             >
               <div className="flex justify-between items-start mb-1">
                 <span className={`text-sm font-medium ${isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-gray-700'}`}>
                   {day}
                 </span>
+                {isMultiSelected && (
+                  <div className="bg-green-500 text-white rounded-full p-0.5">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1">

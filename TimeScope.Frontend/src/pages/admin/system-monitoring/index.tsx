@@ -37,7 +37,6 @@ export default function SystemMonitoringPage() {
 
   const handleForceGC = async () => {
     await forceGC();
-    alert('Garbage Collection déclenché avec succès!');
     refetchMetrics();
   };
 
