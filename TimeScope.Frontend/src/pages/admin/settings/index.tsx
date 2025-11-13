@@ -115,7 +115,7 @@ export default function SettingsPageAPI() {
   const handleResetDefaults = async () => {
 
     try {
-      const result = await resetToDefaults();
+      await resetToDefaults();
       refetch();
     } catch (error: any) {
     }
@@ -150,25 +150,27 @@ export default function SettingsPageAPI() {
   }, {} as Record<string, AppSetting[]>);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-3 md:p-8 space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
-          <p className="text-muted-foreground mt-2">
+      <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Paramètres</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-2">
             Configuration de l'application
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handleResetDefaults} variant="outline" size="sm" disabled={mutating}>
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={handleResetDefaults} variant="outline" size="sm" disabled={mutating} className="w-full sm:w-auto">
             <RotateCcw className="w-4 h-4 mr-2" />
-            Réinitialiser
+            <span className="hidden sm:inline">Réinitialiser</span>
+            <span className="sm:hidden">Réinit.</span>
           </Button>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
-                Nouveau Paramètre
+                <span className="hidden sm:inline">Nouveau Paramètre</span>
+                <span className="sm:hidden">Nouveau</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -262,7 +264,7 @@ export default function SettingsPageAPI() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
               <Label>Recherche</Label>
               <Input

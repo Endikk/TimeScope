@@ -430,14 +430,14 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6 pt-4">
+    <div className="flex flex-1 flex-col gap-4 md:gap-6 p-3 md:p-6 pt-2 md:pt-4">
       <div className="min-h-[100vh] flex-1 md:min-h-min">
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
 
           <HomeHeader />
 
         <div className="bg-white rounded-xl border shadow-sm">
-          <div className="p-6">
+          <div className="p-3 md:p-6">
             <MonthlyStats
               selectedMonth={selectedMonth}
               selectedYear={selectedYear}
@@ -505,14 +505,14 @@ export default function Home() {
             />
 
             {/* Multi-select control panel */}
-            <div className="mt-4 border-t pt-4">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-3">
+            <div className="mt-3 md:mt-4 border-t pt-3 md:pt-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 md:gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full sm:w-auto">
                   <Button
                     variant={isMultiSelectMode ? "default" : "outline"}
                     size="sm"
                     onClick={handleToggleMultiSelectMode}
-                    className={isMultiSelectMode ? "bg-green-600 hover:bg-green-700" : ""}
+                    className={`${isMultiSelectMode ? "bg-green-600 hover:bg-green-700" : ""} w-full sm:w-auto text-xs md:text-sm`}
                   >
                     {isMultiSelectMode ? (
                       <>
@@ -529,32 +529,34 @@ export default function Home() {
 
                   {selectedDates.size > 0 && (
                     <>
-                      <Badge variant="secondary" className="text-sm px-3 py-1">
-                        {selectedDates.size} date{selectedDates.size > 1 ? 's' : ''} sélectionnée{selectedDates.size > 1 ? 's' : ''}
+                      <Badge variant="secondary" className="text-xs md:text-sm px-2 md:px-3 py-1 whitespace-nowrap">
+                        {selectedDates.size} date{selectedDates.size > 1 ? 's' : ''}
                       </Badge>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleClearSelection}
-                        className="text-gray-600 hover:text-gray-900"
+                        className="text-gray-600 hover:text-gray-900 w-full sm:w-auto text-xs md:text-sm"
                       >
                         <X className="h-4 w-4 mr-1" />
-                        Effacer sélection
+                        <span className="hidden sm:inline">Effacer sélection</span>
+                        <span className="sm:hidden">Effacer</span>
                       </Button>
                     </>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleCopySelectedEntries}
                     disabled={selectedDates.size === 0}
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 w-full sm:w-auto text-xs md:text-sm"
                   >
                     <Copy className="h-4 w-4 mr-2" />
-                    Copier les entrées
+                    <span className="hidden sm:inline">Copier les entrées</span>
+                    <span className="sm:hidden">Copier</span>
                     {selectedDates.size > 0 && ` (${selectedDates.size})`}
                   </Button>
 
@@ -563,10 +565,11 @@ export default function Home() {
                     size="sm"
                     onClick={pasteEntries}
                     disabled={copiedEntries.length === 0 || selectedDates.size === 0}
-                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                    className="text-green-600 hover:text-green-700 hover:bg-green-50 w-full sm:w-auto text-xs md:text-sm"
                   >
                     <Clipboard className="h-4 w-4 mr-2" />
-                    Coller les entrées
+                    <span className="hidden sm:inline">Coller les entrées</span>
+                    <span className="sm:hidden">Coller</span>
                     {copiedEntries.length > 0 && ` (${copiedEntries.length})`}
                   </Button>
                 </div>
@@ -593,7 +596,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Formulaire de saisie */}
           <Card>
             <CardHeader>

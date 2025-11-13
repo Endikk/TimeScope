@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,16 +76,16 @@ export default function DatabaseMaintenancePageAPI() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 md:px-4 py-4 md:py-8">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Maintenance des Bases de Données</h1>
-          <p className="text-muted-foreground">
+      <div className="mb-4 md:mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Maintenance des Bases de Données</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Surveillance et optimisation des 4 bases de données PostgreSQL
           </p>
         </div>
-        <Button onClick={handleRefresh} variant="outline">
+        <Button onClick={handleRefresh} variant="outline" className="w-full md:w-auto shrink-0">
           <RefreshCw className="h-4 w-4 mr-2" />
           Actualiser
         </Button>
@@ -109,7 +108,7 @@ export default function DatabaseMaintenancePageAPI() {
                 Vérifié le {new Date(health.adminDatabase.checkedAt).toLocaleString('fr-FR')}
               </span>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-2">
@@ -153,7 +152,7 @@ export default function DatabaseMaintenancePageAPI() {
 
       {/* Database Statistics */}
       {stats && (
-        <div className="grid gap-6 md:grid-cols-2 mb-6">
+        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 mb-4 md:mb-6">
           {/* Admin Database */}
           <Card>
             <CardHeader>

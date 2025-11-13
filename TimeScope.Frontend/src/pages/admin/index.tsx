@@ -101,45 +101,47 @@ export default function AdminPageAPI() {
   ]
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 md:px-4 py-4 md:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
-            <p className="text-muted-foreground">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4 md:mb-8">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Administration</h1>
+            <p className="text-sm md:text-base text-muted-foreground">
               Gérez votre instance TimeScope
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge variant="secondary">v1.0.0</Badge>
-            <Button onClick={refetchAll} variant="outline" size="sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className="text-xs md:text-sm">v1.0.0</Badge>
+            <Button onClick={refetchAll} variant="outline" size="sm" className="w-full sm:w-auto">
               <RefreshCw className="mr-2 h-4 w-4" />
-              Actualiser
+              <span className="hidden sm:inline">Actualiser</span>
+              <span className="sm:hidden">Actualis.</span>
             </Button>
-            <Button onClick={() => navigate('/admin/settings')}>
+            <Button onClick={() => navigate('/admin/settings')} size="sm" className="w-full sm:w-auto">
               <Settings className="mr-2 h-4 w-4" />
-              Paramètres
+              <span className="hidden sm:inline">Paramètres</span>
+              <span className="sm:hidden">Param.</span>
             </Button>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-3 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4 md:mb-8">
           {stats.map((stat, index) => {
             const IconComponent = stat.icon
             return (
               <Card key={index} className={`${stat.cardBg} border shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105`}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 md:px-6">
+                  <CardTitle className="text-xs md:text-sm font-medium text-gray-700 truncate pr-2">
                     {stat.title}
                   </CardTitle>
-                  <div className={`${stat.iconBg} p-2.5 rounded-lg shadow-lg`}>
-                    <IconComponent className="h-5 w-5 text-white" />
+                  <div className={`${stat.iconBg} p-2 md:p-2.5 rounded-lg shadow-lg shrink-0`}>
+                    <IconComponent className="h-4 w-4 md:h-5 md:w-5 text-white" />
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <CardContent className="px-3 md:px-6">
+                  <div className="text-xl md:text-2xl font-bold text-gray-900">{stat.value}</div>
                   {stat.total && (
                     <p className="text-xs text-gray-600 mt-1">
                       sur {stat.total} total
@@ -153,8 +155,8 @@ export default function AdminPageAPI() {
 
         {/* Quick Links Grid */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Accès Rapide</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Accès Rapide</h2>
+          <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {quickLinks.map((link, index) => {
               const IconComponent = link.icon
               return (
@@ -163,14 +165,14 @@ export default function AdminPageAPI() {
                   className="hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 border-2"
                   onClick={() => navigate(link.path)}
                 >
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <div className={`bg-gradient-to-br ${link.gradient} p-3 rounded-lg`}>
-                        <IconComponent className="h-6 w-6 text-white" />
+                  <CardHeader className="px-3 md:px-6 py-3 md:py-6">
+                    <div className="flex items-center gap-3">
+                      <div className={`bg-gradient-to-br ${link.gradient} p-2.5 md:p-3 rounded-lg shrink-0`}>
+                        <IconComponent className="h-5 w-5 md:h-6 md:w-6 text-white" />
                       </div>
-                      <div>
-                        <CardTitle className="text-base">{link.title}</CardTitle>
-                        <CardDescription className="text-sm mt-1">
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="text-sm md:text-base truncate">{link.title}</CardTitle>
+                        <CardDescription className="text-xs md:text-sm mt-1">
                           {link.description}
                         </CardDescription>
                       </div>
