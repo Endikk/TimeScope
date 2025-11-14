@@ -71,10 +71,10 @@ const DayDetailsPopover: React.FC<DayDetailsPopoverProps> = ({
   return (
     <Card className="w-[420px] p-0 shadow-lg border-0 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-blue-500 p-4 text-white">
-        <div className="flex items-center gap-2 mb-1">
-          <Calendar className="h-5 w-5" />
-          <h3 className="font-semibold text-lg capitalize">
+      <div className="bg-blue-500  p-4 text-white">
+        <div className="flex items-center justify-center gap-2">
+          <Calendar className="h-5 w-5 flex-shrink-0" />
+          <h3 className="font-semibold text-lg capitalize leading-none">
             {formatDate(date)}
           </h3>
         </div>
@@ -124,7 +124,7 @@ const DayDetailsPopover: React.FC<DayDetailsPopoverProps> = ({
                     {companyEntries.map((entry) => (
                       <div
                         key={entry.id}
-                        className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                        className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-blue-50 transition-colors"
                       >
                         <ListTodo className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0 space-y-1">
