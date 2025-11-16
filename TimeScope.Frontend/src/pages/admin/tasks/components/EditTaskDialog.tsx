@@ -1,0 +1,49 @@
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { TaskForm } from './TaskForm';
+import { CreateTaskDto } from '@/lib/api/services';
+
+interface EditTaskDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  formData: CreateTaskDto;
+  setFormData: (data: CreateTaskDto) => void;
+  onSave: () => void;
+  projects: any[];
+  users: any[];
+}
+
+export function EditTaskDialog({
+  isOpen,
+  onOpenChange,
+  formData,
+  setFormData,
+  onSave,
+  projects,
+  users
+}: EditTaskDialogProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Modifier la tâche</DialogTitle>
+          <DialogDescription>
+            Modifiez les informations de la tâche
+          </DialogDescription>
+        </DialogHeader>
+        <TaskForm
+          formData={formData}
+          setFormData={setFormData}
+          projects={projects}
+          users={users}
+        />
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Annuler
+          </Button>
+          <Button onClick={onSave}>Enregistrer</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
