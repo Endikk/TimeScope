@@ -169,6 +169,50 @@ public class UsersController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    /// <summary>
+    /// Change le mot de passe d'un utilisateur
+    /// Accessible par l'utilisateur lui-même
+    /// </summary>
+    [HttpPost("{id}/change-password")]
+    public async Task<ActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto dto)
+    {
+        try
+        {
+            var command = new ChangePasswordCommand
+            {
+                UserId = id,
+                CurrentPassword = dto.CurrentPassword,
+                NewPassword = dto.NewPassword
+            };
+
+            await _userService.ChangePasswordAsync(command);
+
+            _logger.LogInformation("Password changed successfully for user {UserId}", id);
+
+            return Ok(new { message = "Password changed successfully" });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized password change attempt for user {UserId}", id);
+            return Unauthorized(new { message = "Current password is incorrect" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while changing password for user {UserId}", id);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing password for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
 }
 
 // DTOs
@@ -184,5 +228,14 @@ public record UpdateUserDto(
     string? FirstName,
     string? LastName,
     string? Email,
-    bool? IsActive
+    bool? IsActive,
+    string? PhoneNumber,
+    string? JobTitle,
+    string? Department,
+    DateTime? HireDate
+);
+
+public record ChangePasswordDto(
+    string CurrentPassword,
+    string NewPassword
 );

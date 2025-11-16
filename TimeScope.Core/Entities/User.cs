@@ -10,6 +10,12 @@ public class User : BaseEntity
     public UserRole Role { get; set; }
     public bool IsActive { get; set; } = true;
 
+    // Professional Information
+    public string? PhoneNumber { get; set; }
+    public string? JobTitle { get; set; }
+    public string? Department { get; set; }
+    public DateTime? HireDate { get; set; }
+
     // Relations
     public ICollection<WorkTask> AssignedTasks { get; set; } = new List<WorkTask>();
     public ICollection<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();

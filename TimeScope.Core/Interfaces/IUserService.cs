@@ -9,6 +9,7 @@ public interface IUserService
     Task<bool> DeleteUserAsync(Guid id);
     Task<User?> GetUserByIdAsync(Guid id);
     Task<IEnumerable<User>> GetAllUsersAsync();
+    Task ChangePasswordAsync(ChangePasswordCommand command);
 }
 
 public class CreateUserCommand
@@ -26,4 +27,15 @@ public class UpdateUserCommand
     public string? LastName { get; set; }
     public string? Email { get; set; }
     public bool? IsActive { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? JobTitle { get; set; }
+    public string? Department { get; set; }
+    public DateTime? HireDate { get; set; }
+}
+
+public class ChangePasswordCommand
+{
+    public Guid UserId { get; set; }
+    public string CurrentPassword { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
 }

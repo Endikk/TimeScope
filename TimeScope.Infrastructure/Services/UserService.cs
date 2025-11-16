@@ -86,6 +86,27 @@ public class UserService : IUserService
             user.IsActive = command.IsActive.Value;
         }
 
+        // Update professional information
+        if (command.PhoneNumber != null)
+        {
+            user.PhoneNumber = string.IsNullOrWhiteSpace(command.PhoneNumber) ? null : command.PhoneNumber.Trim();
+        }
+
+        if (command.JobTitle != null)
+        {
+            user.JobTitle = string.IsNullOrWhiteSpace(command.JobTitle) ? null : command.JobTitle.Trim();
+        }
+
+        if (command.Department != null)
+        {
+            user.Department = string.IsNullOrWhiteSpace(command.Department) ? null : command.Department.Trim();
+        }
+
+        if (command.HireDate.HasValue)
+        {
+            user.HireDate = command.HireDate.Value;
+        }
+
         await _adminUow.Users.UpdateAsync(user);
         await _adminUow.SaveChangesAsync();
 
@@ -115,6 +136,31 @@ public class UserService : IUserService
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
         return await _adminUow.Users.GetAllAsync();
+    }
+
+    public async Task ChangePasswordAsync(ChangePasswordCommand command)
+    {
+        var user = await _adminUow.Users.GetByIdAsync(command.UserId);
+
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"User with ID {command.UserId} not found");
+        }
+
+        // Verify current password
+        if (!_passwordHasher.VerifyPassword(command.CurrentPassword, user.PasswordHash))
+        {
+            throw new UnauthorizedAccessException("Current password is incorrect");
+        }
+
+        // Validate new password
+        ValidatePassword(command.NewPassword);
+
+        // Hash new password
+        user.PasswordHash = _passwordHasher.HashPassword(command.NewPassword);
+
+        await _adminUow.Users.UpdateAsync(user);
+        await _adminUow.SaveChangesAsync();
     }
 
     #region Private Helper Methods - Logique métier
