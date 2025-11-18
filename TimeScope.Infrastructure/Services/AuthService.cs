@@ -83,7 +83,11 @@ public class AuthService : IAuthService
                     Email = user.Email,
                     Avatar = user.Avatar,
                     Role = user.Role.ToString(),
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    PhoneNumber = user.PhoneNumber,
+                    JobTitle = user.JobTitle,
+                    Department = user.Department,
+                    HireDate = user.HireDate
                 }
             };
         }
@@ -151,7 +155,11 @@ public class AuthService : IAuthService
                 Email = user.Email,
                 Avatar = user.Avatar,
                 Role = user.Role.ToString(),
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                PhoneNumber = user.PhoneNumber,
+                JobTitle = user.JobTitle,
+                Department = user.Department,
+                HireDate = user.HireDate
             }
         };
     }

@@ -1,6 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
-import { Database } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 interface DatabaseStats {
@@ -22,7 +21,7 @@ interface DatabaseStatsCardProps {
   }>;
 }
 
-export function DatabaseStatsCard({ title, description, icon: Icon, iconColor, stats, rows }: DatabaseStatsCardProps) {
+export function DatabaseStatsCard({ title, description, icon: Icon, iconColor, rows }: DatabaseStatsCardProps) {
   return (
     <Card>
       <CardHeader>

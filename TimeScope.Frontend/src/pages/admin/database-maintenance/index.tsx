@@ -52,10 +52,10 @@ export default function DatabaseMaintenancePageAPI() {
             iconColor="text-blue-500"
             stats={stats.adminDatabase}
             rows={[
-              { label: 'Total utilisateurs', value: stats.adminDatabase.usersCount },
-              { label: 'Utilisateurs actifs', value: stats.adminDatabase.activeUsersCount },
-              { label: 'Total enregistrements', value: stats.adminDatabase.totalRecords },
-              { label: 'Dernière mise à jour', value: stats.adminDatabase.lastUpdated, isDate: true },
+              { label: 'Total utilisateurs', value: stats.adminDatabase.usersCount ?? 0 },
+              { label: 'Utilisateurs actifs', value: stats.adminDatabase.activeUsersCount ?? 0 },
+              { label: 'Total enregistrements', value: stats.adminDatabase.totalRecords ?? 0 },
+              { label: 'Dernière mise à jour', value: stats.adminDatabase.lastUpdated ?? '', isDate: true },
             ]}
           />
 
@@ -66,10 +66,10 @@ export default function DatabaseMaintenancePageAPI() {
             iconColor="text-purple-500"
             stats={stats.projectsDatabase}
             rows={[
-              { label: 'Projets', value: stats.projectsDatabase.projectsCount },
-              { label: 'Groupes', value: stats.projectsDatabase.groupsCount },
-              { label: 'Thèmes', value: stats.projectsDatabase.themesCount },
-              { label: 'Total enregistrements', value: stats.projectsDatabase.totalRecords },
+              { label: 'Projets', value: stats.projectsDatabase.projectsCount ?? 0 },
+              { label: 'Groupes', value: stats.projectsDatabase.groupsCount ?? 0 },
+              { label: 'Thèmes', value: stats.projectsDatabase.themesCount ?? 0 },
+              { label: 'Total enregistrements', value: stats.projectsDatabase.totalRecords ?? 0 },
             ]}
           />
 
@@ -80,9 +80,9 @@ export default function DatabaseMaintenancePageAPI() {
             iconColor="text-green-500"
             stats={stats.timeDatabase}
             rows={[
-              { label: 'Tâches', value: stats.timeDatabase.tasksCount },
-              { label: 'Entrées de temps', value: stats.timeDatabase.timeEntriesCount },
-              { label: 'Total enregistrements', value: stats.timeDatabase.totalRecords },
+              { label: 'Tâches', value: stats.timeDatabase.tasksCount ?? 0 },
+              { label: 'Entrées de temps', value: stats.timeDatabase.timeEntriesCount ?? 0 },
+              { label: 'Total enregistrements', value: stats.timeDatabase.totalRecords ?? 0 },
             ]}
           />
 
@@ -93,7 +93,7 @@ export default function DatabaseMaintenancePageAPI() {
             iconColor="text-orange-500"
             stats={stats.reportsDatabase}
             rows={[
-              { label: 'Total enregistrements', value: stats.reportsDatabase.totalRecords },
+              { label: 'Total enregistrements', value: stats.reportsDatabase.totalRecords ?? 0 },
               { label: '', value: 'En cours de développement' },
             ]}
           />

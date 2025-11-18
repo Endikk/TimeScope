@@ -5,6 +5,18 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+// Helper function to format date for input type="date"
+const formatDateForInput = (dateString?: string): string => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+};
+
 interface User {
   id: string
   name: string
@@ -12,6 +24,8 @@ interface User {
   phone?: string
   role: "Admin" | "Manager" | "Employee"
   department?: string
+  jobTitle?: string
+  hireDate?: string
   status: "active" | "inactive"
   joinDate: string
   avatar?: string
@@ -34,7 +48,7 @@ export function EditUserDialog({
 }: EditUserDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Modifier l'utilisateur</DialogTitle>
           <DialogDescription>
@@ -64,16 +78,36 @@ export function EditUserDialog({
               <Label htmlFor="edit-phone">Téléphone</Label>
               <Input
                 id="edit-phone"
-                value={selectedUser.phone}
+                value={selectedUser.phone || ''}
                 onChange={(e) => onUserChange({...selectedUser, phone: e.target.value})}
+                placeholder="+33 6 12 34 56 78"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-jobTitle">Poste</Label>
+              <Input
+                id="edit-jobTitle"
+                value={selectedUser.jobTitle || ''}
+                onChange={(e) => onUserChange({...selectedUser, jobTitle: e.target.value})}
+                placeholder="Développeur Full Stack"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-department">Département</Label>
               <Input
                 id="edit-department"
-                value={selectedUser.department}
+                value={selectedUser.department || ''}
                 onChange={(e) => onUserChange({...selectedUser, department: e.target.value})}
+                placeholder="Développement"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-hireDate">Date d'embauche</Label>
+              <Input
+                id="edit-hireDate"
+                type="date"
+                value={formatDateForInput(selectedUser.hireDate)}
+                onChange={(e) => onUserChange({...selectedUser, hireDate: e.target.value})}
               />
             </div>
             <div className="grid gap-2">

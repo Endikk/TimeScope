@@ -80,7 +80,11 @@ public class UsersController : ControllerBase
                 LastName = dto.LastName,
                 Email = dto.Email,
                 Password = dto.Password,
-                Role = dto.Role.ToString()
+                Role = dto.Role,
+                PhoneNumber = dto.PhoneNumber,
+                JobTitle = dto.JobTitle,
+                Department = dto.Department,
+                HireDate = dto.HireDate
             };
 
             var user = await _userService.CreateUserAsync(command);
@@ -111,12 +115,25 @@ public class UsersController : ControllerBase
     {
         try
         {
+            DateTime? hireDate = null;
+            if (!string.IsNullOrEmpty(dto.HireDate))
+            {
+                if (DateTime.TryParse(dto.HireDate, out var parsedDate))
+                {
+                    hireDate = parsedDate;
+                }
+            }
+
             var command = new UpdateUserCommand
             {
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                IsActive = dto.IsActive
+                IsActive = dto.IsActive,
+                PhoneNumber = dto.PhoneNumber,
+                JobTitle = dto.JobTitle,
+                Department = dto.Department,
+                HireDate = hireDate
             };
 
             await _userService.UpdateUserAsync(id, command);
@@ -213,6 +230,31 @@ public class UsersController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    /// <summary>
+    /// Récupère les statistiques d'activité d'un utilisateur
+    /// Accessible par tous les utilisateurs authentifiés
+    /// </summary>
+    [HttpGet("{id}/stats")]
+    public async Task<ActionResult<UserStatsDto>> GetUserStats(Guid id)
+    {
+        try
+        {
+            var stats = await _userService.GetUserStatsAsync(id);
+
+            if (stats == null)
+            {
+                return NotFound($"User with ID {id} not found");
+            }
+
+            return Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving stats for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
 }
 
 // DTOs
@@ -221,7 +263,11 @@ public record CreateUserDto(
     string LastName,
     string Email,
     string Password,
-    UserRole Role
+    string Role,
+    string? PhoneNumber = null,
+    string? JobTitle = null,
+    string? Department = null,
+    string? HireDate = null
 );
 
 public record UpdateUserDto(
@@ -232,10 +278,17 @@ public record UpdateUserDto(
     string? PhoneNumber,
     string? JobTitle,
     string? Department,
-    DateTime? HireDate
+    string? HireDate
 );
 
 public record ChangePasswordDto(
     string CurrentPassword,
     string NewPassword
+);
+
+public record UserStatsDto(
+    int TasksCompleted,
+    int TasksInProgress,
+    double TotalHours,
+    int ProjectsCount
 );

@@ -7,11 +7,19 @@ public class UserService : IUserService
 {
     private readonly IAdminUnitOfWork _adminUow;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly ITimeUnitOfWork? _timeUow;
+    private readonly IProjectsUnitOfWork? _projectsUow;
 
-    public UserService(IAdminUnitOfWork adminUow, IPasswordHasher passwordHasher)
+    public UserService(
+        IAdminUnitOfWork adminUow,
+        IPasswordHasher passwordHasher,
+        ITimeUnitOfWork? timeUow = null,
+        IProjectsUnitOfWork? projectsUow = null)
     {
         _adminUow = adminUow;
         _passwordHasher = passwordHasher;
+        _timeUow = timeUow;
+        _projectsUow = projectsUow;
     }
 
     public async Task<User> CreateUserAsync(CreateUserCommand command)
@@ -30,6 +38,13 @@ public class UserService : IUserService
             throw new ArgumentException("Last name is required");
         }
 
+        // Vérifier si l'email existe déjà
+        var existingUser = await _adminUow.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == command.Email.Trim().ToLowerInvariant());
+        if (existingUser != null)
+        {
+            throw new ArgumentException("Un utilisateur avec cet email existe déjà");
+        }
+
         // Logique métier : hash du password avec BCrypt
         var passwordHash = _passwordHasher.HashPassword(command.Password);
 
@@ -39,14 +54,31 @@ public class UserService : IUserService
             throw new ArgumentException($"Invalid role: {command.Role}");
         }
 
+        // Parse HireDate if provided
+        DateTime? hireDate = null;
+        if (!string.IsNullOrWhiteSpace(command.HireDate))
+        {
+            if (DateTime.TryParse(command.HireDate, out var parsedDate))
+            {
+                // Convert to UTC for PostgreSQL compatibility
+                hireDate = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc);
+            }
+        }
+
         var user = new User
         {
+            Id = Guid.NewGuid(),
+            CreatedAt = DateTime.UtcNow,
             FirstName = command.FirstName.Trim(),
             LastName = command.LastName.Trim(),
             Email = command.Email.Trim().ToLowerInvariant(),
             PasswordHash = passwordHash,
             Role = userRole,
-            IsActive = true
+            IsActive = true,
+            PhoneNumber = command.PhoneNumber,
+            JobTitle = command.JobTitle,
+            Department = command.Department,
+            HireDate = hireDate
         };
 
         await _adminUow.Users.AddAsync(user);
@@ -104,7 +136,8 @@ public class UserService : IUserService
 
         if (command.HireDate.HasValue)
         {
-            user.HireDate = command.HireDate.Value;
+            // Convert to UTC for PostgreSQL compatibility
+            user.HireDate = DateTime.SpecifyKind(command.HireDate.Value, DateTimeKind.Utc);
         }
 
         await _adminUow.Users.UpdateAsync(user);
@@ -161,6 +194,73 @@ public class UserService : IUserService
 
         await _adminUow.Users.UpdateAsync(user);
         await _adminUow.SaveChangesAsync();
+    }
+
+    public async Task<UserStatsDto?> GetUserStatsAsync(Guid userId)
+    {
+        // Verify user exists
+        var user = await _adminUow.Users.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return null;
+        }
+
+        int tasksCompleted = 0;
+        int tasksInProgress = 0;
+        double totalHours = 0;
+        int projectsCount = 0;
+
+        // Get tasks statistics if TimeUnitOfWork is available
+        if (_timeUow != null)
+        {
+            try
+            {
+                var allTasks = await _timeUow.Tasks.GetAllAsync();
+                var userTasks = allTasks.Where(t => t.AssigneeId == userId).ToList();
+
+                tasksCompleted = userTasks.Count(t => t.Status == Core.Entities.TaskStatus.Termine);
+                tasksInProgress = userTasks.Count(t => t.Status == Core.Entities.TaskStatus.EnCours);
+
+                // Calculate total hours from time entries
+                var allTimeEntries = await _timeUow.TimeEntries.GetAllAsync();
+                var userTimeEntries = allTimeEntries.Where(te => te.UserId == userId);
+
+                foreach (var entry in userTimeEntries)
+                {
+                    totalHours += entry.Duration.TotalHours;
+                }
+            }
+            catch
+            {
+                // If TimeDB is not available, use default values
+            }
+        }
+
+        // Get projects count if ProjectsUnitOfWork is available
+        if (_projectsUow != null)
+        {
+            try
+            {
+                var allProjects = await _projectsUow.Projects.GetAllAsync();
+                // Count all projects (since Project entity doesn't have OwnerId or Members)
+                // This could be enhanced when the schema supports user-project relationships
+                projectsCount = allProjects.Count();
+            }
+            catch
+            {
+                // If ProjectsDB is not available, use default value
+            }
+        }
+
+        var stats = new UserStatsDto
+        {
+            TasksCompleted = tasksCompleted,
+            TasksInProgress = tasksInProgress,
+            TotalHours = Math.Round(totalHours, 2),
+            ProjectsCount = projectsCount
+        };
+
+        return stats;
     }
 
     #region Private Helper Methods - Logique métier

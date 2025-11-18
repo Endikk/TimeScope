@@ -21,6 +21,10 @@ interface UserFiltersProps {
     email: string
     password: string
     role: "Admin" | "Manager" | "Employee"
+    phoneNumber?: string
+    jobTitle?: string
+    department?: string
+    hireDate?: string
   }
   onNewUserChange: (user: any) => void
   onAddUser: () => void
@@ -83,7 +87,7 @@ export function UserFilters({
                 Ajouter
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Ajouter un utilisateur</DialogTitle>
                 <DialogDescription>
@@ -144,6 +148,43 @@ export function UserFilters({
                       <SelectItem value="Admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phoneNumber">Téléphone</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    value={newUser.phoneNumber || ''}
+                    onChange={(e) => onNewUserChange({...newUser, phoneNumber: e.target.value})}
+                    placeholder="+33 6 12 34 56 78"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="jobTitle">Poste</Label>
+                  <Input
+                    id="jobTitle"
+                    value={newUser.jobTitle || ''}
+                    onChange={(e) => onNewUserChange({...newUser, jobTitle: e.target.value})}
+                    placeholder="Développeur Full Stack"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="department">Département</Label>
+                  <Input
+                    id="department"
+                    value={newUser.department || ''}
+                    onChange={(e) => onNewUserChange({...newUser, department: e.target.value})}
+                    placeholder="Développement"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="hireDate">Date d'embauche</Label>
+                  <Input
+                    id="hireDate"
+                    type="date"
+                    value={newUser.hireDate || ''}
+                    onChange={(e) => onNewUserChange({...newUser, hireDate: e.target.value})}
+                  />
                 </div>
               </div>
               <DialogFooter>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Edit, Trash2, Users, Calendar, AlertCircle, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, Users, Calendar, AlertCircle, TrendingUp } from 'lucide-react';
 
 interface TasksTableProps {
   filteredTasks: any[];

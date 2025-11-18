@@ -1,11 +1,6 @@
-import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
 
-interface SettingsHeaderProps {
-  onRefresh: () => void;
-}
-
-export function SettingsHeader({ onRefresh }: SettingsHeaderProps) {
+export function SettingsHeader() {
   return (
     <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
       <div className="min-w-0 flex-1">

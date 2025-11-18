@@ -6,7 +6,7 @@ import { AdminSettingsCard } from './components/AdminSettingsCard';
 import { UserSettingsCard } from './components/UserSettingsCard';
 
 export default function SettingsPageAPI() {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   // Paramètres Admin (globaux pour toute l'application)
   const [adminSettings, setAdminSettings] = useState({
@@ -104,21 +104,6 @@ export default function SettingsPageAPI() {
     console.log(`Préférence utilisateur mise à jour: ${key} = ${value}`);
   };
 
-  const handleSaveAllSettings = async () => {
-    setLoading(true);
-
-    try {
-      // Simuler un appel API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Tous les paramètres enregistrés:', { adminSettings, userSettings });
-      alert('Paramètres enregistrés avec succès !');
-    } catch (error) {
-      console.error('Erreur lors de l\'enregistrement:', error);
-      alert('Erreur lors de l\'enregistrement des paramètres');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -133,7 +118,7 @@ export default function SettingsPageAPI() {
 
   return (
     <div className="p-3 md:p-8 space-y-4 md:space-y-6">
-      <SettingsHeader onRefresh={handleSaveAllSettings} />
+      <SettingsHeader />
 
       <Tabs defaultValue="admin" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">

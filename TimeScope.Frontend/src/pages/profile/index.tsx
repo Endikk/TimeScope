@@ -1,33 +1,89 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileHeader } from './components/ProfileHeader';
-import { PersonalInfoCard } from './components/PersonalInfoCard';
+import { PersonalInfoCard, PersonalInfoData } from './components/PersonalInfoCard';
 import { ProfessionalInfoCard } from './components/ProfessionalInfoCard';
 import { ActivityStatsCard } from './components/ActivityStatsCard';
 import { SecurityCard } from './components/SecurityCard';
-import axios from 'axios';
+import { profileApiService, UserStatsResponse } from '@/lib/api/services/profile.service';
+import { tokenStorage } from '@/lib/api/services/auth.service';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const [isEditingPersonalInfo, setIsEditingPersonalInfo] = useState(false);
+  const [activityStats, setActivityStats] = useState<UserStatsResponse>({
+    tasksCompleted: 0,
+    tasksInProgress: 0,
+    totalHours: 0,
+    projectsCount: 0,
+  });
 
-  // Mock statistics data - in real app, this would come from API
-  const activityStats = {
-    tasksCompleted: 47,
-    tasksInProgress: 8,
-    totalHours: 156,
-    projectsCount: 5,
+  // Load user statistics on mount
+  useEffect(() => {
+    const loadStats = async () => {
+      if (!user?.id) return;
+
+      try {
+        const stats = await profileApiService.getUserStats(user.id);
+        setActivityStats(stats);
+      } catch (error) {
+        console.error('Failed to load user stats:', error);
+        // Keep default stats (0) on error
+      }
+    };
+
+    loadStats();
+  }, [user?.id]);
+
+  const handleUploadPhoto = async () => {
+    if (!user?.id) return;
+
+    // Create file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        await profileApiService.uploadAvatar(user.id, file);
+        alert('Photo de profil mise à jour avec succès');
+        // TODO: Refresh user data in context
+      } catch (error) {
+        console.error('Failed to upload avatar:', error);
+        alert('Erreur lors du téléchargement de la photo');
+      }
+    };
+
+    input.click();
   };
 
-  const handleUploadPhoto = () => {
-    // TODO: Implement photo upload functionality
-    console.log('Upload photo');
-  };
+  const handleSavePersonalInfo = async (data: PersonalInfoData) => {
+    if (!user?.id) {
+      throw new Error('User not found');
+    }
 
-  const handleSavePersonalInfo = () => {
-    // TODO: Call API to save changes
-    setIsEditingPersonalInfo(false);
-    console.log('Save personal info');
+    try {
+      const updatedUser = await profileApiService.updateProfile(user.id, data);
+
+      // Update user in localStorage
+      tokenStorage.save(
+        tokenStorage.getToken() || '',
+        tokenStorage.getRefreshToken() || '',
+        updatedUser
+      );
+
+      setIsEditingPersonalInfo(false);
+      alert('Informations mises à jour avec succès');
+
+      // Reload page to refresh user context
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      throw new Error('Erreur lors de la mise à jour du profil');
+    }
   };
 
   const handleEditPersonalInfo = () => {
@@ -40,20 +96,17 @@ export default function ProfilePage() {
     }
 
     try {
-      await axios.post(`/api/users/${user.id}/change-password`, {
+      await profileApiService.changePassword(user.id, {
         currentPassword,
         newPassword,
       });
 
       alert('Mot de passe changé avec succès');
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          throw new Error('Mot de passe actuel incorrect');
-        }
-        throw new Error(error.response?.data?.message || 'Erreur lors du changement de mot de passe');
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        throw new Error('Mot de passe actuel incorrect');
       }
-      throw error;
+      throw new Error(error?.response?.data?.message || 'Erreur lors du changement de mot de passe');
     }
   };
 
@@ -77,7 +130,6 @@ export default function ProfilePage() {
             />
             <ProfessionalInfoCard user={user} />
             <SecurityCard
-              userId={user?.id || ''}
               onPasswordChange={handlePasswordChange}
             />
           </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useUsers, useUserMutations } from "@/lib/hooks/use-users"
 import type { User as ApiUser, CreateUserDto } from "@/lib/api/services/users.service"
+import { roleNumberToString } from "@/lib/api/services/users.service"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StatsCards, UserFilters, UsersTable, EditUserDialog } from './components'
@@ -12,6 +13,8 @@ interface User {
   phone?: string
   role: "Admin" | "Manager" | "Employee"
   department?: string
+  jobTitle?: string
+  hireDate?: string
   status: "active" | "inactive"
   joinDate: string
   avatar?: string
@@ -21,11 +24,13 @@ const apiUserToLocal = (apiUser: ApiUser): User => ({
   id: apiUser.id,
   name: `${apiUser.firstName} ${apiUser.lastName}`,
   email: apiUser.email,
-  phone: "",
-  role: apiUser.role,
-  department: "",
+  phone: apiUser.phoneNumber || "",
+  role: roleNumberToString(apiUser.role),
+  department: apiUser.department || "",
+  jobTitle: apiUser.jobTitle || "",
+  hireDate: apiUser.hireDate || "",
   status: apiUser.isActive ? "active" : "inactive",
-  joinDate: new Date().toISOString(),
+  joinDate: apiUser.hireDate || new Date().toISOString(),
   avatar: apiUser.avatar
 })
 
@@ -137,12 +142,20 @@ export default function UserManagement() {
     email: string
     password: string
     role: "Admin" | "Manager" | "Employee"
+    phoneNumber?: string
+    jobTitle?: string
+    department?: string
+    hireDate?: string
   }>({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     role: "Employee",
+    phoneNumber: "",
+    jobTitle: "",
+    department: "",
+    hireDate: "",
   })
 
   useEffect(() => {
@@ -179,7 +192,11 @@ export default function UserManagement() {
         lastName: newUser.lastName,
         email: newUser.email,
         password: newUser.password,
-        role: newUser.role
+        role: newUser.role,
+        phoneNumber: newUser.phoneNumber,
+        jobTitle: newUser.jobTitle,
+        department: newUser.department,
+        hireDate: newUser.hireDate
       }
       await createUser(createDto)
       await refetch()
@@ -190,6 +207,10 @@ export default function UserManagement() {
         email: "",
         password: "",
         role: "Employee",
+        phoneNumber: "",
+        jobTitle: "",
+        department: "",
+        hireDate: "",
       })
     } catch (error) {
       console.error("Erreur lors de la création de l'utilisateur:", error)
@@ -206,7 +227,11 @@ export default function UserManagement() {
           firstName,
           lastName,
           email: selectedUser.email,
-          isActive: selectedUser.status === "active"
+          isActive: selectedUser.status === "active",
+          phoneNumber: selectedUser.phone,
+          jobTitle: selectedUser.jobTitle,
+          department: selectedUser.department,
+          hireDate: selectedUser.hireDate || undefined
         })
         await refetch()
         setIsEditDialogOpen(false)

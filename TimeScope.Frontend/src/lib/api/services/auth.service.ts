@@ -29,6 +29,11 @@ export interface User {
   role: 'Admin' | 'Manager' | 'Employee';
   /** Whether the user account is active */
   isActive: boolean;
+  /** Professional Information */
+  phoneNumber?: string;
+  jobTitle?: string;
+  department?: string;
+  hireDate?: string;
 }
 
 /**

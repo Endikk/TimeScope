@@ -7,11 +7,10 @@ import { Shield, Lock, Key, Smartphone } from 'lucide-react';
 import { useState } from 'react';
 
 interface SecurityCardProps {
-  userId: string;
   onPasswordChange: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
-export function SecurityCard({ userId, onPasswordChange }: SecurityCardProps) {
+export function SecurityCard({ onPasswordChange }: SecurityCardProps) {
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');

@@ -2,23 +2,81 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { User, Mail, Phone, MapPin, Calendar, Save } from 'lucide-react';
+import { User as UserIcon, Mail, Phone, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User } from '@/lib/api/services/auth.service';
 
 interface PersonalInfoCardProps {
-  user: any;
+  user: User | null;
   isEditing: boolean;
-  onSave: () => void;
+  onSave: (data: PersonalInfoData) => Promise<void>;
   onEdit: () => void;
 }
 
+export interface PersonalInfoData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+}
+
 export function PersonalInfoCard({ user, isEditing, onSave, onEdit }: PersonalInfoCardProps) {
+  const [formData, setFormData] = useState<PersonalInfoData>({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phoneNumber: user?.phoneNumber || '',
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber || '',
+      });
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    setError('');
+    setIsLoading(true);
+
+    try {
+      await onSave(formData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset form data
+    if (user) {
+      setFormData({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber || '',
+      });
+    }
+    setError('');
+    onEdit();
+  };
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
+              <UserIcon className="h-5 w-5 text-primary" />
               Informations Personnelles
             </CardTitle>
             <CardDescription>
@@ -33,28 +91,36 @@ export function PersonalInfoCard({ user, isEditing, onSave, onEdit }: PersonalIn
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {error && (
+          <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="firstName" className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
+              <UserIcon className="h-4 w-4 text-muted-foreground" />
               Prénom
             </Label>
             <Input
               id="firstName"
-              defaultValue={user?.firstName}
-              disabled={!isEditing}
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              disabled={!isEditing || isLoading}
               className={!isEditing ? 'bg-muted' : ''}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="lastName" className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
+              <UserIcon className="h-4 w-4 text-muted-foreground" />
               Nom
             </Label>
             <Input
               id="lastName"
-              defaultValue={user?.lastName}
-              disabled={!isEditing}
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              disabled={!isEditing || isLoading}
               className={!isEditing ? 'bg-muted' : ''}
             />
           </div>
@@ -68,8 +134,9 @@ export function PersonalInfoCard({ user, isEditing, onSave, onEdit }: PersonalIn
           <Input
             id="email"
             type="email"
-            defaultValue={user?.email}
-            disabled={!isEditing}
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            disabled={!isEditing || isLoading}
             className={!isEditing ? 'bg-muted' : ''}
           />
         </div>
@@ -82,47 +149,22 @@ export function PersonalInfoCard({ user, isEditing, onSave, onEdit }: PersonalIn
           <Input
             id="phone"
             type="tel"
-            defaultValue={user?.phone || '+33 6 12 34 56 78'}
-            disabled={!isEditing}
-            className={!isEditing ? 'bg-muted' : ''}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="address" className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            Adresse
-          </Label>
-          <Input
-            id="address"
-            defaultValue={user?.address || '123 Rue de la Paix, 75001 Paris'}
-            disabled={!isEditing}
-            className={!isEditing ? 'bg-muted' : ''}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="birthdate" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            Date de naissance
-          </Label>
-          <Input
-            id="birthdate"
-            type="date"
-            defaultValue={user?.birthdate || '1990-01-01'}
-            disabled={!isEditing}
+            value={formData.phoneNumber}
+            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+            disabled={!isEditing || isLoading}
+            placeholder="+33 6 12 34 56 78"
             className={!isEditing ? 'bg-muted' : ''}
           />
         </div>
 
         {isEditing && (
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => onEdit()}>
+            <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
               Annuler
             </Button>
-            <Button onClick={onSave}>
+            <Button onClick={handleSave} disabled={isLoading}>
               <Save className="h-4 w-4 mr-2" />
-              Enregistrer
+              {isLoading ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </div>
         )}

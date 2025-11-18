@@ -6,11 +6,28 @@ export interface User {
   lastName: string;
   email: string;
   avatar?: string;
-  role: 'Admin' | 'Manager' | 'Employee';
+  role: number | 'Admin' | 'Manager' | 'Employee';
   isActive: boolean;
+  phoneNumber?: string;
+  jobTitle?: string;
+  department?: string;
+  hireDate?: string;
   // Internal fields - not exposed in API responses
   // createdAt, updatedAt, isDeleted are managed server-side
 }
+
+// Helper function to convert role number to string
+export const roleNumberToString = (role: number | string): 'Admin' | 'Manager' | 'Employee' => {
+  if (typeof role === 'string') {
+    return role as 'Admin' | 'Manager' | 'Employee';
+  }
+  switch (role) {
+    case 0: return 'Admin';
+    case 1: return 'Manager';
+    case 2: return 'Employee';
+    default: return 'Employee';
+  }
+};
 
 export interface CreateUserDto {
   firstName: string;
@@ -18,6 +35,10 @@ export interface CreateUserDto {
   email: string;
   password: string;
   role: 'Admin' | 'Manager' | 'Employee';
+  phoneNumber?: string;
+  jobTitle?: string;
+  department?: string;
+  hireDate?: string;
 }
 
 export interface UpdateUserDto {
@@ -25,6 +46,10 @@ export interface UpdateUserDto {
   lastName?: string;
   email?: string;
   isActive?: boolean;
+  phoneNumber?: string;
+  jobTitle?: string;
+  department?: string;
+  hireDate?: string;
 }
 
 class UsersService {
@@ -58,7 +83,7 @@ class UsersService {
    * Mettre à jour un utilisateur
    */
   async updateUser(id: string, user: UpdateUserDto): Promise<void> {
-    await apiClient.put(`${this.endpoint}/${id}`, { ...user, id });
+    await apiClient.put(`${this.endpoint}/${id}`, user);
   }
 
   /**
