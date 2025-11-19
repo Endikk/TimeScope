@@ -87,4 +87,36 @@ export const profileApiService = {
 
     return response.data;
   },
+
+  /**
+   * Upload user banner
+   */
+  async uploadBanner(userId: string, file: File): Promise<User> {
+    const formData = new FormData();
+    formData.append('banner', file);
+
+    const response = await apiClient.post<User>(`/users/${userId}/banner`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return response.data;
+  },
+
+  /**
+   * Delete user avatar
+   */
+  async deleteAvatar(userId: string): Promise<User> {
+    const response = await apiClient.delete<User>(`/users/${userId}/avatar`);
+    return response.data;
+  },
+
+  /**
+   * Delete user banner
+   */
+  async deleteBanner(userId: string): Promise<User> {
+    const response = await apiClient.delete<User>(`/users/${userId}/banner`);
+    return response.data;
+  },
 };

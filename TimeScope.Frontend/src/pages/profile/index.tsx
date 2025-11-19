@@ -48,10 +48,25 @@ export default function ProfilePage() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('La taille du fichier ne doit pas dépasser 5 Mo');
+        return;
+      }
+
       try {
-        await profileApiService.uploadAvatar(user.id, file);
+        const updatedUser = await profileApiService.uploadAvatar(user.id, file);
+
+        // Update user in localStorage
+        tokenStorage.save(
+          tokenStorage.getToken() || '',
+          tokenStorage.getRefreshToken() || '',
+          updatedUser
+        );
+
         alert('Photo de profil mise à jour avec succès');
-        // TODO: Refresh user data in context
+        // Reload page to refresh user context
+        window.location.reload();
       } catch (error) {
         console.error('Failed to upload avatar:', error);
         alert('Erreur lors du téléchargement de la photo');
@@ -59,6 +74,92 @@ export default function ProfilePage() {
     };
 
     input.click();
+  };
+
+  const handleUploadBanner = async () => {
+    if (!user?.id) return;
+
+    // Create file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      // Validate file size (max 10MB for banners)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('La taille du fichier ne doit pas dépasser 10 Mo');
+        return;
+      }
+
+      try {
+        const updatedUser = await profileApiService.uploadBanner(user.id, file);
+
+        // Update user in localStorage
+        tokenStorage.save(
+          tokenStorage.getToken() || '',
+          tokenStorage.getRefreshToken() || '',
+          updatedUser
+        );
+
+        alert('Bannière mise à jour avec succès');
+        // Reload page to refresh user context
+        window.location.reload();
+      } catch (error) {
+        console.error('Failed to upload banner:', error);
+        alert('Erreur lors du téléchargement de la bannière');
+      }
+    };
+
+    input.click();
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!user?.id) return;
+
+    if (!confirm('Êtes-vous sûr de vouloir supprimer votre photo de profil ?')) return;
+
+    try {
+      const updatedUser = await profileApiService.deleteAvatar(user.id);
+
+      // Update user in localStorage
+      tokenStorage.save(
+        tokenStorage.getToken() || '',
+        tokenStorage.getRefreshToken() || '',
+        updatedUser
+      );
+
+      alert('Photo de profil supprimée avec succès');
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to delete avatar:', error);
+      alert('Erreur lors de la suppression de la photo');
+    }
+  };
+
+  const handleDeleteBanner = async () => {
+    if (!user?.id) return;
+
+    if (!confirm('Êtes-vous sûr de vouloir supprimer votre bannière ?')) return;
+
+    try {
+      const updatedUser = await profileApiService.deleteBanner(user.id);
+
+      // Update user in localStorage
+      tokenStorage.save(
+        tokenStorage.getToken() || '',
+        tokenStorage.getRefreshToken() || '',
+        updatedUser
+      );
+
+      alert('Bannière supprimée avec succès');
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to delete banner:', error);
+      alert('Erreur lors de la suppression de la bannière');
+    }
   };
 
   const handleSavePersonalInfo = async (data: PersonalInfoData) => {
@@ -116,7 +217,13 @@ export default function ProfilePage() {
       <div className="max-w-7xl mx-auto">
         {/* Profile Header */}
         <div className="bg-card rounded-lg shadow-sm mb-8">
-          <ProfileHeader user={user} onUploadPhoto={handleUploadPhoto} />
+          <ProfileHeader
+            user={user}
+            onUploadPhoto={handleUploadPhoto}
+            onUploadBanner={handleUploadBanner}
+            onDeletePhoto={handleDeletePhoto}
+            onDeleteBanner={handleDeleteBanner}
+          />
         </div>
 
         {/* Main Content Grid */}

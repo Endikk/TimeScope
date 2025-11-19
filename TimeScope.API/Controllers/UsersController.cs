@@ -260,6 +260,158 @@ public class UsersController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    /// <summary>
+    /// Upload de l'avatar de l'utilisateur (stocké en base64)
+    /// </summary>
+    [HttpPost("{id}/avatar")]
+    public async Task<ActionResult<User>> UploadAvatar(Guid id, IFormFile avatar)
+    {
+        try
+        {
+            if (avatar == null || avatar.Length == 0)
+            {
+                return BadRequest(new { message = "No file uploaded" });
+            }
+
+            // Validate file type
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+            if (!allowedTypes.Contains(avatar.ContentType.ToLower()))
+            {
+                return BadRequest(new { message = "Invalid file type. Allowed: JPEG, PNG, GIF, WebP" });
+            }
+
+            // Validate file size (max 5MB)
+            if (avatar.Length > 5 * 1024 * 1024)
+            {
+                return BadRequest(new { message = "File size exceeds 5MB limit" });
+            }
+
+            // Convert to base64
+            using var memoryStream = new MemoryStream();
+            await avatar.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var base64String = $"data:{avatar.ContentType};base64,{Convert.ToBase64String(bytes)}";
+
+            var user = await _userService.UpdateAvatarAsync(id, base64String);
+
+            _logger.LogInformation("Avatar updated successfully for user {UserId}", id);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading avatar for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Upload de la bannière de l'utilisateur (stockée en base64)
+    /// </summary>
+    [HttpPost("{id}/banner")]
+    public async Task<ActionResult<User>> UploadBanner(Guid id, IFormFile banner)
+    {
+        try
+        {
+            if (banner == null || banner.Length == 0)
+            {
+                return BadRequest(new { message = "No file uploaded" });
+            }
+
+            // Validate file type
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+            if (!allowedTypes.Contains(banner.ContentType.ToLower()))
+            {
+                return BadRequest(new { message = "Invalid file type. Allowed: JPEG, PNG, GIF, WebP" });
+            }
+
+            // Validate file size (max 10MB for banners)
+            if (banner.Length > 10 * 1024 * 1024)
+            {
+                return BadRequest(new { message = "File size exceeds 10MB limit" });
+            }
+
+            // Convert to base64
+            using var memoryStream = new MemoryStream();
+            await banner.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var base64String = $"data:{banner.ContentType};base64,{Convert.ToBase64String(bytes)}";
+
+            var user = await _userService.UpdateBannerAsync(id, base64String);
+
+            _logger.LogInformation("Banner updated successfully for user {UserId}", id);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading banner for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Supprime l'avatar de l'utilisateur
+    /// </summary>
+    [HttpDelete("{id}/avatar")]
+    public async Task<ActionResult<User>> DeleteAvatar(Guid id)
+    {
+        try
+        {
+            var user = await _userService.DeleteAvatarAsync(id);
+
+            _logger.LogInformation("Avatar deleted successfully for user {UserId}", id);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting avatar for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Supprime la bannière de l'utilisateur
+    /// </summary>
+    [HttpDelete("{id}/banner")]
+    public async Task<ActionResult<User>> DeleteBanner(Guid id)
+    {
+        try
+        {
+            var user = await _userService.DeleteBannerAsync(id);
+
+            _logger.LogInformation("Banner deleted successfully for user {UserId}", id);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting banner for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
 }
 
 // DTOs

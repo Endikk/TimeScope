@@ -11,6 +11,10 @@ public interface IUserService
     Task<IEnumerable<User>> GetAllUsersAsync();
     Task ChangePasswordAsync(ChangePasswordCommand command);
     Task<UserStatsDto?> GetUserStatsAsync(Guid userId);
+    Task<User> UpdateAvatarAsync(Guid id, string base64Image);
+    Task<User> UpdateBannerAsync(Guid id, string base64Image);
+    Task<User> DeleteAvatarAsync(Guid id);
+    Task<User> DeleteBannerAsync(Guid id);
 }
 
 public class CreateUserCommand
