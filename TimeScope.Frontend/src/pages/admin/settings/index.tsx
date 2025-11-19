@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, User, RefreshCw } from 'lucide-react';
 import { SettingsHeader } from './components/SettingsHeader';
 import { AdminSettingsCard } from './components/AdminSettingsCard';
 import { UserSettingsCard } from './components/UserSettingsCard';
+import { settingsService, AppSetting } from '@/lib/api/services/settings.service';
+import { toast } from 'sonner';
 
 export default function SettingsPageAPI() {
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   // Paramètres Admin (globaux pour toute l'application)
   const [adminSettings, setAdminSettings] = useState({
@@ -40,31 +43,31 @@ export default function SettingsPageAPI() {
     },
   });
 
-  // Paramètres Utilisateur (préférences personnelles)
+  // Autorisations Employé (ce que l'admin permet aux employés de configurer)
   const [userSettings, setUserSettings] = useState({
     profile: {
-      showProfilePicture: true,
-      showEmail: false,
-      showPhone: false,
+      allowProfilePicture: true,
+      allowShowEmail: true,
+      allowShowPhone: true,
     },
     notifications: {
-      emailOnTaskAssign: true,
-      emailOnTaskUpdate: false,
-      emailOnMention: true,
-      desktopNotifications: true,
-      summaryFrequency: 'daily',
+      allowEmailOnTaskAssign: true,
+      allowEmailOnTaskUpdate: true,
+      allowEmailOnMention: true,
+      allowDesktopNotifications: true,
+      allowSummaryFrequency: true,
     },
     appearance: {
-      theme: 'light',
-      colorScheme: 'blue',
-      compactView: false,
-      showAvatars: true,
+      allowTheme: true,
+      allowColorScheme: true,
+      allowCompactView: true,
+      allowShowAvatars: true,
     },
     regional: {
-      language: 'fr',
-      timezone: 'Europe/Paris',
-      dateFormat: 'DD/MM/YYYY',
-      timeFormat: '24h',
+      allowLanguage: true,
+      allowTimezone: true,
+      allowDateFormat: true,
+      allowTimeFormat: true,
     },
   });
 
@@ -104,6 +107,182 @@ export default function SettingsPageAPI() {
     console.log(`Préférence utilisateur mise à jour: ${key} = ${value}`);
   };
 
+  // Charger les paramètres depuis le backend
+  const loadSettings = useCallback(async () => {
+    try {
+      setLoading(true);
+      const settings = await settingsService.getAllSettings();
+
+      // Convertir les paramètres du backend vers la structure locale
+      const adminSettingsFromBackend = { ...adminSettings };
+      const userSettingsFromBackend = { ...userSettings };
+
+      settings.forEach((setting: AppSetting) => {
+        const keys = setting.key.split('.');
+        let value: any = setting.value;
+
+        // Convertir la valeur selon le type
+        if (setting.dataType === 'boolean') {
+          value = setting.value === 'true';
+        } else if (setting.dataType === 'number') {
+          value = parseInt(setting.value, 10);
+        }
+
+        // Déterminer si c'est un paramètre admin ou utilisateur
+        if (keys[0] === 'admin' && keys.length >= 3) {
+          const category = keys[1];
+          const field = keys[2];
+          if (adminSettingsFromBackend[category as keyof typeof adminSettingsFromBackend]) {
+            (adminSettingsFromBackend[category as keyof typeof adminSettingsFromBackend] as any)[field] = value;
+          }
+        } else if (keys[0] === 'allowed' && keys.length >= 3) {
+          const category = keys[1];
+          const field = keys[2];
+          if (userSettingsFromBackend[category as keyof typeof userSettingsFromBackend]) {
+            (userSettingsFromBackend[category as keyof typeof userSettingsFromBackend] as any)[field] = value;
+          }
+        }
+      });
+
+      setAdminSettings(adminSettingsFromBackend);
+      setUserSettings(userSettingsFromBackend);
+    } catch (error) {
+      console.error('Erreur lors du chargement des paramètres:', error);
+      toast.error('Erreur lors du chargement des paramètres');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Sauvegarder les paramètres admin
+  const saveAdminSettings = async () => {
+    try {
+      setSaving(true);
+
+      // Récupérer les paramètres existants pour savoir lesquels créer/mettre à jour
+      const existingSettings = await settingsService.getAllSettings({ category: 'admin' });
+      const existingKeys = new Set(existingSettings.map(s => s.key));
+
+      // Convertir les paramètres en format clé/valeur pour le backend
+      const settingsToSave: { key: string; value: string; category: string; dataType: string; isPublic: boolean }[] = [];
+
+      Object.entries(adminSettings).forEach(([category, values]) => {
+        Object.entries(values as Record<string, any>).forEach(([field, value]) => {
+          const key = `admin.${category}.${field}`;
+          const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
+          settingsToSave.push({
+            key,
+            value: String(value),
+            category: 'admin',
+            dataType,
+            isPublic: false
+          });
+        });
+      });
+
+      // Mettre à jour ou créer chaque paramètre
+      for (const setting of settingsToSave) {
+        if (existingKeys.has(setting.key)) {
+          await settingsService.updateSetting(setting.key, {
+            value: setting.value,
+            category: setting.category,
+            dataType: setting.dataType,
+            isPublic: setting.isPublic
+          });
+        } else {
+          await settingsService.createSetting({
+            key: setting.key,
+            value: setting.value,
+            category: setting.category,
+            dataType: setting.dataType,
+            isPublic: setting.isPublic
+          });
+        }
+      }
+
+      toast.success('Paramètres administrateur enregistrés avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde des paramètres admin:', error);
+      toast.error('Erreur lors de la sauvegarde des paramètres');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Sauvegarder les autorisations employé
+  const saveUserSettings = async () => {
+    try {
+      setSaving(true);
+
+      // Récupérer les paramètres existants pour savoir lesquels créer/mettre à jour
+      const existingSettings = await settingsService.getAllSettings({ category: 'allowed' });
+      const existingKeys = new Set(existingSettings.map(s => s.key));
+
+      // Créer un map des valeurs existantes pour comparer
+      const existingValues = new Map(existingSettings.map(s => [s.key, s.value]));
+
+      // Convertir les paramètres en format clé/valeur pour le backend
+      const settingsToSave: { key: string; value: string; category: string; dataType: string; isPublic: boolean }[] = [];
+
+      Object.entries(userSettings).forEach(([category, values]) => {
+        Object.entries(values as Record<string, any>).forEach(([field, value]) => {
+          const key = `allowed.${category}.${field}`;
+          const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
+          settingsToSave.push({
+            key,
+            value: String(value),
+            category: 'allowed',
+            dataType,
+            isPublic: true // Les autorisations doivent être publiques pour que les employés puissent les lire
+          });
+        });
+      });
+
+      // Compter les paramètres modifiés
+      let modifiedCount = 0;
+
+      // Mettre à jour ou créer chaque paramètre
+      for (const setting of settingsToSave) {
+        if (existingKeys.has(setting.key)) {
+          // Vérifier si la valeur a changé
+          if (existingValues.get(setting.key) !== setting.value) {
+            modifiedCount++;
+          }
+          await settingsService.updateSetting(setting.key, {
+            value: setting.value,
+            category: setting.category,
+            dataType: setting.dataType,
+            isPublic: setting.isPublic
+          });
+        } else {
+          modifiedCount++;
+          await settingsService.createSetting({
+            key: setting.key,
+            value: setting.value,
+            category: setting.category,
+            dataType: setting.dataType,
+            isPublic: setting.isPublic
+          });
+        }
+      }
+
+      toast.success(
+        modifiedCount > 0
+          ? `${modifiedCount} autorisation${modifiedCount > 1 ? 's' : ''} enregistrée${modifiedCount > 1 ? 's' : ''} avec succès`
+          : 'Autorisations enregistrées',
+        { position: 'top-center' }
+      );
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde des autorisations:', error);
+      toast.error('Erreur lors de la sauvegarde des autorisations', { position: 'top-center' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   if (loading) {
     return (
@@ -128,7 +307,7 @@ export default function SettingsPageAPI() {
           </TabsTrigger>
           <TabsTrigger value="user" className="flex items-center gap-2">
             <User className="w-4 h-4" />
-            Paramètres Employé
+            Autorisations Employé
           </TabsTrigger>
         </TabsList>
 
@@ -148,6 +327,8 @@ export default function SettingsPageAPI() {
           <AdminSettingsCard
             settings={adminSettings}
             onUpdate={handleAdminSettingUpdate}
+            onSave={saveAdminSettings}
+            saving={saving}
           />
         </TabsContent>
 
@@ -156,10 +337,10 @@ export default function SettingsPageAPI() {
             <div className="flex items-start gap-3">
               <User className="w-5 h-5 text-green-600 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-green-900">Préférences Personnelles</h3>
+                <h3 className="font-semibold text-green-900">Autorisations Employé</h3>
                 <p className="text-sm text-green-700 mt-1">
-                  Ces paramètres sont <strong>personnalisables par chaque employé</strong> pour adapter
-                  l'interface et les notifications à leurs préférences.
+                  Définissez quelles options les <strong>employés peuvent personnaliser</strong>.
+                  Les options désactivées ne seront pas visibles par les employés.
                 </p>
               </div>
             </div>
@@ -167,6 +348,8 @@ export default function SettingsPageAPI() {
           <UserSettingsCard
             settings={userSettings}
             onUpdate={handleUserSettingUpdate}
+            onSave={saveUserSettings}
+            saving={saving}
           />
         </TabsContent>
       </Tabs>

@@ -1,16 +1,17 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { User, Bell, Palette, Globe } from 'lucide-react';
+import { User, Bell, Palette, Globe, Loader2 } from 'lucide-react';
 
 interface UserSettingsCardProps {
   settings: any;
   onUpdate: (key: string, value: any) => void;
+  onSave: () => Promise<void>;
+  saving: boolean;
 }
 
-export function UserSettingsCard({ settings, onUpdate }: UserSettingsCardProps) {
+export function UserSettingsCard({ settings, onUpdate, onSave, saving }: UserSettingsCardProps) {
   return (
     <div className="space-y-6">
       {/* Profil */}
@@ -18,52 +19,52 @@ export function UserSettingsCard({ settings, onUpdate }: UserSettingsCardProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
-            Paramètres de Profil
+            Autorisations de Profil
           </CardTitle>
           <CardDescription>
-            Paramètres modifiables par chaque employé pour personnaliser son expérience
+            Définissez quelles options de profil les employés peuvent personnaliser
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="show-profile-picture">Afficher la photo de profil</Label>
+              <Label htmlFor="allow-profile-picture">Photo de profil</Label>
               <p className="text-sm text-muted-foreground">
-                Permettre aux employés d'afficher leur photo de profil
+                Permettre aux employés d'afficher/masquer leur photo de profil
               </p>
             </div>
             <Switch
-              id="show-profile-picture"
-              checked={settings?.profile?.showProfilePicture ?? true}
-              onCheckedChange={(checked) => onUpdate('profile.showProfilePicture', checked)}
+              id="allow-profile-picture"
+              checked={settings?.profile?.allowProfilePicture ?? true}
+              onCheckedChange={(checked) => onUpdate('profile.allowProfilePicture', checked)}
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="show-email">Email visible</Label>
+              <Label htmlFor="allow-show-email">Email visible</Label>
               <p className="text-sm text-muted-foreground">
-                Afficher l'email dans le profil public
+                Permettre aux employés de choisir d'afficher leur email
               </p>
             </div>
             <Switch
-              id="show-email"
-              checked={settings?.profile?.showEmail ?? false}
-              onCheckedChange={(checked) => onUpdate('profile.showEmail', checked)}
+              id="allow-show-email"
+              checked={settings?.profile?.allowShowEmail ?? true}
+              onCheckedChange={(checked) => onUpdate('profile.allowShowEmail', checked)}
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="show-phone">Téléphone visible</Label>
+              <Label htmlFor="allow-show-phone">Téléphone visible</Label>
               <p className="text-sm text-muted-foreground">
-                Afficher le numéro de téléphone dans le profil
+                Permettre aux employés de choisir d'afficher leur téléphone
               </p>
             </div>
             <Switch
-              id="show-phone"
-              checked={settings?.profile?.showPhone ?? false}
-              onCheckedChange={(checked) => onUpdate('profile.showPhone', checked)}
+              id="allow-show-phone"
+              checked={settings?.profile?.allowShowPhone ?? true}
+              onCheckedChange={(checked) => onUpdate('profile.allowShowPhone', checked)}
             />
           </div>
         </CardContent>
@@ -74,88 +75,81 @@ export function UserSettingsCard({ settings, onUpdate }: UserSettingsCardProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-primary" />
-            Notifications Personnelles
+            Autorisations de Notifications
           </CardTitle>
           <CardDescription>
-            Configuration des notifications individuelles pour chaque employé
+            Définissez quelles notifications les employés peuvent configurer
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-on-task-assign">Email à l'assignation de tâche</Label>
+              <Label htmlFor="allow-email-on-task-assign">Email à l'assignation de tâche</Label>
               <p className="text-sm text-muted-foreground">
-                Recevoir un email quand une tâche vous est assignée
+                Permettre aux employés de configurer cette notification
               </p>
             </div>
             <Switch
-              id="email-on-task-assign"
-              checked={settings?.notifications?.emailOnTaskAssign ?? true}
-              onCheckedChange={(checked) => onUpdate('notifications.emailOnTaskAssign', checked)}
+              id="allow-email-on-task-assign"
+              checked={settings?.notifications?.allowEmailOnTaskAssign ?? true}
+              onCheckedChange={(checked) => onUpdate('notifications.allowEmailOnTaskAssign', checked)}
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-on-task-update">Email à la mise à jour de tâche</Label>
+              <Label htmlFor="allow-email-on-task-update">Email à la mise à jour de tâche</Label>
               <p className="text-sm text-muted-foreground">
-                Recevoir un email quand une tâche est modifiée
+                Permettre aux employés de configurer cette notification
               </p>
             </div>
             <Switch
-              id="email-on-task-update"
-              checked={settings?.notifications?.emailOnTaskUpdate ?? false}
-              onCheckedChange={(checked) => onUpdate('notifications.emailOnTaskUpdate', checked)}
+              id="allow-email-on-task-update"
+              checked={settings?.notifications?.allowEmailOnTaskUpdate ?? true}
+              onCheckedChange={(checked) => onUpdate('notifications.allowEmailOnTaskUpdate', checked)}
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-on-mention">Email lors d'une mention</Label>
+              <Label htmlFor="allow-email-on-mention">Email lors d'une mention</Label>
               <p className="text-sm text-muted-foreground">
-                Recevoir un email quand vous êtes mentionné dans un commentaire
+                Permettre aux employés de configurer cette notification
               </p>
             </div>
             <Switch
-              id="email-on-mention"
-              checked={settings?.notifications?.emailOnMention ?? true}
-              onCheckedChange={(checked) => onUpdate('notifications.emailOnMention', checked)}
+              id="allow-email-on-mention"
+              checked={settings?.notifications?.allowEmailOnMention ?? true}
+              onCheckedChange={(checked) => onUpdate('notifications.allowEmailOnMention', checked)}
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="desktop-notifications">Notifications bureau</Label>
+              <Label htmlFor="allow-desktop-notifications">Notifications bureau</Label>
               <p className="text-sm text-muted-foreground">
-                Afficher des notifications de bureau pour les événements importants
+                Permettre aux employés de configurer les notifications bureau
               </p>
             </div>
             <Switch
-              id="desktop-notifications"
-              checked={settings?.notifications?.desktopNotifications ?? true}
-              onCheckedChange={(checked) => onUpdate('notifications.desktopNotifications', checked)}
+              id="allow-desktop-notifications"
+              checked={settings?.notifications?.allowDesktopNotifications ?? true}
+              onCheckedChange={(checked) => onUpdate('notifications.allowDesktopNotifications', checked)}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notification-frequency">Fréquence des résumés</Label>
-            <Select
-              value={settings?.notifications?.summaryFrequency ?? 'daily'}
-              onValueChange={(value) => onUpdate('notifications.summaryFrequency', value)}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionner" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Aucun</SelectItem>
-                <SelectItem value="daily">Quotidien</SelectItem>
-                <SelectItem value="weekly">Hebdomadaire</SelectItem>
-                <SelectItem value="monthly">Mensuel</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-muted-foreground">
-              Fréquence d'envoi des résumés d'activité par email
-            </p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-summary-frequency">Fréquence des résumés</Label>
+              <p className="text-sm text-muted-foreground">
+                Permettre aux employés de choisir la fréquence des résumés
+              </p>
+            </div>
+            <Switch
+              id="allow-summary-frequency"
+              checked={settings?.notifications?.allowSummaryFrequency ?? true}
+              onCheckedChange={(checked) => onUpdate('notifications.allowSummaryFrequency', checked)}
+            />
           </div>
         </CardContent>
       </Card>
@@ -165,77 +159,66 @@ export function UserSettingsCard({ settings, onUpdate }: UserSettingsCardProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5 text-primary" />
-            Apparence et Interface
+            Autorisations d'Apparence
           </CardTitle>
           <CardDescription>
-            Personnalisation de l'interface utilisateur
+            Définissez quelles options d'interface les employés peuvent modifier
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="theme">Thème</Label>
-            <Select
-              value={settings?.appearance?.theme ?? 'light'}
-              onValueChange={(value) => onUpdate('appearance.theme', value)}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionner un thème" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">Clair</SelectItem>
-                <SelectItem value="dark">Sombre</SelectItem>
-                <SelectItem value="auto">Automatique</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-muted-foreground">
-              Choisir le thème de couleur de l'application
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="color-scheme">Palette de couleurs</Label>
-            <Select
-              value={settings?.appearance?.colorScheme ?? 'blue'}
-              onValueChange={(value) => onUpdate('appearance.colorScheme', value)}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionner" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="blue">Bleu</SelectItem>
-                <SelectItem value="green">Vert</SelectItem>
-                <SelectItem value="purple">Violet</SelectItem>
-                <SelectItem value="orange">Orange</SelectItem>
-                <SelectItem value="red">Rouge</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="compact-view">Vue compacte</Label>
+              <Label htmlFor="allow-theme">Thème</Label>
               <p className="text-sm text-muted-foreground">
-                Réduire l'espacement pour afficher plus d'informations
+                Permettre aux employés de changer le thème (clair/sombre)
               </p>
             </div>
             <Switch
-              id="compact-view"
-              checked={settings?.appearance?.compactView ?? false}
-              onCheckedChange={(checked) => onUpdate('appearance.compactView', checked)}
+              id="allow-theme"
+              checked={settings?.appearance?.allowTheme ?? true}
+              onCheckedChange={(checked) => onUpdate('appearance.allowTheme', checked)}
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="show-avatars">Afficher les avatars</Label>
+              <Label htmlFor="allow-color-scheme">Palette de couleurs</Label>
               <p className="text-sm text-muted-foreground">
-                Afficher les photos de profil dans les listes
+                Permettre aux employés de changer la palette de couleurs
               </p>
             </div>
             <Switch
-              id="show-avatars"
-              checked={settings?.appearance?.showAvatars ?? true}
-              onCheckedChange={(checked) => onUpdate('appearance.showAvatars', checked)}
+              id="allow-color-scheme"
+              checked={settings?.appearance?.allowColorScheme ?? true}
+              onCheckedChange={(checked) => onUpdate('appearance.allowColorScheme', checked)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-compact-view">Vue compacte</Label>
+              <p className="text-sm text-muted-foreground">
+                Permettre aux employés d'activer la vue compacte
+              </p>
+            </div>
+            <Switch
+              id="allow-compact-view"
+              checked={settings?.appearance?.allowCompactView ?? true}
+              onCheckedChange={(checked) => onUpdate('appearance.allowCompactView', checked)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-show-avatars">Affichage des avatars</Label>
+              <p className="text-sm text-muted-foreground">
+                Permettre aux employés de masquer/afficher les avatars
+              </p>
+            </div>
+            <Switch
+              id="allow-show-avatars"
+              checked={settings?.appearance?.allowShowAvatars ?? true}
+              onCheckedChange={(checked) => onUpdate('appearance.allowShowAvatars', checked)}
             />
           </div>
         </CardContent>
@@ -246,88 +229,86 @@ export function UserSettingsCard({ settings, onUpdate }: UserSettingsCardProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5 text-primary" />
-            Préférences Régionales
+            Autorisations Régionales
           </CardTitle>
           <CardDescription>
-            Configuration de la langue et du fuseau horaire
+            Définissez quelles préférences régionales les employés peuvent modifier
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="language">Langue</Label>
-            <Select
-              value={settings?.regional?.language ?? 'fr'}
-              onValueChange={(value) => onUpdate('regional.language', value)}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionner une langue" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-language">Langue</Label>
+              <p className="text-sm text-muted-foreground">
+                Permettre aux employés de changer la langue de l'interface
+              </p>
+            </div>
+            <Switch
+              id="allow-language"
+              checked={settings?.regional?.allowLanguage ?? true}
+              onCheckedChange={(checked) => onUpdate('regional.allowLanguage', checked)}
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="timezone">Fuseau horaire</Label>
-            <Select
-              value={settings?.regional?.timezone ?? 'Europe/Paris'}
-              onValueChange={(value) => onUpdate('regional.timezone', value)}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionner" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Europe/Paris">Paris (UTC+1)</SelectItem>
-                <SelectItem value="Europe/London">Londres (UTC+0)</SelectItem>
-                <SelectItem value="America/New_York">New York (UTC-5)</SelectItem>
-                <SelectItem value="America/Los_Angeles">Los Angeles (UTC-8)</SelectItem>
-                <SelectItem value="Asia/Tokyo">Tokyo (UTC+9)</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-timezone">Fuseau horaire</Label>
+              <p className="text-sm text-muted-foreground">
+                Permettre aux employés de changer leur fuseau horaire
+              </p>
+            </div>
+            <Switch
+              id="allow-timezone"
+              checked={settings?.regional?.allowTimezone ?? true}
+              onCheckedChange={(checked) => onUpdate('regional.allowTimezone', checked)}
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="date-format">Format de date</Label>
-            <Select
-              value={settings?.regional?.dateFormat ?? 'DD/MM/YYYY'}
-              onValueChange={(value) => onUpdate('regional.dateFormat', value)}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionner" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="DD/MM/YYYY">JJ/MM/AAAA</SelectItem>
-                <SelectItem value="MM/DD/YYYY">MM/JJ/AAAA</SelectItem>
-                <SelectItem value="YYYY-MM-DD">AAAA-MM-JJ</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-date-format">Format de date</Label>
+              <p className="text-sm text-muted-foreground">
+                Permettre aux employés de changer le format de date
+              </p>
+            </div>
+            <Switch
+              id="allow-date-format"
+              checked={settings?.regional?.allowDateFormat ?? true}
+              onCheckedChange={(checked) => onUpdate('regional.allowDateFormat', checked)}
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="time-format">Format d'heure</Label>
-            <Select
-              value={settings?.regional?.timeFormat ?? '24h'}
-              onValueChange={(value) => onUpdate('regional.timeFormat', value)}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionner" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="24h">24 heures</SelectItem>
-                <SelectItem value="12h">12 heures (AM/PM)</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-time-format">Format d'heure</Label>
+              <p className="text-sm text-muted-foreground">
+                Permettre aux employés de changer le format d'heure
+              </p>
+            </div>
+            <Switch
+              id="allow-time-format"
+              checked={settings?.regional?.allowTimeFormat ?? true}
+              onCheckedChange={(checked) => onUpdate('regional.allowTimeFormat', checked)}
+            />
           </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button size="lg" className="w-full md:w-auto">
-          Enregistrer mes préférences
+        <Button
+          size="lg"
+          className="w-full md:w-auto"
+          onClick={onSave}
+          disabled={saving}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Enregistrement...
+            </>
+          ) : (
+            'Enregistrer les autorisations'
+          )}
         </Button>
       </div>
     </div>

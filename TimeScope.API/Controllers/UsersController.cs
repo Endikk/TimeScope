@@ -98,10 +98,15 @@ public class UsersController : ControllerBase
             _logger.LogWarning(ex, "Validation error while creating user");
             return BadRequest(new { message = ex.Message });
         }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("IX_Users_Email") == true)
+        {
+            _logger.LogWarning(ex, "Email already exists in database");
+            return Conflict(new { message = "Un utilisateur avec cet email existe déjà" });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating user in Admin database");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { message = "Internal server error", details = ex.Message, innerException = ex.InnerException?.Message });
         }
     }
 

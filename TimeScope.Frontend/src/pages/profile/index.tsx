@@ -5,6 +5,7 @@ import { PersonalInfoCard, PersonalInfoData } from './components/PersonalInfoCar
 import { ProfessionalInfoCard } from './components/ProfessionalInfoCard';
 import { ActivityStatsCard } from './components/ActivityStatsCard';
 import { SecurityCard } from './components/SecurityCard';
+import { UserPreferencesCard } from './components/UserPreferencesCard';
 import { profileApiService, UserStatsResponse } from '@/lib/api/services/profile.service';
 import { tokenStorage } from '@/lib/api/services/auth.service';
 
@@ -132,6 +133,7 @@ export default function ProfilePage() {
             <SecurityCard
               onPasswordChange={handlePasswordChange}
             />
+            <UserPreferencesCard />
           </div>
 
           {/* Right Column - Spans 1 column on large screens */}

@@ -210,6 +210,151 @@ public class SettingsService : ISettingsService
                 DataType = "string",
                 IsPublic = true
             },
+            // Autorisations par défaut pour les employés
+            new AppSetting
+            {
+                Key = "allowed.profile.allowProfilePicture",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure profile picture visibility",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.profile.allowShowEmail",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure email visibility",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.profile.allowShowPhone",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure phone visibility",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowEmailOnTaskAssign",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure task assignment notifications",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowEmailOnTaskUpdate",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure task update notifications",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowEmailOnMention",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure mention notifications",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowDesktopNotifications",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure desktop notifications",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowSummaryFrequency",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure summary frequency",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.appearance.allowTheme",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change theme",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.appearance.allowColorScheme",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change color scheme",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.appearance.allowCompactView",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to enable compact view",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.appearance.allowShowAvatars",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure avatar display",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.regional.allowLanguage",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change language",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.regional.allowTimezone",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change timezone",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.regional.allowDateFormat",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change date format",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.regional.allowTimeFormat",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change time format",
+                DataType = "boolean",
+                IsPublic = true
+            },
             new AppSetting
             {
                 Key = "time.workday_hours",

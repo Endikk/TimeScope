@@ -4,14 +4,16 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, Clock, Users, Database, Mail } from 'lucide-react';
+import { Shield, Clock, Users, Database, Mail, Loader2 } from 'lucide-react';
 
 interface AdminSettingsCardProps {
   settings: any;
   onUpdate: (key: string, value: any) => void;
+  onSave: () => Promise<void>;
+  saving: boolean;
 }
 
-export function AdminSettingsCard({ settings, onUpdate }: AdminSettingsCardProps) {
+export function AdminSettingsCard({ settings, onUpdate, onSave, saving }: AdminSettingsCardProps) {
   return (
     <div className="space-y-6">
       {/* Sécurité */}
@@ -341,8 +343,20 @@ export function AdminSettingsCard({ settings, onUpdate }: AdminSettingsCardProps
       </Card>
 
       <div className="flex justify-end">
-        <Button size="lg" className="w-full md:w-auto">
-          Enregistrer tous les paramètres
+        <Button
+          size="lg"
+          className="w-full md:w-auto"
+          onClick={onSave}
+          disabled={saving}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Enregistrement...
+            </>
+          ) : (
+            'Enregistrer tous les paramètres'
+          )}
         </Button>
       </div>
     </div>
