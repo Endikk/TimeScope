@@ -109,6 +109,7 @@ builder.Services.AddScoped<IMonitoringService, MonitoringService>();
 builder.Services.AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
 builder.Services.AddScoped<IAdministrationService, AdministrationService>();
 builder.Services.AddScoped<IRequestService, RequestService>();
+builder.Services.AddScoped<ICrossDbValidationService, CrossDbValidationService>();
 
 // Note: Legacy IUnitOfWork is deprecated - use specialized UnitOfWork instead
 

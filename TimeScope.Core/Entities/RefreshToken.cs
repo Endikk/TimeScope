@@ -47,6 +47,32 @@ public class RefreshToken : BaseEntity
     public string? ReasonRevoked { get; set; }
 
     /// <summary>
+    /// Hash du token pour stockage sécurisé (SHA256).
+    /// Le token en clair n'est jamais stocké.
+    /// </summary>
+    public string? TokenHash { get; set; }
+
+    /// <summary>
+    /// Informations sur l'appareil/navigateur.
+    /// </summary>
+    public string? DeviceInfo { get; set; }
+
+    /// <summary>
+    /// User-Agent du navigateur.
+    /// </summary>
+    public string? UserAgent { get; set; }
+
+    /// <summary>
+    /// Nom de l'appareil (optionnel, défini par l'utilisateur).
+    /// </summary>
+    public string? DeviceName { get; set; }
+
+    /// <summary>
+    /// Géolocalisation approximative (pays/ville).
+    /// </summary>
+    public string? Location { get; set; }
+
+    /// <summary>
     /// Check if token is currently active (not expired and not revoked).
     /// </summary>
     public bool IsActive => RevokedAt == null && DateTime.UtcNow < ExpiresAt;
