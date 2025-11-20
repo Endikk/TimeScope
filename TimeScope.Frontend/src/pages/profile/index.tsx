@@ -10,7 +10,8 @@ import { profileApiService, UserStatsResponse } from '@/lib/api/services/profile
 import { tokenStorage } from '@/lib/api/services/auth.service';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const [user, setUser] = useState<any>(authUser);
   const [isEditingPersonalInfo, setIsEditingPersonalInfo] = useState(false);
   const [activityStats, setActivityStats] = useState<UserStatsResponse>({
     tasksCompleted: 0,
@@ -19,22 +20,35 @@ export default function ProfilePage() {
     projectsCount: 0,
   });
 
-  // Load user statistics on mount
+  // Load fresh user data and statistics on mount
   useEffect(() => {
-    const loadStats = async () => {
-      if (!user?.id) return;
+    const loadUserData = async () => {
+      if (!authUser?.id) return;
 
       try {
-        const stats = await profileApiService.getUserStats(user.id);
+        // Load fresh user data from API
+        const freshUserData = await profileApiService.getUserProfile(authUser.id);
+        setUser(freshUserData);
+
+        // Update localStorage with fresh data
+        tokenStorage.save(
+          tokenStorage.getToken() || '',
+          tokenStorage.getRefreshToken() || '',
+          freshUserData
+        );
+
+        // Load user stats
+        const stats = await profileApiService.getUserStats(authUser.id);
         setActivityStats(stats);
       } catch (error) {
-        console.error('Failed to load user stats:', error);
-        // Keep default stats (0) on error
+        console.error('Failed to load user data:', error);
+        // Fall back to auth context user if API fails
+        setUser(authUser);
       }
     };
 
-    loadStats();
-  }, [user?.id]);
+    loadUserData();
+  }, [authUser?.id]);
 
   const handleUploadPhoto = async () => {
     if (!user?.id) return;
