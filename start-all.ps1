@@ -11,7 +11,8 @@ Write-Host "[1/3] Demarrage des bases de donnees Docker..." -ForegroundColor Yel
 docker-compose up -d
 if ($LASTEXITCODE -eq 0) {
     Write-Host "OK - Bases de donnees demarrees" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "ERREUR - Impossible de demarrer les bases" -ForegroundColor Red
     exit 1
 }
@@ -20,6 +21,22 @@ Write-Host ""
 # Attendre que les bases soient pretes
 Write-Host "Attente de disponibilite des bases (10s)..." -ForegroundColor Gray
 Start-Sleep -Seconds 10
+
+# Verification du modele Ollama
+Write-Host "Verification du modele Ollama..." -ForegroundColor Gray
+try {
+    $ollamaList = docker exec timescope-ollama ollama list
+    if ($ollamaList -match "llama3") {
+        Write-Host "OK - Modele llama3 present" -ForegroundColor Green
+    }
+    else {
+        Write-Host "ATTENTION - Modele llama3 manquant!" -ForegroundColor Red
+        Write-Host "Veuillez executer: docker exec -it timescope-ollama ollama pull llama3" -ForegroundColor Yellow
+    }
+}
+catch {
+    Write-Host "ERREUR - Impossible de verifier Ollama (conteneur arrete ?)" -ForegroundColor Red
+}
 
 # Etape 2: Demarrer le Backend
 Write-Host "[2/3] Demarrage du Backend (.NET API)..." -ForegroundColor Yellow
@@ -45,6 +62,7 @@ Write-Host "  - Frontend:    http://localhost:5173" -ForegroundColor Cyan
 Write-Host "  - Backend:     https://localhost:7xxx" -ForegroundColor Cyan
 Write-Host "  - Swagger:     https://localhost:7xxx/swagger" -ForegroundColor Cyan
 Write-Host "  - pgAdmin:     http://localhost:5050" -ForegroundColor Cyan
+Write-Host "  - n8n:         http://localhost:5678" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  - DB Admin:    localhost:5433" -ForegroundColor Gray
 Write-Host "  - DB Projects: localhost:5434" -ForegroundColor Gray

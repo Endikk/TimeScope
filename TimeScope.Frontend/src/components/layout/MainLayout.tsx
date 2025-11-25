@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { useLocation } from "react-router"
 import { ProfileDropdown } from "@/components/ui/profile-dropdown"
+import { ChatWidget } from "@/components/chat/ChatWidget"
 
 export function MainLayout() {
   const location = useLocation()
@@ -73,6 +74,7 @@ export function MainLayout() {
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <Outlet />
         </div>
+        <ChatWidget />
       </SidebarInset>
     </SidebarProvider>
   )

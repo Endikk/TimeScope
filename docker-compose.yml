@@ -89,9 +89,42 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 
+  # n8n - Workflow Automation
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: timescope-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Europe/Paris
+      - TZ=Europe/Paris
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      - WEBHOOK_CORS_ORIGIN_WHITELIST=http://localhost:3000,http://localhost:5173,*
+      - WEBHOOK_URL=http://localhost:5678/
+      - N8N_EDITOR_BASE_URL=http://localhost:5678/
+      - N8N_SECURE_COOKIE=false
+    volumes:
+      - n8n_data:/home/node/.n8n
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Ollama - Local LLM
+  ollama:
+    image: ollama/ollama:latest
+    container_name: timescope-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
 volumes:
   postgres_admin_data:
   postgres_projects_data:
   postgres_time_data:
   postgres_reports_data:
   pgadmin_data:
+  n8n_data:
+  ollama_data:

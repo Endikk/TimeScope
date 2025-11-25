@@ -13,5 +13,12 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      '/webhook': {
+        target: 'http://localhost:5678',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
 })

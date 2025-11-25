@@ -1,0 +1,423 @@
+{
+    "name": "TimeScope AI Assistant - Working",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "chat",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook-1",
+            "name": "Webhook Chat",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                240,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "user-message",
+                            "name": "userMessage",
+                            "value": "={{ $json.body.message }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "user-id",
+                            "name": "userId",
+                            "value": "={{ $json.body.userId }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "auth-token",
+                            "name": "authToken",
+                            "value": "={{ $json.body.authToken }}",
+                            "type": "string"
+                        }
+                    ]
+                }
+            },
+            "id": "extract-1",
+            "name": "Extract Context",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                460,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "http://host.docker.internal:5001/api/projects",
+                "authentication": "none",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "={{ 'Bearer ' + $('Extract Context').item.json.authToken }}"
+                        }
+                    ]
+                }
+            },
+            "id": "fetch-projects",
+            "name": "Fetch Projects",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                680,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "http://host.docker.internal:5001/api/tasks",
+                "authentication": "none",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "={{ 'Bearer ' + $('Extract Context').item.json.authToken }}"
+                        }
+                    ]
+                }
+            },
+            "id": "fetch-tasks",
+            "name": "Fetch Tasks",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                680,
+                500
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Préparer le contexte pour l'IA\nconst userMessage = $('Extract Context').item.json.userMessage;\nconst authToken = $('Extract Context').item.json.authToken;\nconst userId = $('Extract Context').item.json.userId;\n\nconst projectsData = $input.all()[0]?.json || [];\nconst tasksData = $input.all()[1]?.json || [];\n\nconst projects = Array.isArray(projectsData) ? projectsData : [projectsData];\nconst tasks = Array.isArray(tasksData) ? tasksData : [tasksData];\n\n// Créer la liste des projets disponibles pour l'IA\nconst projectsList = projects.map(p => `- Société: ${p.companyName || 'Sans société'} | Projet: ${p.name}`).join('\\\\n');\n\n// Créer le prompt pour l'IA\nconst systemPrompt = `Tu es un assistant intelligent pour TimeScope, une application de time tracking.\n\nTon rôle est d'extraire les informations suivantes du message de l'utilisateur :\n1. Le nom de la SOCIÉTÉ (si mentionné avec les mots \"société\", \"chez\", \"pour\")\n2. Le nom du PROJET (si mentionné avec le mot \"projet\")\n3. Le nom de la TÂCHE (obligatoire)\n4. La durée en heures décimales (obligatoire : 30min = 0.5, 1h30 = 1.5, etc.)\n5. La date (par défaut : aujourd'hui)\n\nIMPORTANT : \n- Si l'utilisateur dit \"Société X\", mets X dans companyName\n- Si l'utilisateur dit \"Projet Y\", mets Y dans projectName\n- Si l'utilisateur dit \"Société X Projet Y\", mets X dans companyName ET Y dans projectName\n- Au moins un des deux (companyName OU projectName) doit être fourni\n\nPROJETS ET SOCIÉTÉS DISPONIBLES :\n${projectsList}\n\nRéponds UNIQUEMENT avec un JSON valide au format suivant (sans commentaire, sans markdown) :\n{\n  \"companyName\": \"nom de la société (si mentionné)\",\n  \"projectName\": \"nom du projet (si mentionné)\",\n  \"taskName\": \"nom de la tâche\",\n  \"durationHours\": 0.5,\n  \"date\": \"2025-11-21\",\n  \"understood\": true\n}\n\nSi des informations manquent, réponds :\n{\n  \"understood\": false,\n  \"question\": \"Précise quelle information manque (société/projet, tâche, ou durée)\"\n}\n\nDate actuelle : 2025-11-21\n\nExemples :\n- \"Société GCP Projet Infrastructure et tâche documentation pour aujourd'hui 1h\" → {\"companyName\": \"GCP\", \"projectName\": \"Infrastructure\", \"taskName\": \"documentation\", \"durationHours\": 1.0, \"date\": \"2025-11-21\", \"understood\": true}\n- \"1h sur le projet Infrastructure pour la doc\" → {\"projectName\": \"Infrastructure\", \"taskName\": \"doc\", \"durationHours\": 1.0, \"date\": \"2025-11-21\", \"understood\": true}\n- \"30 minutes de dev chez GCP\" → {\"companyName\": \"GCP\", \"taskName\": \"dev\", \"durationHours\": 0.5, \"date\": \"2025-11-21\", \"understood\": true}\n- \"Société GCP tâche réunion 2h\" → {\"companyName\": \"GCP\", \"taskName\": \"réunion\", \"durationHours\": 2.0, \"date\": \"2025-11-21\", \"understood\": true}\n- \"Projet Documentation tâche rédaction 1h30\" → {\"projectName\": \"Documentation\", \"taskName\": \"rédaction\", \"durationHours\": 1.5, \"date\": \"2025-11-21\", \"understood\": true}`;\n\nconst userPrompt = `Message utilisateur : \"${userMessage}\"`;\n\nreturn {\n  json: {\n    systemPrompt: systemPrompt,\n    userPrompt: userPrompt,\n    authToken: authToken,\n    userId: userId,\n    projects: projects\n  }\n};"
+            },
+            "id": "prepare-prompt",
+            "name": "Prepare AI Prompt",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                900,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://timescope-ollama:11434/api/chat",
+                "authentication": "none",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ \n  {\n    \"model\": \"llama3.2\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": $('Prepare AI Prompt').item.json.systemPrompt\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $('Prepare AI Prompt').item.json.userPrompt\n      }\n    ],\n    \"stream\": false,\n    \"format\": \"json\"\n  }\n}}",
+                "options": {}
+            },
+            "id": "call-ollama",
+            "name": "Call Ollama API",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1120,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Parser la réponse de l'IA\nconst aiResponse = $input.first().json;\nconst messageContent = aiResponse.message?.content || '{}';\n\nlet parsed;\ntry {\n  parsed = JSON.parse(messageContent);\n} catch (e) {\n  // Si le parsing échoue, essayer d'extraire le JSON du texte\n  const jsonMatch = messageContent.match(/\\{[^}]+\\}/);\n  if (jsonMatch) {\n    parsed = JSON.parse(jsonMatch[0]);\n  } else {\n    return {\n      json: {\n        error: true,\n        response: \"Désolé, je n'ai pas compris votre demande. Pouvez-vous reformuler en précisant la SOCIÉTÉ/PROJET, la TÂCHE et la DURÉE ?\"\n      }\n    };\n  }\n}\n\n// Récupérer le contexte\nconst authToken = $('Prepare AI Prompt').item.json.authToken;\nconst userId = $('Prepare AI Prompt').item.json.userId;\nconst projects = $('Prepare AI Prompt').item.json.projects;\n\nif (!parsed.understood) {\n  return {\n    json: {\n      error: true,\n      response: parsed.question || \"Je n'ai pas compris votre demande. Précisez la SOCIÉTÉ/PROJET, la TÂCHE et la DURÉE.\"\n    }\n  };\n}\n\nif (!projects || projects.length === 0) {\n  return {\n    json: {\n      error: true,\n      response: \"Aucun projet disponible. Veuillez contacter le support via la page Support/Contact pour créer un projet.\"\n    }\n  };\n}\n\n// Extraire les critères de recherche\nconst projectName = parsed.projectName;\nconst companyName = parsed.companyName;\n\n// Vérifier qu'au moins un critère est fourni\nif (!projectName && !companyName) {\n  return {\n    json: {\n      error: true,\n      response: \"Vous devez préciser le nom de la SOCIÉTÉ ou du PROJET. Projets disponibles : \" + projects.map(p => `${p.name} (${p.companyName || 'Sans société'})`).join(', ')\n    }\n  };\n}\n\n// Recherche flexible par société ET/OU projet\nlet matchedProjects = projects.filter(p => {\n  const matchesProject = projectName && (\n    p.name.toLowerCase().includes(projectName.toLowerCase()) ||\n    projectName.toLowerCase().includes(p.name.toLowerCase())\n  );\n  \n  const matchesCompany = companyName && p.companyName && (\n    p.companyName.toLowerCase().includes(companyName.toLowerCase()) ||\n    companyName.toLowerCase().includes(p.companyName.toLowerCase())\n  );\n  \n  // Accepter si au moins un critère correspond\n  return matchesProject || matchesCompany;\n});\n\n// Si les deux critères sont fournis, prioriser les correspondances exactes\nif (projectName && companyName && matchedProjects.length > 1) {\n  const exactMatches = matchedProjects.filter(p => {\n    const matchesProject = p.name.toLowerCase().includes(projectName.toLowerCase()) ||\n      projectName.toLowerCase().includes(p.name.toLowerCase());\n    const matchesCompany = p.companyName && (\n      p.companyName.toLowerCase().includes(companyName.toLowerCase()) ||\n      companyName.toLowerCase().includes(p.companyName.toLowerCase())\n    );\n    return matchesProject && matchesCompany;\n  });\n  \n  if (exactMatches.length > 0) {\n    matchedProjects = exactMatches;\n  }\n}\n\n// Gérer les cas d'ambiguïté\nif (matchedProjects.length === 0) {\n  const searchCriteria = [];\n  if (companyName) searchCriteria.push(`la société \"${companyName}\"`);\n  if (projectName) searchCriteria.push(`le projet \"${projectName}\"`);\n  \n  return {\n    json: {\n      error: true,\n      response: `Aucun projet trouvé pour ${searchCriteria.join(' et ')}. Projets disponibles : ${projects.map(p => `${p.name} (${p.companyName || 'Sans société'})`).join(', ')}. Pour ajouter un nouveau projet, contactez le support via la page Support/Contact.`\n    }\n  };\n}\n\nif (matchedProjects.length > 1) {\n  return {\n    json: {\n      error: true,\n      response: `Plusieurs projets correspondent à votre recherche : ${matchedProjects.map(p => `${p.name} (${p.companyName || 'Sans société'})`).join(', ')}. Veuillez préciser davantage.`\n    }\n  };\n}\n\nconst matchedProject = matchedProjects[0];\n\nreturn {\n  json: {\n    error: false,\n    projectName: matchedProject.name,\n    companyName: matchedProject.companyName || 'Sans société',\n    taskName: parsed.taskName,\n    durationHours: parsed.durationHours,\n    date: parsed.date,\n    projectId: matchedProject.id,\n    userId: userId,\n    authToken: authToken\n  }\n};"
+            },
+            "id": "parse-ai-response",
+            "name": "Parse AI Response",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1340,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "string": [
+                        {
+                            "value1": "={{ String($json.error) }}",
+                            "operation": "equals",
+                            "value2": "true"
+                        }
+                    ]
+                }
+            },
+            "id": "check-error",
+            "name": "Has Error?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                1560,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Logger l'erreur complète avec tous les détails\nconst errorData = $('Parse AI Response').item.json;\nconst ollamaResponse = $('Call Ollama API').item.json;\nconst aiPrompt = $('Prepare AI Prompt').item.json;\n\n// Créer un log détaillé\nconst debugLog = {\n  timestamp: new Date().toISOString(),\n  errorMessage: errorData.response,\n  userMessage: aiPrompt.userPrompt,\n  ollamaRawResponse: ollamaResponse,\n  parsedData: errorData,\n  systemPrompt: aiPrompt.systemPrompt.substring(0, 200) + '...'\n};\n\n// Logger dans la console n8n\nconsole.log('=== TimeScope AI Error Debug ===');\nconsole.log(JSON.stringify(debugLog, null, 2));\nconsole.log('================================');\n\nreturn {\n  json: {\n    output: errorData.response,\n    success: false,\n    debug: debugLog\n  }\n};"
+            },
+            "id": "log-error",
+            "name": "Log Error Details",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1780,
+                280
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ { \"output\": $json.output, \"success\": false, \"debug\": $json.debug } }}"
+            },
+            "id": "respond-error",
+            "name": "Respond Error",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
+            "position": [
+                2000,
+                280
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://host.docker.internal:5001/api/tasks",
+                "authentication": "none",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "={{ 'Bearer ' + $('Parse AI Response').item.json.authToken }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ \n  {\n    \"name\": $('Parse AI Response').item.json.taskName,\n    \"description\": \"Tâche créée automatiquement par l'assistant IA\",\n    \"projectId\": $('Parse AI Response').item.json.projectId,\n    \"status\": \"EnCours\",\n    \"precision\": \"Medium\",\n    \"priority\": \"Medium\",\n    \"estimatedTime\": \"00:00:00\"\n  }\n}}",
+                "options": {
+                    "ignoreHttpStatusErrors": true
+                }
+            },
+            "id": "create-task",
+            "name": "Create Task",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1780,
+                520
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://host.docker.internal:5001/api/timeentries",
+                "authentication": "none",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "={{ 'Bearer ' + $('Parse AI Response').item.json.authToken }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ \n  {\n    \"taskId\": $json.id,\n    \"userId\": $('Parse AI Response').item.json.userId,\n    \"date\": $('Parse AI Response').item.json.date,\n    \"duration\": (Math.floor($('Parse AI Response').item.json.durationHours)).toString().padStart(2, '0') + ':' + (Math.round(($('Parse AI Response').item.json.durationHours - Math.floor($('Parse AI Response').item.json.durationHours)) * 60)).toString().padStart(2, '0') + ':00',\n    \"notes\": \"Créé par l'assistant IA\"\n  }\n}}"
+            },
+            "id": "create-time-entry",
+            "name": "Create Time Entry",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                2000,
+                520
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ \n  { \n    \"output\": \"✓ J'ai enregistré \" + $('Parse AI Response').item.json.durationHours + \"h sur le projet '\" + $('Parse AI Response').item.json.projectName + \"' (\" + $('Parse AI Response').item.json.companyName + \") pour la tâche '\" + $('Parse AI Response').item.json.taskName + \"' le \" + $('Parse AI Response').item.json.date + \".\",\n    \"success\": true \n  }\n}}"
+            },
+            "id": "respond-success",
+            "name": "Respond Success",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
+            "position": [
+                2220,
+                520
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook Chat": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Context",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract Context": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch Projects",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Fetch Tasks",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Projects": {
+            "main": [
+                [
+                    {
+                        "node": "Prepare AI Prompt",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Tasks": {
+            "main": [
+                [
+                    {
+                        "node": "Prepare AI Prompt",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Prepare AI Prompt": {
+            "main": [
+                [
+                    {
+                        "node": "Call Ollama API",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Call Ollama API": {
+            "main": [
+                [
+                    {
+                        "node": "Parse AI Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse AI Response": {
+            "main": [
+                [
+                    {
+                        "node": "Has Error?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Error?": {
+            "main": [
+                [
+                    {
+                        "node": "Log Error Details",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Create Task",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Log Error Details": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Error",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Create Task": {
+            "main": [
+                [
+                    {
+                        "node": "Create Time Entry",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Create Time Entry": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [
+        "TimeScope",
+        "AI",
+        "Working"
+    ],
+    "triggerCount": 0,
+    "updatedAt": "2025-11-21T23:00:00.000Z",
+    "versionId": "2"
+}

@@ -25,15 +25,30 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère tous les projets depuis la base Projects
+    /// Récupère tous les projets depuis la base Projects avec les informations du groupe
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
+    public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjects()
     {
         try
         {
-            var projects = await _projectService.GetAllProjectsAsync();
-            return Ok(projects);
+            var projects = await _projectsUow.Projects.GetAllAsync();
+            var groups = await _projectsUow.Groups.GetAllAsync();
+            
+            var projectDtos = projects.Select(p =>
+            {
+                var group = groups.FirstOrDefault(g => g.Id == p.GroupId);
+                return new ProjectDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    GroupId = p.GroupId,
+                    CompanyName = group?.Name
+                };
+            });
+            
+            return Ok(projectDtos);
         }
         catch (Exception ex)
         {
@@ -331,6 +346,15 @@ public class ProjectsController : ControllerBase
 }
 
 // DTOs
+public class ProjectDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public Guid? GroupId { get; set; }
+    public string? CompanyName { get; set; }
+}
+
 public class CreateProjectDto
 {
     public string Name { get; set; } = string.Empty;
