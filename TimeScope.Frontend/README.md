@@ -57,7 +57,7 @@ L'application sera disponible sur http://localhost:3000
 Créez un fichier `.env.local` à la racine du projet :
 
 ```env
-NEXT_PUBLIC_API_URL=https://localhost:5001/api
+NEXT_PUBLIC_API_URL=http://localhost:8080/api
 NEXT_PUBLIC_APP_NAME=TimeScope
 NEXT_PUBLIC_APP_VERSION=1.0.0
 ```

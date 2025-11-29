@@ -138,7 +138,7 @@ Assurez-vous d'avoir les outils suivants installés sur votre machine.
    cd TimeScope.API
    dotnet run
    ```
-   L'API sera accessible via Swagger à l'adresse `https://localhost:5001/swagger`.
+   L'API sera accessible via Swagger à l'adresse `http://localhost:8080/swagger`.
 
 5. **Démarrez le frontend**
    ```sh

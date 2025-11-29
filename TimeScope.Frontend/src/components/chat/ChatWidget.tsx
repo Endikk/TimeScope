@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import axios from 'axios'
 import { useAuth } from '@/contexts/AuthContext'
 import { tokenStorage } from '@/lib/api/services/auth.service'
+import { useRefreshStore } from '@/lib/store/refreshStore'
 
 interface Message {
     id: string
@@ -187,6 +188,11 @@ export function ChatWidget() {
                 content: response.data.output || "Je n'ai pas compris votre demande.",
                 sender: 'bot',
                 timestamp: new Date()
+            }
+
+            // Trigger calendar refresh if the operation was successful
+            if (response.data.success) {
+                useRefreshStore.getState().triggerRefresh()
             }
 
             setMessages(prev => [...prev, botResponse])
