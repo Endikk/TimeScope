@@ -34,7 +34,7 @@ export function GroupsTab({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Groupes</CardTitle>
+            <CardTitle>Sociétés</CardTitle>
             <CardDescription>{groups.length} groupe(s)</CardDescription>
           </div>
           <Dialog open={isAddOpen} onOpenChange={onAddOpenChange}>

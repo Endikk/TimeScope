@@ -36,7 +36,7 @@ export function StatisticsCards({ statistics }: StatisticsCardsProps) {
         </CardHeader>
         <CardContent className="px-3 md:px-6">
           <div className="text-2xl md:text-3xl font-bold text-blue-900">{statistics.totalProjects}</div>
-          <p className="text-xs text-blue-700 mt-1">{statistics.totalGroups} groupes</p>
+          <p className="text-xs text-blue-700 mt-1">{statistics.totalGroups} sociétés</p>
         </CardContent>
       </Card>
 

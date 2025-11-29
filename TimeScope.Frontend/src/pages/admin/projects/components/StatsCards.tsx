@@ -21,7 +21,7 @@ export function StatsCards({ projectsCount, groupsCount, tasksCount }: StatsCard
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 md:px-6">
-          <CardTitle className="text-xs md:text-sm font-medium">Groupes</CardTitle>
+          <CardTitle className="text-xs md:text-sm font-medium">Sociétés</CardTitle>
           <Layers className="h-4 w-4 text-muted-foreground shrink-0" />
         </CardHeader>
         <CardContent className="px-3 md:px-6">

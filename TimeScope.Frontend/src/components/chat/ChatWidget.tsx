@@ -301,14 +301,18 @@ export function ChatWidget() {
                         <CardContent className="flex-1 p-0 overflow-hidden bg-muted/30">
                             <ScrollArea className="h-full w-full p-4" ref={scrollAreaRef}>
                                 <div className="flex flex-col gap-4 pb-2">
-                                    {messages.map((message) => (
+                                    {messages.map((message, index) => (
                                         <div
                                             key={message.id}
                                             className={cn(
                                                 "flex gap-3 max-w-[85%]",
-                                                "animate-in fade-in slide-in-from-bottom-2 duration-300",
+                                                "animate-in fade-in slide-in-from-bottom-5 duration-500",
                                                 message.sender === 'user' ? "ml-auto flex-row-reverse" : ""
                                             )}
+                                            style={{
+                                                animationDelay: `${index * 50}ms`,
+                                                animationFillMode: 'both'
+                                            }}
                                         >
                                             <div className={cn(
                                                 "h-8 w-8 rounded-full flex items-center justify-center shrink-0 border",
@@ -337,7 +341,7 @@ export function ChatWidget() {
                                         </div>
                                     ))}
                                     {isLoading && (
-                                        <div className="flex gap-3 max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                        <div className="flex gap-3 max-w-[85%] animate-in fade-in slide-in-from-bottom-5 duration-500">
                                             <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 bg-background text-foreground border border-border">
                                                 <Bot className="h-4 w-4" />
                                             </div>

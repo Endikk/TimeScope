@@ -1,5 +1,5 @@
 {
-    "name": "TimeScope AI Assistant - Working",
+    "name": "TimeScope AI Assistant - Production Ready",
     "nodes": [
         {
             "parameters": {
@@ -8,7 +8,7 @@
                 "responseMode": "responseNode",
                 "options": {}
             },
-            "id": "webhook-1",
+            "id": "webhook-chat",
             "name": "Webhook Chat",
             "type": "n8n-nodes-base.webhook",
             "typeVersion": 2,
@@ -19,35 +19,34 @@
         },
         {
             "parameters": {
-                "assignments": {
-                    "assignments": [
+                "jsCode": "// ===== VALIDATION ET EXTRACTION DU CONTEXTE =====\nconst body = $input.first().json.body;\n\n// Validation des champs requis\nif (!body || !body.message || !body.userId || !body.authToken) {\n  return {\n    json: {\n      error: true,\n      errorType: 'VALIDATION_ERROR',\n      technicalMessage: 'Requête invalide : message, userId et authToken sont requis.',\n      userMessage: body?.message || '',\n      context: 'validation'\n    }\n  };\n}\n\n// Nettoyage et validation du message\nconst userMessage = String(body.message).trim();\nif (userMessage.length === 0) {\n  return {\n    json: {\n      error: true,\n      errorType: 'VALIDATION_ERROR',\n      technicalMessage: 'Le message ne peut pas être vide.',\n      userMessage: userMessage,\n      context: 'validation'\n    }\n  };\n}\n\nif (userMessage.length > 500) {\n  return {\n    json: {\n      error: true,\n      errorType: 'VALIDATION_ERROR',\n      technicalMessage: 'Le message est trop long (maximum 500 caractères).',\n      userMessage: userMessage,\n      context: 'validation'\n    }\n  };\n}\n\n// Extraction et validation du contexte\nreturn {\n  json: {\n    error: false,\n    userMessage: userMessage,\n    userId: String(body.userId),\n    authToken: String(body.authToken),\n    timestamp: new Date().toISOString()\n  }\n};"
+            },
+            "id": "validate-input",
+            "name": "Validate Input",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                460,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
                         {
-                            "id": "user-message",
-                            "name": "userMessage",
-                            "value": "={{ $json.body.message }}",
-                            "type": "string"
-                        },
-                        {
-                            "id": "user-id",
-                            "name": "userId",
-                            "value": "={{ $json.body.userId }}",
-                            "type": "string"
-                        },
-                        {
-                            "id": "auth-token",
-                            "name": "authToken",
-                            "value": "={{ $json.body.authToken }}",
-                            "type": "string"
+                            "value1": "={{ $json.error }}",
+                            "value2": true
                         }
                     ]
                 }
             },
-            "id": "extract-1",
-            "name": "Extract Context",
-            "type": "n8n-nodes-base.set",
-            "typeVersion": 3.4,
+            "id": "check-validation",
+            "name": "Check Validation",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
             "position": [
-                460,
+                680,
                 400
             ]
         },
@@ -61,9 +60,12 @@
                     "parameters": [
                         {
                             "name": "Authorization",
-                            "value": "={{ 'Bearer ' + $('Extract Context').item.json.authToken }}"
+                            "value": "={{ 'Bearer ' + $('Validate Input').item.json.authToken }}"
                         }
                     ]
+                },
+                "options": {
+                    "timeout": 10000
                 }
             },
             "id": "fetch-projects",
@@ -71,7 +73,7 @@
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
-                680,
+                900,
                 300
             ]
         },
@@ -85,9 +87,12 @@
                     "parameters": [
                         {
                             "name": "Authorization",
-                            "value": "={{ 'Bearer ' + $('Extract Context').item.json.authToken }}"
+                            "value": "={{ 'Bearer ' + $('Validate Input').item.json.authToken }}"
                         }
                     ]
+                },
+                "options": {
+                    "timeout": 10000
                 }
             },
             "id": "fetch-tasks",
@@ -95,20 +100,40 @@
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
-                680,
+                900,
                 500
             ]
         },
         {
             "parameters": {
-                "jsCode": "// Préparer le contexte pour l'IA\nconst userMessage = $('Extract Context').item.json.userMessage;\nconst authToken = $('Extract Context').item.json.authToken;\nconst userId = $('Extract Context').item.json.userId;\n\nconst projectsData = $input.all()[0]?.json || [];\nconst tasksData = $input.all()[1]?.json || [];\n\nconst projects = Array.isArray(projectsData) ? projectsData : [projectsData];\nconst tasks = Array.isArray(tasksData) ? tasksData : [tasksData];\n\n// Créer la liste des projets disponibles pour l'IA\nconst projectsList = projects.map(p => `- Société: ${p.companyName || 'Sans société'} | Projet: ${p.name}`).join('\\\\n');\n\n// Date actuelle dynamique\nconst now = new Date();\nconst today = now.toISOString().split('T')[0];\nconst dayOfWeek = now.toLocaleDateString('fr-FR', { weekday: 'long' });\n\n// Créer le prompt pour l'IA\nconst systemPrompt = `Tu es un assistant intelligent pour TimeScope, une application de time tracking.\n\nTon rôle est d'extraire les informations suivantes du message de l'utilisateur :\n1. Le nom de la SOCIÉTÉ (si mentionné avec les mots \"société\", \"chez\", \"pour\")\n2. Le nom du PROJET (si mentionné avec le mot \"projet\")\n3. Le nom de la TÂCHE (obligatoire)\n4. La durée en heures décimales (obligatoire : 30min = 0.5, 1h30 = 1.5, etc.)\n5. La date (par défaut : aujourd'hui = ${today})\n\nIMPORTANT : \n- Si l'utilisateur dit \"Société X\", mets X dans companyName\n- Si l'utilisateur dit \"Projet Y\", mets Y dans projectName\n- Si l'utilisateur dit \"Société X Projet Y\", mets X dans companyName ET Y dans projectName\n- Au moins un des deux (companyName OU projectName) doit être fourni\n\nFORMAT RAPIDE SUPPORTÉ :\nL'utilisateur peut utiliser le format \"Société/Projet/Tâche pour Durée au Date\".\nExemple : \"TimeScope/DevTime/React pour 30 minutes au 21/11/2025\"\nDans ce cas :\n- companyName = TimeScope\n- projectName = DevTime\n- taskName = React\n- duration = 30 minutes\n- date = 21/11/2025\n\nPROJETS ET SOCIÉTÉS DISPONIBLES :\n${projectsList}\n\nRéponds UNIQUEMENT avec un JSON valide au format suivant (sans commentaire, sans markdown) :\n{\n  \"companyName\": \"nom de la société (si mentionné)\",\n  \"projectName\": \"nom du projet (si mentionné)\",\n  \"taskName\": \"nom de la tâche\",\n  \"durationHours\": 0.5,\n  \"date\": \"YYYY-MM-DD\",\n  \"understood\": true\n}\n\nSi des informations manquent, réponds :\n{\n  \"understood\": false,\n  \"question\": \"Précise quelle information manque (société/projet, tâche, ou durée).\"\n}\n\nDate actuelle : ${today} (${dayOfWeek})\n\nExemples :\n- \"Société GCP Projet Infrastructure et tâche documentation pour aujourd'hui 1h\" → {\"companyName\": \"GCP\", \"projectName\": \"Infrastructure\", \"taskName\": \"documentation\", \"durationHours\": 1.0, \"date\": \"${today}\", \"understood\": true}\n- \"1h sur le projet Infrastructure pour la doc\" → {\"projectName\": \"Infrastructure\", \"taskName\": \"doc\", \"durationHours\": 1.0, \"date\": \"${today}\", \"understood\": true}\n- \"30 minutes de dev chez GCP\" → {\"companyName\": \"GCP\", \"taskName\": \"dev\", \"durationHours\": 0.5, \"date\": \"${today}\", \"understood\": true}\n- \"Société GCP tâche réunion 2h\" → {\"companyName\": \"GCP\", \"taskName\": \"réunion\", \"durationHours\": 2.0, \"date\": \"${today}\", \"understood\": true}\n- \"Projet Documentation tâche rédaction 1h30\" → {\"projectName\": \"Documentation\", \"taskName\": \"rédaction\", \"durationHours\": 1.5, \"date\": \"${today}\", \"understood\": true}\n- \"TimeScope/DevTime/React pour 30 minutes au 21/11/2025\" → {\"companyName\": \"TimeScope\", \"projectName\": \"DevTime\", \"taskName\": \"React\", \"durationHours\": 0.5, \"date\": \"2025-11-21\", \"understood\": true}`;\n\nconst userPrompt = `Message utilisateur : \"${userMessage}\"`;\n\nreturn {\n  json: {\n    systemPrompt: systemPrompt,\n    userPrompt: userPrompt,\n    authToken: authToken,\n    userId: userId,\n    projects: projects\n  }\n};"
+                "jsCode": "// ===== PRÉPARATION DU CONTEXTE POUR L'IA =====\\n\\n// Récupération des données\\nconst context = $('Validate Input').item.json;\\nconst projectsData = $input.all()[0]?.json || [];\\nconst tasksData = $input.all()[1]?.json || [];\\n\\n// Normalisation des données\\nconst projects = Array.isArray(projectsData) ? projectsData : [projectsData];\\nconst tasks = Array.isArray(tasksData) ? tasksData : [tasksData];\\n\\n// Filtrer les données invalides\\nconst validProjects = projects.filter(p => p && p.id && p.name);\\nconst validTasks = tasks.filter(t => t && t.id && t.name && t.projectId);\\n\\n// Vérification des données disponibles\\nif (validProjects.length === 0) {\\n  return {\\n    json: {\\n      error: true,\\n      errorType: 'NO_DATA',\\n      technicalMessage: 'Aucun projet disponible.',\\n      userMessage: context.userMessage,\\n      context: 'no_projects'\\n    }\\n  };\\n}\\n\\nif (validTasks.length === 0) {\\n  return {\\n    json: {\\n      error: true,\\n      errorType: 'NO_DATA',\\n      technicalMessage: 'Aucune tâche disponible.',\\n      userMessage: context.userMessage,\\n      context: 'no_tasks'\\n    }\\n  };\\n}\\n\\n// Création de la liste des projets pour l'IA\\nconst projectsList = validProjects\\n  .map(p => `- ${p.companyName || 'Sans société'} > ${p.name}`)\\n  .join('\\\\n');\\n\\n// Date actuelle\\nconst now = new Date();\\nconst today = now.toISOString().split('T')[0];\\nconst dayOfWeek = now.toLocaleDateString('fr-FR', { weekday: 'long' });\\n\\n// Construction du prompt système\\nconst systemPrompt = `Tu es l'assistant IA de TimeScope, une application professionnelle de time tracking.\\\\n\\\\n=== TON RÔLE ===\\\\nExtraire avec précision les informations de saisie de temps depuis le message de l'utilisateur.\\\\n\\\\n=== INFORMATIONS À EXTRAIRE ===\\\\n1. SOCIÉTÉ (optionnel) : Nom de la société/entreprise\\\\n2. PROJET (obligatoire) : Nom du projet\\\\n3. TÂCHE (obligatoire) : Nom de la tâche (DOIT exister dans le projet)\\\\n4. DURÉE (obligatoire) : Durée en heures décimales\\\\n   - 30min = 0.5h\\\\n   - 1h30 = 1.5h\\\\n   - 2h15 = 2.25h\\\\n   - 3 heures = 3.0h\\\\n5. DATE (optionnel) : Date de la saisie (défaut = aujourd'hui)\\\\n\\\\n=== FORMATS SUPPORTÉS ===\\\\n\\\\nFORMAT SLASH (prioritaire) :\\\\n\\\\\"Société/Projet/Tâche pendant X heures pour le DD/MM/YYYY\\\\\"\\\\nExemples :\\\\n- \\\\\"TimeScope/DevTime/React pendant 3 heures pour le 25/11/2025\\\\\"\\\\n  → companyName: \\\\\"TimeScope\\\\\", projectName: \\\\\"DevTime\\\\\", taskName: \\\\\"React\\\\\", durationHours: 3.0, date: \\\\\"2025-11-25\\\\\"\\\\n- \\\\\"GCP/Infrastructure/Documentation pendant 1h30 pour le 28/11/2025\\\\\"\\\\n  → companyName: \\\\\"GCP\\\\\", projectName: \\\\\"Infrastructure\\\\\", taskName: \\\\\"Documentation\\\\\", durationHours: 1.5, date: \\\\\"2025-11-28\\\\\"\\\\n\\\\nFORMAT NATUREL :\\\\n- \\\\\"1h30 sur le projet DevTime pour la tâche React\\\\\"\\\\n- \\\\\"Société TimeScope projet Backend tâche API 2h hier\\\\\"\\\\n- \\\\\"30 minutes de documentation sur Infrastructure\\\\\"\\\\n\\\\nDATES ACCEPTÉES :\\\\n- Format français : DD/MM/YYYY (ex: 25/11/2025)\\\\n- Format ISO : YYYY-MM-DD (ex: 2025-11-25)\\\\n- Relatif : \\\\\"aujourd'hui\\\\\", \\\\\"hier\\\\\", \\\\\"demain\\\\\"\\\\n- IMPORTANT : Convertis TOUJOURS les dates françaises DD/MM/YYYY en format ISO YYYY-MM-DD\\\\n\\\\nDURÉES ACCEPTÉES :\\\\n- \\\\\"3 heures\\\\\" → 3.0\\\\n- \\\\\"1h30\\\\\" ou \\\\\"1h 30\\\\\" → 1.5\\\\n- \\\\\"30 minutes\\\\\" ou \\\\\"30min\\\\\" → 0.5\\\\n- \\\\\"2h15\\\\\" → 2.25\\\\n\\\\n=== RÈGLES STRICTES ===\\\\n• La tâche DOIT exister dans le système (pas de création)\\\\n• Au moins le PROJET doit être mentionné\\\\n• La durée doit être > 0 et ≤ 24 heures\\\\n• Convertis TOUJOURS la date au format YYYY-MM-DD dans ta réponse\\\\n\\\\n=== PROJETS DISPONIBLES ===\\\\n${projectsList}\\\\n\\\\n=== FORMAT DE RÉPONSE ===\\\\nRéponds UNIQUEMENT avec un JSON valide (sans markdown, sans commentaires) :\\\\n\\\\nSi tu comprends tout :\\\\n{\\\\n  \\\\\"understood\\\\\": true,\\\\n  \\\\\"companyName\\\\\": \\\\\"nom société\\\\\" ou null,\\\\n  \\\\\"projectName\\\\\": \\\\\"nom projet\\\\\",\\\\n  \\\\\"taskName\\\\\": \\\\\"nom tâche\\\\\",\\\\n  \\\\\"durationHours\\\\\": 1.5,\\\\n  \\\\\"date\\\\\": \\\\\"YYYY-MM-DD\\\\\"\\\\n}\\\\n\\\\nSi des informations manquent :\\\\n{\\\\n  \\\\\"understood\\\\\": false,\\\\n  \\\\\"question\\\\\": \\\\\"Message clair expliquant ce qui manque\\\\\"\\\\n}\\\\n\\\\n=== EXEMPLES COMPLETS ===\\\\nEntrée : \\\\\"TimeScope/DevTime/React pendant 3 heures pour le 25/11/2025\\\\\"\\\\nSortie : {\\\\\"understood\\\\\": true, \\\\\"companyName\\\\\": \\\\\"TimeScope\\\\\", \\\\\"projectName\\\\\": \\\\\"DevTime\\\\\", \\\\\"taskName\\\\\": \\\\\"React\\\\\", \\\\\"durationHours\\\\\": 3.0, \\\\\"date\\\\\": \\\\\"2025-11-25\\\\\"}\\\\n\\\\nEntrée : \\\\\"GCP/Infrastructure/API 2h hier\\\\\"\\\\nSortie : {\\\\\"understood\\\\\": true, \\\\\"companyName\\\\\": \\\\\"GCP\\\\\", \\\\\"projectName\\\\\": \\\\\"Infrastructure\\\\\", \\\\\"taskName\\\\\": \\\\\"API\\\\\", \\\\\"durationHours\\\\\": 2.0, \\\\\"date\\\\\": \\\\\"calculer hier\\\\\"}\\\\n\\\\nEntrée : \\\\\"1h30 sur DevTime pour React\\\\\"\\\\nSortie : {\\\\\"understood\\\\\": true, \\\\\"companyName\\\\\": null, \\\\\"projectName\\\\\": \\\\\"DevTime\\\\\", \\\\\"taskName\\\\\": \\\\\"React\\\\\", \\\\\"durationHours\\\\\": 1.5, \\\\\"date\\\\\": \\\\\"${today}\\\\\"}\\\\n\\\\n=== CONTEXTE ACTUEL ===\\\\nDate : ${today} (${dayOfWeek})\\\\nNombre de projets : ${validProjects.length}\\\\nNombre de tâches : ${validTasks.length}`;\\n\\nconst userPrompt = `Message utilisateur : \\\\\"${context.userMessage}\\\\\"`;\\n\\nreturn {\\n  json: {\\n    error: false,\\n    systemPrompt: systemPrompt,\\n    userPrompt: userPrompt,\\n    authToken: context.authToken,\\n    userId: context.userId,\\n    projects: validProjects,\\n    tasks: validTasks,\\n    timestamp: context.timestamp,\\n    userMessage: context.userMessage\\n  }\\n};"
             },
-            "id": "prepare-prompt",
-            "name": "Prepare AI Prompt",
+            "id": "prepare-ai-context",
+            "name": "Prepare AI Context",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                900,
+                1120,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.error }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "check-data-availability",
+            "name": "Check Data Availability",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                1340,
                 400
             ]
         },
@@ -119,111 +144,150 @@
                 "authentication": "none",
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "={{ \n  {\n    \"model\": \"llama3.2\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": $('Prepare AI Prompt').item.json.systemPrompt\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $('Prepare AI Prompt').item.json.userPrompt\n      }\n    ],\n    \"stream\": false,\n    \"format\": \"json\"\n  }\n}}",
-                "options": {}
+                "jsonBody": "={{ \n  {\n    \"model\": \"llama3.2\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": $json.systemPrompt\n      },\n      {\n        \"role\": \"user\",\n        \"content\": $json.userPrompt\n      }\n    ],\n    \"stream\": false,\n    \"format\": \"json\",\n    \"options\": {\n      \"temperature\": 0.1,\n      \"top_p\": 0.9\n    }\n  }\n}}",
+                "options": {
+                    "timeout": 30000
+                }
             },
             "id": "call-ollama",
-            "name": "Call Ollama API",
+            "name": "Call Ollama AI",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
-                1120,
-                400
+                1560,
+                500
             ]
         },
         {
             "parameters": {
-                "jsCode": "// Parser la réponse de l'IA\nconst aiResponse = $input.first().json;\nconst messageContent = aiResponse.message?.content || '{}';\n\nlet parsed;\ntry {\n  parsed = JSON.parse(messageContent);\n} catch (e) {\n  // Si le parsing échoue, essayer d'extraire le JSON du texte\n  const jsonMatch = messageContent.match(/\\{[^}]+\\}/);\n  if (jsonMatch) {\n    parsed = JSON.parse(jsonMatch[0]);\n  } else {\n    return {\n      json: {\n        error: true,\n        response: \"Désolé, je n'ai pas compris votre demande. Pouvez-vous reformuler en précisant la SOCIÉTÉ/PROJET, la TÂCHE et la DURÉE ?\"\n      }\n    };\n  }\n}\n\n// Récupérer le contexte directement depuis la source\nconst authToken = $('Extract Context').item.json.authToken;\nconst userId = $('Extract Context').item.json.userId;\nconst projects = $('Prepare AI Prompt').item.json.projects;\n\nif (!parsed.understood) {\n  return {\n    json: {\n      error: true,\n      response: parsed.question || \"Je n'ai pas compris votre demande. Précisez la SOCIÉTÉ/PROJET, la TÂCHE et la DURÉE.\"\n    }\n  };\n}\n\n// --- VALIDATION STRICTE DE LA DATE ---\nif (parsed.date) {\n  const dateObj = new Date(parsed.date);\n  const dayOfWeek = dateObj.getDay(); // 0 = Dimanche, 6 = Samedi\n  \n  // 1. Vérifier Week-end\n  if (dayOfWeek === 0 || dayOfWeek === 6) {\n    return {\n      json: {\n        error: true,\n        response: `Impossible de créer une tâche le ${parsed.date} car c'est un week-end. Les saisies sont interdites le samedi et le dimanche.`\n      }\n    };\n  }\n\n  // 2. Vérifier Jours Fériés (France 2024-2025)\n  const holidays = [\n    '2024-01-01', '2024-04-01', '2024-05-01', '2024-05-08', '2024-05-09', '2024-05-20', '2024-07-14', '2024-08-15', '2024-11-01', '2024-11-11', '2024-12-25',\n    '2025-01-01', '2025-04-21', '2025-05-01', '2025-05-08', '2025-05-29', '2025-06-09', '2025-07-14', '2025-08-15', '2025-11-01', '2025-11-11', '2025-12-25'\n  ];\n  \n  if (holidays.includes(parsed.date)) {\n    return {\n      json: {\n        error: true,\n        response: `Impossible de créer une tâche le ${parsed.date} car c'est un jour férié.`\n      }\n    };\n  }\n}\n// -------------------------------------\n\nif (!projects || projects.length === 0) {\n  return {\n    json: {\n      error: true,\n      response: \"Aucun projet disponible. Veuillez contacter le support via la page Support/Contact pour créer un projet.\"\n    }\n  };\n}\n\n// Extraire les critères de recherche\nconst projectName = parsed.projectName;\nconst companyName = parsed.companyName;\n\n// Vérifier qu'au moins un critère est fourni\nif (!projectName && !companyName) {\n  return {\n    json: {\n      error: true,\n      response: \"Vous devez préciser le nom de la SOCIÉTÉ ou du PROJET. Projets disponibles : \" + projects.map(p => `${p.name} (${p.companyName || 'Sans société'})`).join(', ')\n    }\n  };\n}\n\n// Recherche flexible par société ET/OU projet\nlet matchedProjects = projects.filter(p => {\n  const matchesProject = projectName && (\n    p.name.toLowerCase().includes(projectName.toLowerCase()) ||\n    projectName.toLowerCase().includes(p.name.toLowerCase())\n  );\n  \n  const matchesCompany = companyName && p.companyName && (\n    p.companyName.toLowerCase().includes(companyName.toLowerCase()) ||\n    companyName.toLowerCase().includes(p.companyName.toLowerCase())\n  );\n  \n  // Accepter si au moins un critère correspond\n  return matchesProject || matchesCompany;\n});\n\n// Si les deux critères sont fournis, prioriser les correspondances exactes\nif (projectName && companyName && matchedProjects.length > 1) {\n  const exactMatches = matchedProjects.filter(p => {\n    const matchesProject = p.name.toLowerCase().includes(projectName.toLowerCase()) ||\n      projectName.toLowerCase().includes(p.name.toLowerCase());\n    const matchesCompany = p.companyName && (\n      p.companyName.toLowerCase().includes(companyName.toLowerCase()) ||\n      companyName.toLowerCase().includes(p.companyName.toLowerCase())\n    );\n    return matchesProject && matchesCompany;\n  });\n  \n  if (exactMatches.length > 0) {\n    matchedProjects = exactMatches;\n  }\n}\n\n// Gérer les cas d'ambiguïté\nif (matchedProjects.length === 0) {\n  const searchCriteria = [];\n  if (companyName) searchCriteria.push(`la société \"${companyName}\"`);\n  if (projectName) searchCriteria.push(`le projet \"${projectName}\"`);\n  \n  return {\n    json: {\n      error: true,\n      response: `Aucun projet trouvé pour ${searchCriteria.join(' et ')}. Projets disponibles : ${projects.map(p => `${p.name} (${p.companyName || 'Sans société'})`).join(', ')}. Pour ajouter un nouveau projet, contactez le support via la page Support/Contact.`\n    }\n  };\n}\n\nif (matchedProjects.length > 1) {\n  return {\n    json: {\n      error: true,\n      response: `Plusieurs projets correspondent à votre recherche : ${matchedProjects.map(p => `${p.name} (${p.companyName || 'Sans société'})`).join(', ')}. Veuillez préciser davantage.`\n    }\n  };\n}\n\nconst matchedProject = matchedProjects[0];\n\nreturn {\n  json: {\n    error: false,\n    projectName: matchedProject.name,\n    companyName: matchedProject.companyName || 'Sans société',\n    taskName: parsed.taskName,\n    durationHours: parsed.durationHours,\n    date: parsed.date,\n    projectId: matchedProject.id,\n    userId: userId,\n    authToken: authToken\n  }\n};"
+                "jsCode": "// ===== PARSING ET VALIDATION DE LA RÉPONSE IA =====\n\nconst aiResponse = $input.first().json;\nconst context = $('Prepare AI Context').first().json;\n\n// Extraction du contenu de la réponse\nlet messageContent = aiResponse.message?.content || '{}';\n\n// Parsing JSON avec gestion d'erreur robuste\nlet parsed;\ntry {\n  messageContent = messageContent.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  parsed = JSON.parse(messageContent);\n} catch (e) {\n  const jsonMatch = messageContent.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    try {\n      parsed = JSON.parse(jsonMatch[0]);\n    } catch (e2) {\n      return {\n        json: {\n          error: true,\n          errorType: 'AI_PARSE_ERROR',\n          technicalMessage: 'L\\'IA n\\'a pas pu parser la réponse.',\n          userMessage: context.userMessage,\n          context: 'ai_parsing_failed'\n        }\n      };\n    }\n  } else {\n    return {\n      json: {\n        error: true,\n        errorType: 'AI_PARSE_ERROR',\n        technicalMessage: 'L\\'IA n\\'a pas retourné de JSON valide.',\n        userMessage: context.userMessage,\n        context: 'ai_no_json'\n      }\n    };\n  }\n}\n\n// Vérification de la compréhension\nif (!parsed.understood) {\n  return {\n    json: {\n      error: true,\n      errorType: 'INCOMPLETE_REQUEST',\n      technicalMessage: parsed.question || 'Informations manquantes.',\n      userMessage: context.userMessage,\n      context: 'incomplete_info'\n    }\n  };\n}\n\n// Validation des champs obligatoires\nif (!parsed.projectName || !parsed.taskName || !parsed.durationHours) {\n  return {\n    json: {\n      error: true,\n      errorType: 'MISSING_FIELDS',\n      technicalMessage: 'Champs manquants : projet, tâche ou durée.',\n      userMessage: context.userMessage,\n      context: 'missing_fields'\n    }\n  };\n}\n\n// Validation de la durée\nconst duration = parseFloat(parsed.durationHours);\nif (isNaN(duration) || duration <= 0 || duration > 24) {\n  return {\n    json: {\n      error: true,\n      errorType: 'INVALID_DURATION',\n      technicalMessage: `Durée invalide : ${parsed.durationHours}h`,\n      userMessage: context.userMessage,\n      requestedDuration: parsed.durationHours,\n      context: 'invalid_duration'\n    }\n  };\n}\n\n// Validation et normalisation de la date\nlet targetDate = parsed.date || new Date().toISOString().split('T')[0];\ntry {\n  const dateObj = new Date(targetDate);\n  if (isNaN(dateObj.getTime())) {\n    throw new Error('Date invalide');\n  }\n  targetDate = dateObj.toISOString().split('T')[0];\n} catch (e) {\n  return {\n    json: {\n      error: true,\n      errorType: 'INVALID_DATE',\n      technicalMessage: `Date invalide : ${parsed.date}`,\n      userMessage: context.userMessage,\n      requestedDate: parsed.date,\n      context: 'invalid_date'\n    }\n  };\n}\n\n// Passage à la suite avec les données validées\nreturn {\n  json: {\n    error: false,\n    parsedData: {\n      companyName: parsed.companyName || null,\n      projectName: String(parsed.projectName).trim(),\n      taskName: String(parsed.taskName).trim(),\n      durationHours: duration,\n      date: targetDate\n    },\n    context: {\n      authToken: context.authToken,\n      userId: context.userId,\n      projects: context.projects,\n      tasks: context.tasks,\n      userMessage: context.userMessage\n    }\n  }\n};"
             },
             "id": "parse-ai-response",
             "name": "Parse AI Response",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                1340,
-                400
+                1780,
+                500
             ]
         },
         {
             "parameters": {
                 "conditions": {
-                    "string": [
+                    "boolean": [
                         {
-                            "value1": "={{ String($json.error) }}",
-                            "operation": "equals",
-                            "value2": "true"
+                            "value1": "={{ $json.error }}",
+                            "value2": true
                         }
                     ]
                 }
             },
-            "id": "check-error",
-            "name": "Has Error?",
+            "id": "check-parsing",
+            "name": "Check Parsing",
             "type": "n8n-nodes-base.if",
             "typeVersion": 2,
             "position": [
-                1560,
-                400
+                2000,
+                500
             ]
         },
         {
             "parameters": {
-                "jsCode": "// Logger l'erreur complète avec tous les détails\nconst errorData = $('Parse AI Response').item.json;\nconst ollamaResponse = $('Call Ollama API').item.json;\nconst aiPrompt = $('Prepare AI Prompt').item.json;\n\n// Créer un log détaillé\nconst debugLog = {\n  timestamp: new Date().toISOString(),\n  errorMessage: errorData.response,\n  userMessage: aiPrompt.userPrompt,\n  ollamaRawResponse: ollamaResponse,\n  parsedData: errorData,\n  systemPrompt: aiPrompt.systemPrompt.substring(0, 200) + '...'\n};\n\n// Logger dans la console n8n\nconsole.log('=== TimeScope AI Error Debug ===');\nconsole.log(JSON.stringify(debugLog, null, 2));\nconsole.log('================================');\n\nreturn {\n  json: {\n    output: errorData.response,\n    success: false,\n    debug: debugLog\n  }\n};"
+                "jsCode": "// ===== VALIDATION DE LA DATE (WEEK-END ET JOURS FÉRIÉS) =====\n\nconst data = $input.first().json;\nconst parsed = data.parsedData;\n\nconst dateObj = new Date(parsed.date);\nconst dayOfWeek = dateObj.getDay();\n\n// Vérification week-end\nif (dayOfWeek === 0 || dayOfWeek === 6) {\n  const dayName = dayOfWeek === 0 ? 'dimanche' : 'samedi';\n  return {\n    json: {\n      error: true,\n      errorType: 'WEEKEND_DATE',\n      technicalMessage: `Date week-end : ${parsed.date} (${dayName})`,\n      userMessage: data.context.userMessage,\n      requestedDate: parsed.date,\n      dayName: dayName,\n      context: 'weekend'\n    }\n  };\n}\n\n// Jours fériés français 2024-2026\nconst holidays = [\n  '2024-01-01', '2024-04-01', '2024-05-01', '2024-05-08', '2024-05-09', \n  '2024-05-20', '2024-07-14', '2024-08-15', '2024-11-01', '2024-11-11', '2024-12-25',\n  '2025-01-01', '2025-04-21', '2025-05-01', '2025-05-08', '2025-05-29', \n  '2025-06-09', '2025-07-14', '2025-08-15', '2025-11-01', '2025-11-11', '2025-12-25',\n  '2026-01-01', '2026-04-06', '2026-05-01', '2026-05-08', '2026-05-14', \n  '2026-05-25', '2026-07-14', '2026-08-15', '2026-11-01', '2026-11-11', '2026-12-25'\n];\n\nif (holidays.includes(parsed.date)) {\n  return {\n    json: {\n      error: true,\n      errorType: 'HOLIDAY_DATE',\n      technicalMessage: `Jour férié : ${parsed.date}`,\n      userMessage: data.context.userMessage,\n      requestedDate: parsed.date,\n      context: 'holiday'\n    }\n  };\n}\n\n// Date valide, continuer\nreturn {\n  json: {\n    error: false,\n    parsedData: parsed,\n    context: data.context\n  }\n};"
             },
-            "id": "log-error",
-            "name": "Log Error Details",
+            "id": "validate-date",
+            "name": "Validate Date",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                1780,
-                280
+                2220,
+                600
             ]
         },
         {
             "parameters": {
-                "respondWith": "json",
-                "responseBody": "={{ { \"output\": $json.output, \"success\": false, \"debug\": $json.debug } }}"
-            },
-            "id": "respond-error",
-            "name": "Respond Error",
-            "type": "n8n-nodes-base.respondToWebhook",
-            "typeVersion": 1.1,
-            "position": [
-                2000,
-                280
-            ]
-        },
-        {
-            "parameters": {
-                "method": "POST",
-                "url": "http://host.docker.internal:8080/api/tasks",
-                "authentication": "none",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
+                "conditions": {
+                    "boolean": [
                         {
-                            "name": "Authorization",
-                            "value": "={{ 'Bearer ' + $('Parse AI Response').item.json.authToken }}"
-                        },
-                        {
-                            "name": "Content-Type",
-                            "value": "application/json"
+                            "value1": "={{ $json.error }}",
+                            "value2": true
                         }
                     ]
-                },
-                "sendBody": true,
-                "specifyBody": "json",
-                "jsonBody": "={{ \n  {\n    \"name\": $('Parse AI Response').item.json.taskName,\n    \"description\": \"Tâche créée automatiquement par l'assistant IA\",\n    \"projectId\": $('Parse AI Response').item.json.projectId,\n    \"status\": \"EnCours\",\n    \"precision\": \"Medium\",\n    \"priority\": \"Medium\",\n    \"estimatedTime\": \"00:00:00\"\n  }\n}}",
-                "options": {
-                    "ignoreHttpStatusErrors": true
                 }
             },
-            "id": "create-task",
-            "name": "Create Task",
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
+            "id": "check-date",
+            "name": "Check Date",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
             "position": [
-                1780,
-                520
+                2440,
+                600
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// ===== RECHERCHE ET VALIDATION DU PROJET =====\n\nconst data = $input.first().json;\nconst parsed = data.parsedData;\nconst projects = data.context.projects;\n\nconst projectName = parsed.projectName.toLowerCase();\nconst companyName = parsed.companyName ? parsed.companyName.toLowerCase() : null;\n\n// Fonction de matching flexible\nconst matchScore = (project) => {\n  let score = 0;\n  const pName = project.name.toLowerCase();\n  const pCompany = project.companyName ? project.companyName.toLowerCase() : null;\n  \n  if (pName === projectName) score += 100;\n  else if (pName.includes(projectName) || projectName.includes(pName)) score += 50;\n  \n  if (companyName && pCompany) {\n    if (pCompany === companyName) score += 100;\n    else if (pCompany.includes(companyName) || companyName.includes(pCompany)) score += 50;\n  }\n  \n  return score;\n};\n\nconst scoredProjects = projects\n  .map(p => ({ project: p, score: matchScore(p) }))\n  .filter(sp => sp.score > 0)\n  .sort((a, b) => b.score - a.score);\n\nif (scoredProjects.length === 0) {\n  const availableList = projects.slice(0, 5).map(p => `${p.companyName || 'Sans société'} > ${p.name}`).join(', ');\n  return {\n    json: {\n      error: true,\n      errorType: 'PROJECT_NOT_FOUND',\n      technicalMessage: `Projet non trouvé : ${parsed.projectName}`,\n      userMessage: data.context.userMessage,\n      requestedProject: parsed.projectName,\n      requestedCompany: parsed.companyName,\n      availableProjects: availableList,\n      context: 'project_not_found'\n    }\n  };\n}\n\nconst maxScore = scoredProjects[0].score;\nconst topMatches = scoredProjects.filter(sp => sp.score === maxScore);\n\nif (topMatches.length > 1) {\n  const matchList = topMatches.map(sp => `${sp.project.companyName || 'Sans société'} > ${sp.project.name}`).join(', ');\n  return {\n    json: {\n      error: true,\n      errorType: 'AMBIGUOUS_PROJECT',\n      technicalMessage: `Plusieurs projets correspondent`,\n      userMessage: data.context.userMessage,\n      requestedProject: parsed.projectName,\n      matches: matchList,\n      context: 'ambiguous_project'\n    }\n  };\n}\n\nconst matchedProject = scoredProjects[0].project;\n\nreturn {\n  json: {\n    error: false,\n    matchedProject: matchedProject,\n    parsedData: parsed,\n    context: data.context\n  }\n};"
+            },
+            "id": "find-project",
+            "name": "Find Project",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                2660,
+                700
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.error }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "check-project",
+            "name": "Check Project",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                2880,
+                700
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// ===== RECHERCHE ET VALIDATION DE LA TÂCHE =====\n\nconst data = $input.first().json;\nconst parsed = data.parsedData;\nconst matchedProject = data.matchedProject;\nconst allTasks = data.context.tasks;\n\nconst projectTasks = allTasks.filter(t => t.projectId === matchedProject.id);\n\nif (projectTasks.length === 0) {\n  return {\n    json: {\n      error: true,\n      errorType: 'NO_TASKS_IN_PROJECT',\n      technicalMessage: `Aucune tâche dans le projet ${matchedProject.name}`,\n      userMessage: data.context.userMessage,\n      projectName: matchedProject.name,\n      context: 'no_tasks'\n    }\n  };\n}\n\nconst taskName = parsed.taskName.toLowerCase();\n\nconst matchTask = (task) => {\n  const tName = task.name.toLowerCase();\n  if (tName === taskName) return 100;\n  if (tName.replace(/\\s+/g, '') === taskName.replace(/\\s+/g, '')) return 90;\n  if (tName.includes(taskName)) return 70;\n  if (taskName.includes(tName)) return 60;\n  if (tName.startsWith(taskName)) return 50;\n  return 0;\n};\n\nconst scoredTasks = projectTasks\n  .map(t => ({ task: t, score: matchTask(t) }))\n  .filter(st => st.score > 0)\n  .sort((a, b) => b.score - a.score);\n\nif (scoredTasks.length === 0) {\n  const availableTasks = projectTasks.slice(0, 10).map(t => t.name).join(', ');\n  return {\n    json: {\n      error: true,\n      errorType: 'TASK_NOT_FOUND',\n      technicalMessage: `Tâche non trouvée : ${parsed.taskName}`,\n      userMessage: data.context.userMessage,\n      requestedTask: parsed.taskName,\n      projectName: matchedProject.name,\n      availableTasks: availableTasks,\n      context: 'task_not_found'\n    }\n  };\n}\n\nconst matchedTask = scoredTasks[0].task;\n\nif (scoredTasks[0].score < 60 && scoredTasks.length > 1) {\n  const suggestions = scoredTasks.slice(0, 3).map(st => st.task.name).join(', ');\n  return {\n    json: {\n      error: true,\n      errorType: 'AMBIGUOUS_TASK',\n      technicalMessage: `Correspondance floue pour la tâche`,\n      userMessage: data.context.userMessage,\n      requestedTask: parsed.taskName,\n      suggestions: suggestions,\n      context: 'ambiguous_task'\n    }\n  };\n}\n\nreturn {\n  json: {\n    error: false,\n    matchedProject: matchedProject,\n    matchedTask: matchedTask,\n    parsedData: parsed,\n    context: data.context\n  }\n};"
+            },
+            "id": "find-task",
+            "name": "Find Task",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                3100,
+                800
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.error }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "check-task",
+            "name": "Check Task",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                3320,
+                800
             ]
         },
         {
@@ -236,7 +300,7 @@
                     "parameters": [
                         {
                             "name": "Authorization",
-                            "value": "={{ 'Bearer ' + $('Parse AI Response').item.json.authToken }}"
+                            "value": "={{ 'Bearer ' + $json.context.authToken }}"
                         },
                         {
                             "name": "Content-Type",
@@ -246,29 +310,112 @@
                 },
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "={{ \n  {\n    \"taskId\": $json.id,\n    \"userId\": $('Parse AI Response').item.json.userId,\n    \"date\": $('Parse AI Response').item.json.date,\n    \"duration\": (Math.floor($('Parse AI Response').item.json.durationHours)).toString().padStart(2, '0') + ':' + (Math.round(($('Parse AI Response').item.json.durationHours - Math.floor($('Parse AI Response').item.json.durationHours)) * 60)).toString().padStart(2, '0') + ':00',\n    \"notes\": \"Créé par l'assistant IA\"\n  }\n}}"
+                "jsonBody": "={{ \n  {\n    \"taskId\": $json.matchedTask.id,\n    \"userId\": $json.context.userId,\n    \"date\": $json.parsedData.date,\n    \"duration\": (function() {\n      const hours = Math.floor($json.parsedData.durationHours);\n      const minutes = Math.round(($json.parsedData.durationHours - hours) * 60);\n      return hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0') + ':00';\n    })(),\n    \"notes\": \"Créé par l'assistant IA TimeScope\"\n  }\n}}",
+                "options": {
+                    "timeout": 10000
+                }
             },
             "id": "create-time-entry",
             "name": "Create Time Entry",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
-                2000,
-                520
+                3540,
+                900
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// ===== PRÉPARATION DES DONNÉES POUR RÉPONSE IA SUCCÈS =====\n\nconst data = $('Find Task').item.json;\nconst entryResponse = $input.first().json;\n\nconst successData = {\n  company: data.matchedProject.companyName || 'Sans société',\n  project: data.matchedProject.name,\n  task: data.matchedTask.name,\n  duration: data.parsedData.durationHours,\n  date: data.parsedData.date,\n  entryId: entryResponse.id,\n  userMessage: data.context.userMessage\n};\n\nreturn {\n  json: successData\n};"
+            },
+            "id": "prepare-success-data",
+            "name": "Prepare Success Data",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                3760,
+                900
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://timescope-ollama:11434/api/chat",
+                "authentication": "none",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ \n  {\n    \"model\": \"llama3.2\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"Tu es l'assistant IA de TimeScope. L'utilisateur vient de saisir du temps avec succès. Génère une réponse COURTE, NATURELLE et ENCOURAGEANTE confirmant l'enregistrement.\\n\\nRÈGLES :\\n- Maximum 2-3 phrases\\n- Ton amical et professionnel\\n- Utilise des émojis avec parcimonie (1-2 max)\\n- Mentionne les détails clés : projet, tâche, durée\\n- Varie tes réponses (ne répète pas toujours la même formule)\\n- Sois concis\\n\\nExemples :\\n- \\\"✅ Parfait ! J'ai enregistré 2h sur le projet DevTime pour la tâche React. Bonne continuation !\\\"\\n- \\\"C'est noté ! 1h30 de documentation ajoutée au projet Infrastructure. 👍\\\"\\n- \\\"Enregistré avec succès : 3h sur Backend/API. Continue comme ça !\\\"\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": \"Demande utilisateur : \\\"\" + $json.userMessage + \"\\\"\\n\\nEnregistrement réussi :\\n- Société : \" + $json.company + \"\\n- Projet : \" + $json.project + \"\\n- Tâche : \" + $json.task + \"\\n- Durée : \" + $json.duration + \"h\\n- Date : \" + $json.date\n      }\n    ],\n    \"stream\": false,\n    \"options\": {\n      \"temperature\": 0.7\n    }\n  }\n}}",
+                "options": {
+                    "timeout": 15000
+                }
+            },
+            "id": "generate-success-response",
+            "name": "Generate Success Response",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                3980,
+                900
             ]
         },
         {
             "parameters": {
                 "respondWith": "json",
-                "responseBody": "={{ \n  { \n    \"output\": \"✓ J'ai enregistré \" + $('Parse AI Response').item.json.durationHours + \"h sur le projet '\" + $('Parse AI Response').item.json.projectName + \"' (\" + $('Parse AI Response').item.json.companyName + \") pour la tâche '\" + $('Parse AI Response').item.json.taskName + \"' le \" + $('Parse AI Response').item.json.date + \".\",\n    \"success\": true \n  }\n}}"
+                "responseBody": "={{ \n  {\n    \"success\": true,\n    \"output\": $json.message.content,\n    \"data\": {\n      \"entryId\": $('Prepare Success Data').item.json.entryId,\n      \"project\": $('Prepare Success Data').item.json.project,\n      \"task\": $('Prepare Success Data').item.json.task,\n      \"duration\": $('Prepare Success Data').item.json.duration,\n      \"date\": $('Prepare Success Data').item.json.date\n    }\n  }\n}}"
             },
             "id": "respond-success",
             "name": "Respond Success",
             "type": "n8n-nodes-base.respondToWebhook",
             "typeVersion": 1.1,
             "position": [
-                2220,
-                520
+                4200,
+                900
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://timescope-ollama:11434/api/chat",
+                "authentication": "none",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ \n  {\n    \"model\": \"llama3.2\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"Tu es l'assistant IA de TimeScope. Une erreur s'est produite lors de la saisie de temps. Génère une réponse COURTE, CLAIRE et UTILE pour aider l'utilisateur.\\n\\nRÈGLES :\\n- Maximum 2-3 phrases\\n- Ton empathique mais professionnel\\n- Explique clairement le problème\\n- Donne une solution concrète\\n- Utilise 1 émoji si approprié\\n- Sois concis\\n\\nTypes d'erreurs :\\n- validation : Problème avec la requête\\n- no_projects/no_tasks : Pas de données disponibles\\n- incomplete_info : Informations manquantes\\n- weekend/holiday : Date non autorisée\\n- project_not_found : Projet introuvable\\n- task_not_found : Tâche introuvable\\n- ambiguous_project/task : Plusieurs correspondances\\n- invalid_duration/date : Valeur invalide\\n\\nExemples :\\n- \\\"❌ Je n'ai pas trouvé le projet \\\"DevTime\\\". Projets disponibles : Backend, Frontend, Infrastructure.\\\"\\n- \\\"⚠️ Impossible de saisir du temps le samedi. Essaie avec un jour de semaine.\\\"\\n- \\\"🤔 Plusieurs projets correspondent. Peux-tu préciser la société ?\\\"\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": \"Demande utilisateur : \\\"\" + $json.userMessage + \"\\\"\\n\\nType d'erreur : \" + $json.context + \"\\nMessage technique : \" + $json.technicalMessage + (($json.availableProjects || $json.availableTasks || $json.matches || $json.suggestions) ? \"\\n\\nInformations supplémentaires : \" + ($json.availableProjects || $json.availableTasks || $json.matches || $json.suggestions || '') : '')\n      }\n    ],\n    \"stream\": false,\n    \"options\": {\n      \"temperature\": 0.5\n    }\n  }\n}}",
+                "options": {
+                    "timeout": 15000
+                }
+            },
+            "id": "generate-error-response",
+            "name": "Generate Error Response",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                3980,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ \n  {\n    \"success\": false,\n    \"output\": $json.message.content,\n    \"errorType\": $('Merge Errors').item.json.errorType || 'UNKNOWN_ERROR'\n  }\n}}"
+            },
+            "id": "respond-error",
+            "name": "Respond Error",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
+            "position": [
+                4200,
+                300
+            ]
+        },
+        {
+            "parameters": {},
+            "id": "merge-errors",
+            "name": "Merge Errors",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3,
+            "position": [
+                3760,
+                300
             ]
         }
     ],
@@ -277,15 +424,33 @@
             "main": [
                 [
                     {
-                        "node": "Extract Context",
+                        "node": "Validate Input",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Extract Context": {
+        "Validate Input": {
             "main": [
+                [
+                    {
+                        "node": "Check Validation",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Validation": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Errors",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
                 [
                     {
                         "node": "Fetch Projects",
@@ -304,7 +469,7 @@
             "main": [
                 [
                     {
-                        "node": "Prepare AI Prompt",
+                        "node": "Prepare AI Context",
                         "type": "main",
                         "index": 0
                     }
@@ -315,25 +480,43 @@
             "main": [
                 [
                     {
-                        "node": "Prepare AI Prompt",
+                        "node": "Prepare AI Context",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Prepare AI Prompt": {
+        "Prepare AI Context": {
             "main": [
                 [
                     {
-                        "node": "Call Ollama API",
+                        "node": "Check Data Availability",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Call Ollama API": {
+        "Check Data Availability": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Errors",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Call Ollama AI",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Call Ollama AI": {
             "main": [
                 [
                     {
@@ -348,44 +531,109 @@
             "main": [
                 [
                     {
-                        "node": "Has Error?",
+                        "node": "Check Parsing",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Has Error?": {
+        "Check Parsing": {
             "main": [
                 [
                     {
-                        "node": "Log Error Details",
+                        "node": "Merge Errors",
                         "type": "main",
                         "index": 0
                     }
                 ],
                 [
                     {
-                        "node": "Create Task",
+                        "node": "Validate Date",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Log Error Details": {
+        "Validate Date": {
             "main": [
                 [
                     {
-                        "node": "Respond Error",
+                        "node": "Check Date",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Create Task": {
+        "Check Date": {
             "main": [
+                [
+                    {
+                        "node": "Merge Errors",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Find Project",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Find Project": {
+            "main": [
+                [
+                    {
+                        "node": "Check Project",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Project": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Errors",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Find Task",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Find Task": {
+            "main": [
+                [
+                    {
+                        "node": "Check Task",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Task": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Errors",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
                 [
                     {
                         "node": "Create Time Entry",
@@ -399,7 +647,51 @@
             "main": [
                 [
                     {
+                        "node": "Prepare Success Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Prepare Success Data": {
+            "main": [
+                [
+                    {
+                        "node": "Generate Success Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate Success Response": {
+            "main": [
+                [
+                    {
                         "node": "Respond Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Merge Errors": {
+            "main": [
+                [
+                    {
+                        "node": "Generate Error Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate Error Response": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Error",
                         "type": "main",
                         "index": 0
                     }
@@ -415,9 +707,9 @@
     "tags": [
         "TimeScope",
         "AI",
-        "Working"
+        "Production"
     ],
     "triggerCount": 0,
-    "updatedAt": "2025-11-21T23:00:00.000Z",
-    "versionId": "2"
+    "updatedAt": "2025-11-29T22:34:00.000Z",
+    "versionId": "4"
 }

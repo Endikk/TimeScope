@@ -80,7 +80,7 @@ export function TimesheetFilters({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les groupes</SelectItem>
+                <SelectItem value="all">Toutes les sociétés</SelectItem>
                 {uniqueGroups.map(group => (
                   <SelectItem key={group} value={group}>{group}</SelectItem>
                 ))}

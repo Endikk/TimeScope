@@ -67,7 +67,7 @@ export default function DatabaseMaintenancePageAPI() {
             stats={stats.projectsDatabase}
             rows={[
               { label: 'Projets', value: stats.projectsDatabase.projectsCount ?? 0 },
-              { label: 'Groupes', value: stats.projectsDatabase.groupsCount ?? 0 },
+              { label: 'Sociétés', value: stats.projectsDatabase.groupsCount ?? 0 },
               { label: 'Thèmes', value: stats.projectsDatabase.themesCount ?? 0 },
               { label: 'Total enregistrements', value: stats.projectsDatabase.totalRecords ?? 0 },
             ]}

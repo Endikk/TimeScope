@@ -642,10 +642,10 @@ export default function Home() {
                       <div className="flex-1">
                         <h4 className="font-semibold text-yellow-800">Aucune donnée disponible</h4>
                         <p className="text-sm text-yellow-700 mt-1">
-                          Vous devez d'abord créer des <strong>Groupes</strong>, <strong>Projets</strong>, <strong>Thèmes</strong> et <strong>Tâches</strong> dans les pages d'administration.
+                          Vous devez d'abord créer des <strong>Sociétés</strong>, <strong>Projets</strong>, <strong>Thèmes</strong> et <strong>Tâches</strong> dans les pages d'administration.
                         </p>
                         <p className="text-sm text-yellow-700 mt-2">
-                          📊 Données chargées: {groups.length} groupes, {projects.length} projets, {themes.length} thèmes, {tasks.length} tâches
+                          📊 Données chargées: {groups.length} sociétés, {projects.length} projets, {themes.length} thèmes, {tasks.length} tâches
                         </p>
                       </div>
                     </div>

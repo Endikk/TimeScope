@@ -55,7 +55,7 @@ export function useGroups() {
       const data = await projectsService.getAllGroups();
       setGroups(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des groupes');
+      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des sociétés');
     } finally {
       setLoading(false);
     }

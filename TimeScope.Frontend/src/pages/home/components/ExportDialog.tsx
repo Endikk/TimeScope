@@ -54,15 +54,15 @@ export function ExportDialog({
     // Filtrer les entrées selon le groupe sélectionné et le mois
     const filteredEntries = exportGroupId === 'all'
       ? localEntries.filter(entry => {
-          const entryDate = new Date(entry.date)
-          return entryDate.getMonth() === selectedMonth && entryDate.getFullYear() === selectedYear
-        })
+        const entryDate = new Date(entry.date)
+        return entryDate.getMonth() === selectedMonth && entryDate.getFullYear() === selectedYear
+      })
       : localEntries.filter(entry => {
-          const entryDate = new Date(entry.date)
-          return entryDate.getMonth() === selectedMonth &&
-                 entryDate.getFullYear() === selectedYear &&
-                 entry.groupeId === exportGroupId
-        })
+        const entryDate = new Date(entry.date)
+        return entryDate.getMonth() === selectedMonth &&
+          entryDate.getFullYear() === selectedYear &&
+          entry.groupeId === exportGroupId
+      })
 
     await exportToPDF({
       entries: filteredEntries,
@@ -116,7 +116,7 @@ export function ExportDialog({
               <li>• Total des heures travaillées</li>
               <li>• Nombre de jours travaillés</li>
               <li>• Détail de toutes les entrées par date</li>
-              <li>• Groupes, projets, tâches et descriptions</li>
+              <li>• Sociétés, projets, tâches et descriptions</li>
             </ul>
           </div>
         </div>
