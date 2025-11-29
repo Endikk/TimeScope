@@ -95,18 +95,27 @@ export default function Home() {
   const [exportGroupId, setExportGroupId] = useState<string>('all')
 
   // API Hooks
-  const { groups, loading: groupsLoading } = useGroups()
-  const { projects, loading: projectsLoading } = useProjects()
-  const { themes } = useThemes()
-  const { tasks, loading: tasksLoading } = useTasks()
+  const { groups, loading: groupsLoading, refetch: refetchGroups } = useGroups()
+  const { projects, loading: projectsLoading, refetch: refetchProjects } = useProjects()
+  const { themes, refetch: refetchThemes } = useThemes()
+  const { tasks, loading: tasksLoading, refetch: refetchTasks } = useTasks()
   const { timeEntries, loading: entriesLoading, refetch: refetchEntries } = useTimeEntries()
   const { createTimeEntry, updateTimeEntry, deleteTimeEntry } = useTimeEntryMutations()
   const { refreshKey } = useRefreshStore()
 
   // Refetch when refreshKey changes (triggered by ChatWidget)
   useEffect(() => {
-    refetchEntries()
-  }, [refreshKey, refetchEntries])
+    const refreshAll = async () => {
+      await Promise.all([
+        refetchGroups(),
+        refetchProjects(),
+        refetchThemes(),
+        refetchTasks(),
+        refetchEntries()
+      ])
+    }
+    refreshAll()
+  }, [refreshKey, refetchGroups, refetchProjects, refetchThemes, refetchTasks, refetchEntries])
 
   // Transform API entries to local format for display
   useEffect(() => {
