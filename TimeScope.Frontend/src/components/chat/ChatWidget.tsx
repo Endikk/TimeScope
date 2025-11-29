@@ -295,7 +295,7 @@ export function ChatWidget() {
                         <CardContent className="flex-1 p-0 overflow-hidden bg-muted/30">
                             <ScrollArea className="h-full w-full p-4" ref={scrollAreaRef}>
                                 <div className="flex flex-col gap-4 pb-2">
-                                    {messages.map((message, index) => (
+                                    {messages.map((message) => (
                                         <div
                                             key={message.id}
                                             className={cn(

@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_admin_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_timescope_admin"]
+      test: [ "CMD-SHELL", "pg_isready -U svc_timescope_admin" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,7 +30,7 @@ services:
     volumes:
       - postgres_projects_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_timescope_projects"]
+      test: [ "CMD-SHELL", "pg_isready -U svc_timescope_projects" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,7 +48,7 @@ services:
     volumes:
       - postgres_time_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_timescope_time"]
+      test: [ "CMD-SHELL", "pg_isready -U svc_timescope_time" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -66,7 +66,7 @@ services:
     volumes:
       - postgres_reports_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_timescope_reports"]
+      test: [ "CMD-SHELL", "pg_isready -U svc_timescope_reports" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -119,6 +119,41 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+
+  # Backend API
+  timescope-api:
+    build:
+      context: .
+      dockerfile: TimeScope.API/Dockerfile
+    container_name: timescope-api
+    ports:
+      - "8080:8080"
+    environment:
+      - ConnectionStrings__AdminConnection=Host=postgres-admin;Port=5432;Database=timescope_admin;Username=svc_timescope_admin;Password=Admin8s60N5h7;
+      - ConnectionStrings__ProjectsConnection=Host=postgres-projects;Port=5432;Database=timescope_projects;Username=svc_timescope_projects;Password=Projects8s60N5;
+      - ConnectionStrings__TimeConnection=Host=postgres-time;Port=5432;Database=timescope_time;Username=svc_timescope_time;Password=Time8s60N5h7dd;
+      - ConnectionStrings__ReportsConnection=Host=postgres-reports;Port=5432;Database=timescope_reports;Username=svc_timescope_reports;Password=Reports8s60N5;
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      postgres-admin:
+        condition: service_healthy
+      postgres-projects:
+        condition: service_healthy
+      postgres-time:
+        condition: service_healthy
+      postgres-reports:
+        condition: service_healthy
+
+  # Frontend React App
+  timescope-frontend:
+    build:
+      context: TimeScope.Frontend
+      dockerfile: Dockerfile
+    container_name: timescope-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - timescope-api
 
 volumes:
   postgres_admin_data:

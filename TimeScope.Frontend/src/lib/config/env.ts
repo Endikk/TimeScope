@@ -11,7 +11,7 @@ import { z } from 'zod';
  */
 const envSchema = z.object({
   /** Base URL for the API backend */
-  VITE_API_URL: z.string().url().default('http://localhost:5001/api'),
+  VITE_API_URL: z.string().url().default('http://localhost:8080/api'),
 
   /** Application environment (development, staging, production) */
   MODE: z.enum(['development', 'production', 'test']).default('development'),
