@@ -23,7 +23,7 @@ export function useMonitoringStream(enabled: boolean = true) {
   useEffect(() => {
     if (!enabled) return;
 
-    let abortController = new AbortController();
+    const abortController = new AbortController();
     let retryTimeout: NodeJS.Timeout;
 
     const connect = async () => {

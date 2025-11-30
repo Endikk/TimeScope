@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContainerMetrics } from "@/lib/api/services/monitoring.service";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Line, LineChart, ResponsiveContainer, YAxis } from "recharts";
 import { Activity, Box } from "lucide-react";
 
@@ -16,19 +16,28 @@ interface ContainerHistory {
 
 export function ContainerList({ containers }: ContainerListProps) {
     const [history, setHistory] = useState<ContainerHistory>({});
+    const historyRef = useRef<ContainerHistory>({});
 
     useEffect(() => {
-        setHistory(prev => {
-            const next = { ...prev };
-            containers.forEach(c => {
-                if (!next[c.id]) next[c.id] = [];
-                // Keep last 20 points
-                const newHistory = [...next[c.id], { cpu: c.cpuUsage || 0, memory: c.memoryUsagePercent || 0 }];
-                if (newHistory.length > 20) newHistory.shift();
-                next[c.id] = newHistory;
-            });
-            return next;
+        const next = { ...historyRef.current };
+        let hasChanges = false;
+
+        containers.forEach(c => {
+            if (!next[c.id]) {
+                next[c.id] = [];
+                hasChanges = true;
+            }
+            // Keep last 20 points
+            const newHistory = [...next[c.id], { cpu: c.cpuUsage || 0, memory: c.memoryUsagePercent || 0 }];
+            if (newHistory.length > 20) newHistory.shift();
+            next[c.id] = newHistory;
+            hasChanges = true;
         });
+
+        if (hasChanges) {
+            historyRef.current = next;
+            setHistory(next);
+        }
     }, [containers]);
 
     return (

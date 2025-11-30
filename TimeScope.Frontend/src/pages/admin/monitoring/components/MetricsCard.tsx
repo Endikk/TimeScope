@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Cpu, HardDrive } from 'lucide-react';
 import { AreaChart, ResponsiveContainer, Area as RechartsArea } from 'recharts';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface SystemMetrics {
   cpuUsage: number;
@@ -22,19 +22,19 @@ interface MetricHistory {
 
 export function MetricsCard({ metrics }: MetricsCardProps) {
   const [history, setHistory] = useState<MetricHistory[]>([]);
+  const historyRef = useRef<MetricHistory[]>([]);
 
   useEffect(() => {
     if (metrics) {
-      setHistory(prev => {
-        const newPoint = {
-          timestamp: Date.now(),
-          cpu: metrics.cpuUsage ?? 0,
-          memory: metrics.memoryUsed ?? 0
-        };
-        const newHistory = [...prev, newPoint];
-        if (newHistory.length > 30) newHistory.shift(); // Keep last 30 points (approx 1 min at 2s interval)
-        return newHistory;
-      });
+      const newPoint = {
+        timestamp: Date.now(),
+        cpu: metrics.cpuUsage ?? 0,
+        memory: metrics.memoryUsed ?? 0
+      };
+      const newHistory = [...historyRef.current, newPoint];
+      if (newHistory.length > 30) newHistory.shift(); // Keep last 30 points (approx 1 min at 2s interval)
+      historyRef.current = newHistory;
+      setHistory(newHistory);
     }
   }, [metrics]);
 
