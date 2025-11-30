@@ -181,11 +181,11 @@ export function UserPreferencesCard() {
     const keys = key.split('.');
     setPreferences(prev => {
       const newPrefs = { ...prev };
-      let current: Record<string, any> = newPrefs;
+      let current: Record<string, unknown> = newPrefs;
 
       for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
+        current[keys[i]] = { ...current[keys[i]] as object };
+        current = current[keys[i]] as Record<string, unknown>;
       }
 
       current[keys[keys.length - 1]] = value;

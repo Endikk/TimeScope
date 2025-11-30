@@ -79,11 +79,11 @@ export default function SettingsPageAPI() {
     const keys = key.split('.');
     setAdminSettings(prev => {
       const newSettings = { ...prev };
-      let current: Record<string, any> = newSettings;
+      let current: Record<string, unknown> = newSettings;
 
       for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
+        current[keys[i]] = { ...current[keys[i]] as object };
+        current = current[keys[i]] as Record<string, unknown>;
       }
 
       current[keys[keys.length - 1]] = value;
@@ -97,11 +97,11 @@ export default function SettingsPageAPI() {
     const keys = key.split('.');
     setUserSettings(prev => {
       const newSettings = { ...prev };
-      let current: Record<string, any> = newSettings;
+      let current: Record<string, unknown> = newSettings;
 
       for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
+        current[keys[i]] = { ...current[keys[i]] as object };
+        current = current[keys[i]] as Record<string, unknown>;
       }
 
       current[keys[keys.length - 1]] = value;

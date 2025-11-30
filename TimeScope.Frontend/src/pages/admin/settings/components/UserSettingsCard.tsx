@@ -33,7 +33,7 @@ interface UserSettings {
 
 interface UserSettingsCardProps {
   settings: UserSettings;
-  onUpdate: (key: string, value: unknown) => void;
+  onUpdate: (key: string, value: string | number | boolean) => void;
   onSave: () => Promise<void>;
   saving: boolean;
 }

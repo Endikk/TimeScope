@@ -8,7 +8,7 @@ export interface ApiError {
   message: string;
   status?: number;
   code?: string;
-  details?: any;
+  details?: unknown;
 }
 
 // Configuration de l'API
@@ -29,7 +29,7 @@ const apiClient: AxiosInstance = axios.create({
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
 }> = [];
 
 const processQueue = (error: Error | null, token: string | null = null) => {
@@ -176,10 +176,11 @@ const handleLogout = () => {
 const transformError = (error: AxiosError): ApiError => {
   if (error.response) {
     // Le serveur a répondu avec un code d'erreur
+    const responseData = error.response.data as { message?: string; code?: string } | undefined;
     return {
-      message: (error.response.data as any)?.message || error.message,
+      message: responseData?.message || error.message,
       status: error.response.status,
-      code: (error.response.data as any)?.code,
+      code: responseData?.code,
       details: error.response.data,
     };
   } else if (error.request) {

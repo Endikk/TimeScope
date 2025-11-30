@@ -21,8 +21,9 @@ export function useSystemMetrics(autoRefresh: boolean = false, interval: number 
     try {
       const data = await monitoringService.getSystemMetrics();
       setMetrics(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch system metrics');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch system metrics';
+      setError(errorMessage);
       console.error('Error fetching system metrics:', err);
     } finally {
       setLoading(false);
@@ -57,8 +58,9 @@ export function useSystemInfo() {
     try {
       const data = await monitoringService.getSystemInfo();
       setInfo(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch system info');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch system info';
+      setError(errorMessage);
       console.error('Error fetching system info:', err);
     } finally {
       setLoading(false);
@@ -86,8 +88,9 @@ export function useHealthStatus(autoRefresh: boolean = false, interval: number =
     try {
       const data = await monitoringService.getHealthStatus();
       setHealth(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch health status');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch health status';
+      setError(errorMessage);
       console.error('Error fetching health status:', err);
     } finally {
       setLoading(false);
@@ -122,8 +125,9 @@ export function useLogs(limit: number = 100) {
     try {
       const data = await monitoringService.getLogs(limit);
       setLogs(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch logs');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch logs';
+      setError(errorMessage);
       console.error('Error fetching logs:', err);
     } finally {
       setLoading(false);
@@ -152,8 +156,9 @@ export function useGarbageCollection() {
     try {
       const data = await monitoringService.forceGarbageCollection();
       setResult(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to force garbage collection');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to force garbage collection';
+      setError(errorMessage);
       console.error('Error forcing garbage collection:', err);
     } finally {
       setLoading(false);

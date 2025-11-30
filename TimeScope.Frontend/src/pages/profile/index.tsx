@@ -218,8 +218,8 @@ export default function ProfilePage() {
       });
 
       alert('Mot de passe changé avec succès');
-    } catch (error) {
-      const err = error as any;
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { message?: string } } };
       if (err?.response?.status === 401) {
         throw new Error('Mot de passe actuel incorrect');
       }

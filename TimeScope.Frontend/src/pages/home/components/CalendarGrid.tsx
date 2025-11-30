@@ -17,7 +17,7 @@ interface CalendarGridProps {
   getIntensityClass?: (hours: number) => string
   getTextColorClass?: (hours: number) => string
   isNonWorkingDay: (year: number, month: number, day: number) => boolean
-  getEntriesForDate: (date: string) => any[]
+  getEntriesForDate: (date: string) => any[] // eslint-disable-line @typescript-eslint/no-explicit-any
   viewMode: 'week' | 'month'
   selectedWeek?: number
   selectedDates?: Set<string>
