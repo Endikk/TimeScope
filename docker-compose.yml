@@ -119,8 +119,7 @@ services:
       context: TimeScope.Frontend
       dockerfile: Dockerfile
     container_name: timescope-frontend
-    ports:
-      - "3000:80"
+
     depends_on:
       - timescope-api
 volumes:

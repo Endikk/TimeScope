@@ -40,6 +40,7 @@ import { useGroups, useProjects, useThemes } from "@/lib/hooks/use-projects"
 import { useTasks } from "@/lib/hooks/use-tasks"
 import { useTimeEntries, useTimeEntryMutations } from "@/lib/hooks/use-timeentries"
 import type { CreateTimeEntryDto, UpdateTimeEntryDto } from "@/lib/api/services"
+import { cn } from "@/lib/utils"
 
 // Types pour la saisie de temps
 interface LocalTimeEntry {
@@ -279,19 +280,28 @@ export default function Home() {
   }
 
   const handleDeleteEntry = async (id: string) => {
-    {
-      const success = await deleteTimeEntry(id)
-      if (success) {
-        await refetchEntries()
-      }
+    const success = await deleteTimeEntry(id)
+    if (success) {
+      await refetchEntries()
     }
   }
 
+  const handleDeleteAllEntries = async () => {
+    if (selectedDates.size === 0) return
 
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer toutes les entrées pour les ${selectedDates.size} dates sélectionnées ?`)) {
+      return
+    }
 
+    const targetDates = Array.from(selectedDates)
+    const entriesToDelete = localEntries.filter(entry => targetDates.includes(entry.date))
 
+    for (const entry of entriesToDelete) {
+      await deleteTimeEntry(entry.id)
+    }
 
-
+    await refetchEntries()
+  }
 
   // Multi-select functions
   const handleToggleDateSelection = (dateStr: string, ctrlKey: boolean) => {
@@ -314,28 +324,40 @@ export default function Home() {
   }
 
   const pasteEntries = async () => {
-    if (copiedEntries.length === 0) {
+    if (copiedEntries.length === 0 || selectedDates.size === 0) {
       return
     }
 
-    if (selectedDates.size === 0) {
-      return
-    }
+    // 1. Find the earliest date in the source (copied) entries
+    const sourceDates = copiedEntries.map(e => new Date(e.date).getTime())
+    const minSourceDate = new Date(Math.min(...sourceDates))
 
-    const targetDates = Array.from(selectedDates)
+    // 2. Determine target start points
+    // If multiple dates are selected, we treat EACH selected date as a "start point" for the paste pattern
+    const targetStartDates = Array.from(selectedDates).map(d => new Date(d))
 
-    for (const targetDate of targetDates) {
-      // Vérifier si c'est un jour non travaillé
-      const date = new Date(targetDate)
-      if (isNonWorkingDay(date.getFullYear(), date.getMonth(), date.getDate())) {
-        continue
-      }
-
-      // Copier toutes les entrées pour cette date
+    for (const targetStartDate of targetStartDates) {
       for (const entry of copiedEntries) {
+        // Calculate offset in days from the source start date
+        const entryDate = new Date(entry.date)
+        const diffTime = entryDate.getTime() - minSourceDate.getTime()
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+
+        // Calculate new date: Target Start + Offset
+        const newDate = new Date(targetStartDate)
+        newDate.setDate(newDate.getDate() + diffDays)
+
+        // Format as YYYY-MM-DD
+        const newDateStr = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+
+        // Skip non-working days if needed (optional, but good for safety)
+        if (isNonWorkingDay(newDate.getFullYear(), newDate.getMonth(), newDate.getDate())) {
+          continue
+        }
+
         const createDto: CreateTimeEntryDto = {
           taskId: entry.taskId,
-          date: targetDate,
+          date: newDateStr,
           duration: convertHoursToDuration(entry.heures),
           notes: entry.description
         }
@@ -496,93 +518,115 @@ export default function Home() {
               />
 
               {/* Multi-select control panel */}
-              <div className="mt-3 md:mt-4 border-t pt-3 md:pt-4">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 md:gap-4">
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full sm:w-auto">
+              <div className="mt-4 border-t pt-4">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+
+                  {/* Left: Selection Controls */}
+                  <div className="flex items-center gap-3 w-full lg:w-auto">
                     <Button
                       variant={isMultiSelectMode ? "default" : "outline"}
                       size="sm"
                       onClick={handleToggleMultiSelectMode}
-                      className={`${isMultiSelectMode ? "bg-green-600 hover:bg-green-700" : ""} w-full sm:w-auto text-xs md:text-sm`}
+                      className={cn(
+                        "transition-all duration-200",
+                        isMultiSelectMode ? "bg-indigo-600 hover:bg-indigo-700 text-white border-transparent shadow-sm" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                      )}
                     >
                       {isMultiSelectMode ? (
                         <>
                           <CheckSquare className="h-4 w-4 mr-2" />
-                          Mode Multi-sélection Activé
+                          Multi-sélection active
                         </>
                       ) : (
                         <>
                           <Square className="h-4 w-4 mr-2" />
-                          Activer Multi-sélection
+                          Activer multi-sélection
                         </>
                       )}
                     </Button>
 
                     {selectedDates.size > 0 && (
-                      <>
-                        <Badge variant="secondary" className="text-xs md:text-sm px-2 md:px-3 py-1 whitespace-nowrap">
-                          {selectedDates.size} date{selectedDates.size > 1 ? 's' : ''}
+                      <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                        <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-indigo-100 px-2.5 py-1">
+                          {selectedDates.size} sélectionnée{selectedDates.size > 1 ? 's' : ''}
                         </Badge>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={handleClearSelection}
-                          className="text-gray-600 hover:text-gray-900 w-full sm:w-auto text-xs md:text-sm"
+                          className="text-gray-500 hover:text-gray-900 h-8 px-2"
                         >
-                          <X className="h-4 w-4 mr-1" />
-                          <span className="hidden sm:inline">Effacer sélection</span>
-                          <span className="sm:hidden">Effacer</span>
+                          <X className="h-4 w-4" />
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCopySelectedEntries}
-                      disabled={selectedDates.size === 0}
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 w-full sm:w-auto text-xs md:text-sm"
-                    >
-                      <Copy className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">Copier les entrées</span>
-                      <span className="sm:hidden">Copier</span>
-                      {selectedDates.size > 0 && ` (${selectedDates.size})`}
-                    </Button>
+                  {/* Right: Actions */}
+                  <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
+                    <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCopySelectedEntries}
+                        disabled={selectedDates.size === 0}
+                        className="text-gray-700 hover:text-blue-700 hover:bg-blue-50 h-8"
+                        title="Copier les entrées sélectionnées"
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copier
+                      </Button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={pasteEntries}
-                      disabled={copiedEntries.length === 0 || selectedDates.size === 0}
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50 w-full sm:w-auto text-xs md:text-sm"
-                    >
-                      <Clipboard className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">Coller les entrées</span>
-                      <span className="sm:hidden">Coller</span>
-                      {copiedEntries.length > 0 && ` (${copiedEntries.length})`}
-                    </Button>
+                      <div className="w-px h-4 bg-gray-300 mx-1"></div>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={pasteEntries}
+                        disabled={copiedEntries.length === 0 || selectedDates.size === 0}
+                        className="text-gray-700 hover:text-green-700 hover:bg-green-50 h-8"
+                        title="Coller les entrées copiées"
+                      >
+                        <Clipboard className="h-4 w-4 mr-2" />
+                        Coller
+                        {copiedEntries.length > 0 && (
+                          <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-700 text-[10px] h-5 px-1.5">
+                            {copiedEntries.length}
+                          </Badge>
+                        )}
+                      </Button>
+                    </div>
+
+                    {selectedDates.size > 0 && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleDeleteAllEntries}
+                        className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300 shadow-none"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Tout supprimer
+                      </Button>
+                    )}
                   </div>
                 </div>
 
-                {/* Instructions */}
-                {isMultiSelectMode && (
-                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      <strong>Mode multi-sélection activé :</strong> Cliquez sur plusieurs dates pour les sélectionner.
-                      Vous pouvez aussi maintenir <kbd className="px-1.5 py-0.5 bg-white border border-blue-300 rounded text-xs font-mono">Ctrl</kbd> (ou <kbd className="px-1.5 py-0.5 bg-white border border-blue-300 rounded text-xs font-mono">Cmd</kbd> sur Mac) en cliquant sur les dates.
+                {/* Instructions / Feedback */}
+                <div className="mt-3 space-y-2">
+                  {isMultiSelectMode && selectedDates.size === 0 && (
+                    <p className="text-xs text-indigo-600 flex items-center gap-1.5">
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      Cliquez sur plusieurs dates dans le calendrier pour les sélectionner.
                     </p>
-                  </div>
-                )}
+                  )}
 
-                {copiedEntries.length > 0 && (
-                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800">
-                      <strong>{copiedEntries.length} entrée{copiedEntries.length > 1 ? 's' : ''} dans le presse-papiers :</strong> Sélectionnez une ou plusieurs dates de destination et cliquez sur "Coller" pour dupliquer ces entrées.
+                  {copiedEntries.length > 0 && (
+                    <p className="text-xs text-green-600 flex items-center gap-1.5">
+                      <CheckCircle className="h-3.5 w-3.5" />
+                      {copiedEntries.length} entrées copiées. Sélectionnez une date de début pour coller (la structure de la semaine sera conservée).
                     </p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>

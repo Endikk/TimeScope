@@ -19,7 +19,7 @@ if ($currentBranch -eq "develop") {
 }
 else {
     Write-Host "Mode PRODUCTION active" -ForegroundColor Blue
-    docker-compose up -d --build
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 }
 
 if ($LASTEXITCODE -eq 0) {
