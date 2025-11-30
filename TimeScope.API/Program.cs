@@ -68,22 +68,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configure Multiple Databases
-// Admin Database - Users, Roles, Settings
-builder.Services.AddDbContext<AdminDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("AdminConnection")));
-
-// Projects Database - Projects, Groups, Themes
-builder.Services.AddDbContext<ProjectsDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ProjectsConnection")));
-
-// Time Database - Tasks, Time Entries
-builder.Services.AddDbContext<TimeDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("TimeConnection")));
-
-// Reports Database - Analytics, Logs, Audit
-builder.Services.AddDbContext<ReportsDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ReportsConnection")));
+// Configure Database
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register Specialized Unit of Work for each database
 builder.Services.AddScoped<IAdminUnitOfWork, AdminUnitOfWork>();

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Cpu, HardDrive } from 'lucide-react';
-import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { AreaChart, ResponsiveContainer, Area as RechartsArea } from 'recharts';
 import { useEffect, useState } from 'react';
 
 interface SystemMetrics {
@@ -20,7 +20,7 @@ interface MetricHistory {
   memory: number;
 }
 
-export function MetricsCard({ loading, metrics }: MetricsCardProps) {
+export function MetricsCard({ metrics }: MetricsCardProps) {
   const [history, setHistory] = useState<MetricHistory[]>([]);
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export function MetricsCard({ loading, metrics }: MetricsCardProps) {
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <Area
+                  <RechartsArea
                     type="monotone"
                     dataKey="cpu"
                     stroke="#3b82f6"
@@ -121,7 +121,7 @@ export function MetricsCard({ loading, metrics }: MetricsCardProps) {
                       <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <Area
+                  <RechartsArea
                     type="monotone"
                     dataKey="memory"
                     stroke="#8b5cf6"

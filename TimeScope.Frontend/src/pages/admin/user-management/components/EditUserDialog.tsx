@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { User } from "@/types/user"
 
 // Helper function to format date for input type="date"
 const formatDateForInput = (dateString?: string): string => {
@@ -16,20 +17,6 @@ const formatDateForInput = (dateString?: string): string => {
     return '';
   }
 };
-
-interface User {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  role: "Admin" | "Manager" | "Employee"
-  department?: string
-  jobTitle?: string
-  hireDate?: string
-  status: "active" | "inactive"
-  joinDate: string
-  avatar?: string
-}
 
 interface EditUserDialogProps {
   open: boolean
@@ -57,13 +44,23 @@ export function EditUserDialog({
         </DialogHeader>
         {selectedUser && (
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="edit-name">Nom complet</Label>
-              <Input
-                id="edit-name"
-                value={selectedUser.name}
-                onChange={(e) => onUserChange({...selectedUser, name: e.target.value})}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-firstName">Prénom</Label>
+                <Input
+                  id="edit-firstName"
+                  value={selectedUser.firstName}
+                  onChange={(e) => onUserChange({ ...selectedUser, firstName: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-lastName">Nom</Label>
+                <Input
+                  id="edit-lastName"
+                  value={selectedUser.lastName}
+                  onChange={(e) => onUserChange({ ...selectedUser, lastName: e.target.value })}
+                />
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-email">Email</Label>
@@ -71,15 +68,15 @@ export function EditUserDialog({
                 id="edit-email"
                 type="email"
                 value={selectedUser.email}
-                onChange={(e) => onUserChange({...selectedUser, email: e.target.value})}
+                onChange={(e) => onUserChange({ ...selectedUser, email: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-phone">Téléphone</Label>
               <Input
                 id="edit-phone"
-                value={selectedUser.phone || ''}
-                onChange={(e) => onUserChange({...selectedUser, phone: e.target.value})}
+                value={selectedUser.phoneNumber || ''}
+                onChange={(e) => onUserChange({ ...selectedUser, phoneNumber: e.target.value })}
                 placeholder="+33 6 12 34 56 78"
               />
             </div>
@@ -88,7 +85,7 @@ export function EditUserDialog({
               <Input
                 id="edit-jobTitle"
                 value={selectedUser.jobTitle || ''}
-                onChange={(e) => onUserChange({...selectedUser, jobTitle: e.target.value})}
+                onChange={(e) => onUserChange({ ...selectedUser, jobTitle: e.target.value })}
                 placeholder="Développeur Full Stack"
               />
             </div>
@@ -97,7 +94,7 @@ export function EditUserDialog({
               <Input
                 id="edit-department"
                 value={selectedUser.department || ''}
-                onChange={(e) => onUserChange({...selectedUser, department: e.target.value})}
+                onChange={(e) => onUserChange({ ...selectedUser, department: e.target.value })}
                 placeholder="Développement"
               />
             </div>
@@ -107,14 +104,14 @@ export function EditUserDialog({
                 id="edit-hireDate"
                 type="date"
                 value={formatDateForInput(selectedUser.hireDate)}
-                onChange={(e) => onUserChange({...selectedUser, hireDate: e.target.value})}
+                onChange={(e) => onUserChange({ ...selectedUser, hireDate: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-role">Rôle</Label>
               <Select
                 value={selectedUser.role}
-                onValueChange={(value) => onUserChange({...selectedUser, role: value as User["role"]})}
+                onValueChange={(value) => onUserChange({ ...selectedUser, role: value as User["role"] })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -130,9 +127,9 @@ export function EditUserDialog({
               <Label htmlFor="edit-status">Statut actif</Label>
               <Switch
                 id="edit-status"
-                checked={selectedUser.status === "active"}
+                checked={selectedUser.isActive}
                 onCheckedChange={(checked) =>
-                  onUserChange({...selectedUser, status: checked ? "active" : "inactive"})
+                  onUserChange({ ...selectedUser, isActive: checked })
                 }
               />
             </div>

@@ -2,8 +2,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { TaskForm } from './TaskForm';
 import { CreateTaskDto } from '@/lib/api/services';
-import { Project } from '@/lib/api/services/projects.service';
-import { User } from '@/lib/api/services/users.service';
+import { Project } from '@/types/project';
+import { User } from '@/types/user';
 
 interface EditTaskDialogProps {
   isOpen: boolean;

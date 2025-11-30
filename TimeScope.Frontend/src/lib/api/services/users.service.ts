@@ -1,33 +1,5 @@
 import apiClient from '../client';
-
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar?: string;
-  role: number | 'Admin' | 'Manager' | 'Employee';
-  isActive: boolean;
-  phoneNumber?: string;
-  jobTitle?: string;
-  department?: string;
-  hireDate?: string;
-  // Internal fields - not exposed in API responses
-  // createdAt, updatedAt, isDeleted are managed server-side
-}
-
-// Helper function to convert role number to string
-export const roleNumberToString = (role: number | string): 'Admin' | 'Manager' | 'Employee' => {
-  if (typeof role === 'string') {
-    return role as 'Admin' | 'Manager' | 'Employee';
-  }
-  switch (role) {
-    case 0: return 'Admin';
-    case 1: return 'Manager';
-    case 2: return 'Employee';
-    default: return 'Employee';
-  }
-};
+import { User, roleNumberToString } from '@/types/user';
 
 export interface CreateUserDto {
   firstName: string;
@@ -56,27 +28,47 @@ class UsersService {
   private readonly endpoint = '/users';
 
   /**
+   * Helper to normalize user data from API
+   */
+  private normalizeUser(data: any): User {
+    return {
+      id: data.id || data.Id,
+      firstName: data.firstName || data.FirstName,
+      lastName: data.lastName || data.LastName,
+      email: data.email || data.Email,
+      role: roleNumberToString(data.role || data.Role),
+      isActive: data.isActive ?? data.IsActive ?? true,
+      phoneNumber: data.phoneNumber || data.PhoneNumber,
+      jobTitle: data.jobTitle || data.JobTitle,
+      department: data.department || data.Department,
+      hireDate: data.hireDate || data.HireDate,
+      avatar: data.avatar || data.Avatar,
+      banner: data.banner || data.Banner
+    };
+  }
+
+  /**
    * Récupérer tous les utilisateurs
    */
   async getAllUsers(): Promise<User[]> {
-    const response = await apiClient.get<User[]>(this.endpoint);
-    return response.data;
+    const response = await apiClient.get<any[]>(this.endpoint);
+    return response.data.map(this.normalizeUser);
   }
 
   /**
    * Récupérer un utilisateur par ID
    */
   async getUserById(id: string): Promise<User> {
-    const response = await apiClient.get<User>(`${this.endpoint}/${id}`);
-    return response.data;
+    const response = await apiClient.get<any>(`${this.endpoint}/${id}`);
+    return this.normalizeUser(response.data);
   }
 
   /**
    * Créer un nouvel utilisateur
    */
   async createUser(user: CreateUserDto): Promise<User> {
-    const response = await apiClient.post<User>(this.endpoint, user);
-    return response.data;
+    const response = await apiClient.post<any>(this.endpoint, user);
+    return this.normalizeUser(response.data);
   }
 
   /**
@@ -97,8 +89,8 @@ class UsersService {
    * Obtenir le profil de l'utilisateur connecté
    */
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<User>(`${this.endpoint}/me`);
-    return response.data;
+    const response = await apiClient.get<any>(`${this.endpoint}/me`);
+    return this.normalizeUser(response.data);
   }
 }
 

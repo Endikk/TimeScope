@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { ListTodo, Plus } from 'lucide-react';
 import { TaskForm } from './TaskForm';
 import { CreateTaskDto } from '@/lib/api/services';
-import { Project } from '@/lib/api/services/projects.service';
-import { User } from '@/lib/api/services/users.service';
+import { Project } from '@/types/project';
+import { User } from '@/types/user';
 
 interface TasksHeaderProps {
   isCreateDialogOpen: boolean;

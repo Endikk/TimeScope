@@ -1,3 +1,6 @@
+export type { Group, Project } from '@/types/project';
+export type { Task } from '@/types/task';
+
 export interface LocalTimeEntry {
     id: string
     date: string
@@ -21,19 +24,4 @@ export interface NewTimeEntry {
     taskId: string
     heures: number
     description: string
-}
-
-export interface Group {
-    id: string
-    name: string
-}
-
-export interface Project {
-    id: string
-    name: string
-}
-
-export interface Task {
-    id: string
-    name: string
 }

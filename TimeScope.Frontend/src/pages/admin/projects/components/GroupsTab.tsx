@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Trash2 } from 'lucide-react';
-import type { Group, CreateGroupDto } from '@/lib/api/services/projects.service';
+import type { CreateGroupDto } from '@/lib/api/services/projects.service';
+import type { Group } from '@/types/project';
 
 interface GroupsTabProps {
   groups: Group[];

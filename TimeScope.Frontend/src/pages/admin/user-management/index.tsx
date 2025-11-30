@@ -1,139 +1,19 @@
 import { useState, useMemo } from "react"
 import { useUsers, useUserMutations } from "@/lib/hooks/use-users"
-import type { User as ApiUser, CreateUserDto } from "@/lib/api/services/users.service"
-import { roleNumberToString } from "@/lib/api/services/users.service"
+import type { CreateUserDto } from "@/lib/api/services/users.service"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StatsCards, UserFilters, UsersTable, EditUserDialog } from './components'
+import { User } from "@/types/user"
 
-interface User {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  role: "Admin" | "Manager" | "Employee"
-  department?: string
-  jobTitle?: string
-  hireDate?: string
-  status: "active" | "inactive"
-  joinDate: string
-  avatar?: string
-}
 
-const apiUserToLocal = (apiUser: ApiUser): User => ({
-  id: apiUser.id,
-  name: `${apiUser.firstName} ${apiUser.lastName}`,
-  email: apiUser.email,
-  phone: apiUser.phoneNumber || "",
-  role: roleNumberToString(apiUser.role),
-  department: apiUser.department || "",
-  jobTitle: apiUser.jobTitle || "",
-  hireDate: apiUser.hireDate || "",
-  status: apiUser.isActive ? "active" : "inactive",
-  joinDate: apiUser.hireDate || new Date().toISOString(),
-  avatar: apiUser.avatar
-})
-
-const initialUsers: User[] = [
-  {
-    id: "1",
-    name: "Alice Martin",
-    email: "alice.martin@timescope.com",
-    phone: "+33 6 12 34 56 78",
-    role: "Admin",
-    department: "IT",
-    status: "active",
-    joinDate: "2023-01-15",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice"
-  },
-  {
-    id: "2",
-    name: "Bob Dupont",
-    email: "bob.dupont@timescope.com",
-    phone: "+33 6 23 45 67 89",
-    role: "Manager",
-    department: "Marketing",
-    status: "active",
-    joinDate: "2023-03-20",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob"
-  },
-  {
-    id: "3",
-    name: "Claire Bernard",
-    email: "claire.bernard@timescope.com",
-    phone: "+33 6 34 56 78 90",
-    role: "Employee",
-    department: "Sales",
-    status: "active",
-    joinDate: "2023-05-10",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Claire"
-  },
-  {
-    id: "4",
-    name: "David Laurent",
-    email: "david.laurent@timescope.com",
-    phone: "+33 6 45 67 89 01",
-    role: "Employee",
-    department: "IT",
-    status: "inactive",
-    joinDate: "2023-02-28",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=David"
-  },
-  {
-    id: "5",
-    name: "Emma Rousseau",
-    email: "emma.rousseau@timescope.com",
-    phone: "+33 6 56 78 90 12",
-    role: "Manager",
-    department: "HR",
-    status: "active",
-    joinDate: "2023-04-05",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma"
-  },
-  {
-    id: "6",
-    name: "François Petit",
-    email: "francois.petit@timescope.com",
-    phone: "+33 6 67 89 01 23",
-    role: "Employee",
-    department: "Finance",
-    status: "active",
-    joinDate: "2023-06-18",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Francois"
-  },
-  {
-    id: "7",
-    name: "Sophie Moreau",
-    email: "sophie.moreau@timescope.com",
-    phone: "+33 6 78 90 12 34",
-    role: "Employee",
-    department: "Marketing",
-    status: "active",
-    joinDate: "2023-07-22",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie"
-  },
-  {
-    id: "8",
-    name: "Thomas Leroy",
-    email: "thomas.leroy@timescope.com",
-    phone: "+33 6 89 01 23 45",
-    role: "Manager",
-    department: "Sales",
-    status: "active",
-    joinDate: "2023-08-30",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Thomas"
-  }
-]
 
 export default function UserManagement() {
   const { users: apiUsers, loading: loadingUsers, error: errorUsers, refetch } = useUsers()
   const { createUser, updateUser, deleteUser } = useUserMutations()
 
   const users = useMemo(() => {
-    if (apiUsers && apiUsers.length > 0) {
-      return apiUsers.map(apiUserToLocal)
-    }
-    return initialUsers
+    return apiUsers || []
   }, [apiUsers])
 
   const [searchTerm, setSearchTerm] = useState("")
@@ -165,21 +45,23 @@ export default function UserManagement() {
   })
 
   const filteredUsers = users.filter(user => {
+    const fullName = `${user.firstName} ${user.lastName}`
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.department || '').toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesRole = filterRole === "all" || user.role === filterRole
-    const matchesStatus = filterStatus === "all" || user.status === filterStatus
+    const matchesStatus = filterStatus === "all" ||
+      (filterStatus === "active" ? user.isActive : !user.isActive)
 
     return matchesSearch && matchesRole && matchesStatus
   })
 
   const stats = {
     total: users.length,
-    active: users.filter(u => u.status === "active").length,
-    inactive: users.filter(u => u.status === "inactive").length,
+    active: users.filter(u => u.isActive).length,
+    inactive: users.filter(u => !u.isActive).length,
     admins: users.filter(u => u.role === "Admin").length,
     managers: users.filter(u => u.role === "Manager").length,
     employees: users.filter(u => u.role === "Employee").length,
@@ -220,15 +102,12 @@ export default function UserManagement() {
   const handleEditUser = async () => {
     if (selectedUser) {
       try {
-        const [firstName, ...lastNameParts] = selectedUser.name.split(' ')
-        const lastName = lastNameParts.join(' ')
-
         await updateUser(selectedUser.id, {
-          firstName,
-          lastName,
+          firstName: selectedUser.firstName,
+          lastName: selectedUser.lastName,
           email: selectedUser.email,
-          isActive: selectedUser.status === "active",
-          phoneNumber: selectedUser.phone,
+          isActive: selectedUser.isActive,
+          phoneNumber: selectedUser.phoneNumber,
           jobTitle: selectedUser.jobTitle,
           department: selectedUser.department,
           hireDate: selectedUser.hireDate || undefined
@@ -257,14 +136,11 @@ export default function UserManagement() {
     const user = users.find(u => u.id === userId)
     if (user) {
       try {
-        const [firstName, ...lastNameParts] = user.name.split(' ')
-        const lastName = lastNameParts.join(' ')
-
         await updateUser(userId, {
-          firstName,
-          lastName,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
-          isActive: user.status === "inactive"
+          isActive: !user.isActive
         })
         await refetch()
       } catch (error) {

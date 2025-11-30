@@ -1,15 +1,5 @@
 import apiClient from '../client';
-
-export interface TimeEntry {
-  id: string;
-  taskId: string;
-  userId: string;
-  date: string;
-  duration: string; // Format: "HH:mm:ss"
-  notes?: string;
-  createdAt: string;
-  updatedAt?: string;
-}
+import { TimeEntry } from '@/types/time-entry';
 
 export interface CreateTimeEntryDto {
   taskId: string;

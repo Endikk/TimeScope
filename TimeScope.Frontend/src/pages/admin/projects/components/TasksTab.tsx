@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2 } from 'lucide-react';
 import type { CreateTaskDto } from '@/lib/api/services/tasks.service';
 import type { Task } from '@/lib/types';
-import type { Project } from '@/lib/api/services/projects.service';
+import type { Project } from '@/types/project';
 
 interface TasksTabProps {
   tasks: Task[];

@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, MoreHorizontal, Trash2 } from 'lucide-react';
-import type { Project, Group, CreateProjectDto } from '@/lib/api/services/projects.service';
+import type { CreateProjectDto } from '@/lib/api/services/projects.service';
+import type { Project, Group } from '@/types/project';
 
 interface ProjectsTabProps {
   projects: Project[];

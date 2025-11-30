@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
   projectsService,
-  type Project,
-  type Group,
-  type Theme,
   type CreateProjectDto,
   type UpdateProjectDto,
   type CreateGroupDto,
@@ -11,6 +8,7 @@ import {
   type CreateThemeDto,
   type UpdateThemeDto
 } from '@/lib/api/services/projects.service';
+import type { Project, Group, Theme } from '@/types/project';
 
 /**
  * Hook pour récupérer tous les projets

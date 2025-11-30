@@ -17,37 +17,31 @@ public static class SeedData
     {
         using var scope = serviceProvider.CreateScope();
 
-        // Admin Database
-        var adminContext = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
-        await InitializeAdminDataAsync(adminContext, authService);
-
-        // Projects Database
-        var projectsContext = scope.ServiceProvider.GetRequiredService<ProjectsDbContext>();
-        await InitializeProjectsDataAsync(projectsContext);
-
-        // Time Database
-        var timeContext = scope.ServiceProvider.GetRequiredService<TimeDbContext>();
-        await InitializeTimeDataAsync(timeContext);
-
-        // Reports Database
-        var reportsContext = scope.ServiceProvider.GetRequiredService<ReportsDbContext>();
-        await InitializeReportsDataAsync(reportsContext);
-    }
-
-    private static async Task InitializeAdminDataAsync(AdminDbContext context, IAuthService authService)
-    {
-        // Créer les tables si elles n'existent pas
-        await context.Database.EnsureCreatedAsync();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        // Créer les tables si elles n'existent pas (utile pour le dev, mais EF Migrations gère ça normalement)
+        // await context.Database.EnsureCreatedAsync(); 
+        // Note: Avec les migrations, on évite EnsureCreatedAsync qui peut bypasser les migrations
 
         // Vérifier si des utilisateurs existent déjà
         if (await context.Users.AnyAsync())
         {
-            Console.WriteLine("✓ Admin database already seeded");
+            Console.WriteLine("✓ Database already seeded");
             return;
         }
 
-        Console.WriteLine("🌱 Seeding Admin database...");
+        Console.WriteLine("🌱 Seeding Database...");
 
+        await InitializeUsersAndSettingsAsync(context);
+        await InitializeAuditLogAsync(context);
+        
+        await context.SaveChangesAsync();
+        
+        Console.WriteLine("✓ Database initialized successfully");
+    }
+
+    private static async Task InitializeUsersAndSettingsAsync(ApplicationDbContext context)
+    {
         // Utiliser BCrypt directement pour hash les passwords
         // Créer un utilisateur admin par défaut
         var adminUser = new User
@@ -59,6 +53,7 @@ public static class SeedData
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!", 12),
             Role = UserRole.Admin,
             IsActive = true,
+            PhoneNumber = "+33 6 12 34 56 78",
             Avatar = null,
             CreatedAt = DateTime.UtcNow,
             IsDeleted = false
@@ -74,6 +69,7 @@ public static class SeedData
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Manager123!", 12),
             Role = UserRole.Manager,
             IsActive = true,
+            PhoneNumber = "+33 6 98 76 54 32",
             Avatar = null,
             CreatedAt = DateTime.UtcNow,
             IsDeleted = false
@@ -89,6 +85,7 @@ public static class SeedData
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Employee123!", 12),
             Role = UserRole.Employee,
             IsActive = true,
+            PhoneNumber = "+33 6 11 22 33 44",
             Avatar = null,
             CreatedAt = DateTime.UtcNow,
             IsDeleted = false
@@ -136,61 +133,14 @@ public static class SeedData
 
         context.AppSettings.AddRange(settings);
 
-        await context.SaveChangesAsync();
-
         Console.WriteLine($"✓ Created admin user: {adminUser.Email} (password: Admin123!)");
         Console.WriteLine($"✓ Created manager user: {managerUser.Email} (password: Manager123!)");
         Console.WriteLine($"✓ Created employee user: {employeeUser.Email} (password: Employee123!)");
         Console.WriteLine($"✓ Created {settings.Count} app settings");
     }
 
-    private static async Task InitializeProjectsDataAsync(ProjectsDbContext context)
+    private static async Task InitializeAuditLogAsync(ApplicationDbContext context)
     {
-        await context.Database.EnsureCreatedAsync();
-
-        if (await context.Projects.AnyAsync())
-        {
-            Console.WriteLine("✓ Projects database already seeded");
-            return;
-        }
-
-        Console.WriteLine("🌱 Seeding Projects database...");
-
-        // Les données de projet peuvent être ajoutées ici si nécessaire
-        // Pour l'instant, on laisse vide pour que l'utilisateur crée ses propres projets
-
-        Console.WriteLine("✓ Projects database initialized (empty)");
-    }
-
-    private static async Task InitializeTimeDataAsync(TimeDbContext context)
-    {
-        await context.Database.EnsureCreatedAsync();
-
-        if (await context.Tasks.AnyAsync())
-        {
-            Console.WriteLine("✓ Time database already seeded");
-            return;
-        }
-
-        Console.WriteLine("🌱 Seeding Time database...");
-
-        // Les données de tâches peuvent être ajoutées ici si nécessaire
-
-        Console.WriteLine("✓ Time database initialized (empty)");
-    }
-
-    private static async Task InitializeReportsDataAsync(ReportsDbContext context)
-    {
-        await context.Database.EnsureCreatedAsync();
-
-        if (await context.AuditLogs.AnyAsync())
-        {
-            Console.WriteLine("✓ Reports database already seeded");
-            return;
-        }
-
-        Console.WriteLine("🌱 Seeding Reports database...");
-
         // Créer un log d'audit pour l'initialisation
         var initLog = new AuditLog
         {
@@ -206,8 +156,6 @@ public static class SeedData
         };
 
         context.AuditLogs.Add(initLog);
-        await context.SaveChangesAsync();
-
-        Console.WriteLine("✓ Reports database initialized");
+        Console.WriteLine("✓ Created initial audit log");
     }
 }

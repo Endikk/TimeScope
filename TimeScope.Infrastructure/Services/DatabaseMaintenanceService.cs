@@ -7,21 +7,11 @@ namespace TimeScope.Infrastructure.Services;
 
 public class DatabaseMaintenanceService : IDatabaseMaintenanceService
 {
-    private readonly AdminDbContext _adminContext;
-    private readonly ProjectsDbContext _projectsContext;
-    private readonly TimeDbContext _timeContext;
-    private readonly ReportsDbContext _reportsContext;
+    private readonly ApplicationDbContext _context;
 
-    public DatabaseMaintenanceService(
-        AdminDbContext adminContext,
-        ProjectsDbContext projectsContext,
-        TimeDbContext timeContext,
-        ReportsDbContext reportsContext)
+    public DatabaseMaintenanceService(ApplicationDbContext context)
     {
-        _adminContext = adminContext;
-        _projectsContext = projectsContext;
-        _timeContext = timeContext;
-        _reportsContext = reportsContext;
+        _context = context;
     }
 
     public async Task<DatabaseStats> GetDatabaseStatsAsync()
@@ -30,39 +20,39 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
         {
             AdminDatabase = new DatabaseInfo
             {
-                Name = "Admin",
-                UsersCount = await _adminContext.Users.CountAsync(),
-                ActiveUsersCount = await _adminContext.Users.Where(u => u.IsActive).CountAsync(),
-                TotalRecords = await _adminContext.Users.CountAsync(),
-                LastUpdated = await _adminContext.Users
+                Name = "Admin (Unified)",
+                UsersCount = await _context.Users.CountAsync(),
+                ActiveUsersCount = await _context.Users.Where(u => u.IsActive).CountAsync(),
+                TotalRecords = await _context.Users.CountAsync(),
+                LastUpdated = await _context.Users
                     .OrderByDescending(u => u.UpdatedAt)
                     .Select(u => u.UpdatedAt)
                     .FirstOrDefaultAsync() ?? DateTime.UtcNow
             },
             ProjectsDatabase = new DatabaseInfo
             {
-                Name = "Projects",
-                ProjectsCount = await _projectsContext.Projects.CountAsync(),
-                GroupsCount = await _projectsContext.Groups.CountAsync(),
-                ThemesCount = await _projectsContext.Themes.CountAsync(),
-                TotalRecords = await _projectsContext.Projects.CountAsync() +
-                               await _projectsContext.Groups.CountAsync() +
-                               await _projectsContext.Themes.CountAsync(),
-                LastUpdated = await GetLastUpdatedDate(_projectsContext)
+                Name = "Projects (Unified)",
+                ProjectsCount = await _context.Projects.CountAsync(),
+                GroupsCount = await _context.Groups.CountAsync(),
+                ThemesCount = await _context.Themes.CountAsync(),
+                TotalRecords = await _context.Projects.CountAsync() +
+                               await _context.Groups.CountAsync() +
+                               await _context.Themes.CountAsync(),
+                LastUpdated = await GetLastUpdatedDateProjects(_context)
             },
             TimeDatabase = new DatabaseInfo
             {
-                Name = "Time",
-                TasksCount = await _timeContext.Tasks.CountAsync(),
-                TimeEntriesCount = await _timeContext.TimeEntries.CountAsync(),
-                TotalRecords = await _timeContext.Tasks.CountAsync() +
-                               await _timeContext.TimeEntries.CountAsync(),
-                LastUpdated = await GetLastUpdatedDate(_timeContext)
+                Name = "Time (Unified)",
+                TasksCount = await _context.Tasks.CountAsync(),
+                TimeEntriesCount = await _context.TimeEntries.CountAsync(),
+                TotalRecords = await _context.Tasks.CountAsync() +
+                               await _context.TimeEntries.CountAsync(),
+                LastUpdated = await GetLastUpdatedDateTime(_context)
             },
             ReportsDatabase = new DatabaseInfo
             {
-                Name = "Reports",
-                TotalRecords = await _reportsContext.AuditLogs.CountAsync(),
+                Name = "Reports (Unified)",
+                TotalRecords = await _context.AuditLogs.CountAsync(),
                 LastUpdated = DateTime.UtcNow
             }
         };
@@ -74,16 +64,13 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
     {
         var health = new DatabaseHealth
         {
-            AdminDatabase = await CheckDatabaseConnection(_adminContext.Database, "Admin"),
-            ProjectsDatabase = await CheckDatabaseConnection(_projectsContext.Database, "Projects"),
-            TimeDatabase = await CheckDatabaseConnection(_timeContext.Database, "Time"),
-            ReportsDatabase = await CheckDatabaseConnection(_reportsContext.Database, "Reports")
+            AdminDatabase = await CheckDatabaseConnection(_context.Database, "Unified DB"),
+            ProjectsDatabase = await CheckDatabaseConnection(_context.Database, "Unified DB"),
+            TimeDatabase = await CheckDatabaseConnection(_context.Database, "Unified DB"),
+            ReportsDatabase = await CheckDatabaseConnection(_context.Database, "Unified DB")
         };
 
-        var allHealthy = health.AdminDatabase.IsHealthy &&
-                        health.ProjectsDatabase.IsHealthy &&
-                        health.TimeDatabase.IsHealthy &&
-                        health.ReportsDatabase.IsHealthy;
+        var allHealthy = health.AdminDatabase.IsHealthy;
 
         health.OverallStatus = allHealthy ? "Healthy" : "Unhealthy";
 
@@ -100,10 +87,7 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
         try
         {
             // ANALYZE pour PostgreSQL (met à jour les statistiques du query planner)
-            await _adminContext.Database.ExecuteSqlRawAsync("ANALYZE");
-            await _projectsContext.Database.ExecuteSqlRawAsync("ANALYZE");
-            await _timeContext.Database.ExecuteSqlRawAsync("ANALYZE");
-            await _reportsContext.Database.ExecuteSqlRawAsync("ANALYZE");
+            await _context.Database.ExecuteSqlRawAsync("ANALYZE");
 
             result.Success = true;
             result.Message = "Optimization completed successfully";
@@ -127,46 +111,46 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
             {
                 Name = "Admin",
                 TablesCount = 2,
-                TotalRecords = await _adminContext.Users.CountAsync() + await _adminContext.AppSettings.CountAsync(),
+                TotalRecords = await _context.Users.CountAsync() + await _context.AppSettings.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "Users", await _adminContext.Users.CountAsync() },
-                    { "AppSettings", await _adminContext.AppSettings.CountAsync() }
+                    { "Users", await _context.Users.CountAsync() },
+                    { "AppSettings", await _context.AppSettings.CountAsync() }
                 }
             },
             ProjectsDatabase = new DatabaseSummary
             {
                 Name = "Projects",
                 TablesCount = 3,
-                TotalRecords = await _projectsContext.Projects.CountAsync() +
-                              await _projectsContext.Groups.CountAsync() +
-                              await _projectsContext.Themes.CountAsync(),
+                TotalRecords = await _context.Projects.CountAsync() +
+                              await _context.Groups.CountAsync() +
+                              await _context.Themes.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "Projects", await _projectsContext.Projects.CountAsync() },
-                    { "Groups", await _projectsContext.Groups.CountAsync() },
-                    { "Themes", await _projectsContext.Themes.CountAsync() }
+                    { "Projects", await _context.Projects.CountAsync() },
+                    { "Groups", await _context.Groups.CountAsync() },
+                    { "Themes", await _context.Themes.CountAsync() }
                 }
             },
             TimeDatabase = new DatabaseSummary
             {
                 Name = "Time",
                 TablesCount = 2,
-                TotalRecords = await _timeContext.Tasks.CountAsync() + await _timeContext.TimeEntries.CountAsync(),
+                TotalRecords = await _context.Tasks.CountAsync() + await _context.TimeEntries.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "Tasks", await _timeContext.Tasks.CountAsync() },
-                    { "TimeEntries", await _timeContext.TimeEntries.CountAsync() }
+                    { "Tasks", await _context.Tasks.CountAsync() },
+                    { "TimeEntries", await _context.TimeEntries.CountAsync() }
                 }
             },
             ReportsDatabase = new DatabaseSummary
             {
                 Name = "Reports",
                 TablesCount = 1,
-                TotalRecords = await _reportsContext.AuditLogs.CountAsync(),
+                TotalRecords = await _context.AuditLogs.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "AuditLogs", await _reportsContext.AuditLogs.CountAsync() }
+                    { "AuditLogs", await _context.AuditLogs.CountAsync() }
                 }
             }
         };
@@ -181,10 +165,7 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
             Tests = new List<ConnectionTest>()
         };
 
-        result.Tests.Add(await TestConnection("Admin", _adminContext.Database));
-        result.Tests.Add(await TestConnection("Projects", _projectsContext.Database));
-        result.Tests.Add(await TestConnection("Time", _timeContext.Database));
-        result.Tests.Add(await TestConnection("Reports", _reportsContext.Database));
+        result.Tests.Add(await TestConnection("Unified DB", _context.Database));
 
         result.AllSuccessful = result.Tests.All(t => t.Success);
         result.Timestamp = DateTime.UtcNow;
@@ -205,24 +186,24 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
         var adminCleanup = new DatabaseCleanupResult
         {
             DatabaseName = "Admin",
-            RecordsCleaned = await _adminContext.Users.Where(u => u.IsDeleted).CountAsync()
+            RecordsCleaned = await _context.Users.Where(u => u.IsDeleted).CountAsync()
         };
         result.DatabaseResults.Add(adminCleanup);
 
         var projectsCleanup = new DatabaseCleanupResult
         {
             DatabaseName = "Projects",
-            RecordsCleaned = await _projectsContext.Projects.Where(p => p.IsDeleted).CountAsync() +
-                            await _projectsContext.Groups.Where(g => g.IsDeleted).CountAsync() +
-                            await _projectsContext.Themes.Where(t => t.IsDeleted).CountAsync()
+            RecordsCleaned = await _context.Projects.Where(p => p.IsDeleted).CountAsync() +
+                            await _context.Groups.Where(g => g.IsDeleted).CountAsync() +
+                            await _context.Themes.Where(t => t.IsDeleted).CountAsync()
         };
         result.DatabaseResults.Add(projectsCleanup);
 
         var timeCleanup = new DatabaseCleanupResult
         {
             DatabaseName = "Time",
-            RecordsCleaned = await _timeContext.Tasks.Where(t => t.IsDeleted).CountAsync() +
-                            await _timeContext.TimeEntries.Where(te => te.IsDeleted).CountAsync()
+            RecordsCleaned = await _context.Tasks.Where(t => t.IsDeleted).CountAsync() +
+                            await _context.TimeEntries.Where(te => te.IsDeleted).CountAsync()
         };
         result.DatabaseResults.Add(timeCleanup);
 
@@ -295,7 +276,7 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
         }
     }
 
-    private static async Task<DateTime> GetLastUpdatedDate(ProjectsDbContext context)
+    private static async Task<DateTime> GetLastUpdatedDateProjects(ApplicationDbContext context)
     {
         var projectDate = await context.Projects
             .OrderByDescending(p => p.UpdatedAt)
@@ -315,7 +296,7 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
         return new[] { projectDate ?? DateTime.UtcNow, groupDate ?? DateTime.UtcNow, themeDate ?? DateTime.UtcNow, DateTime.UtcNow }.Max();
     }
 
-    private static async Task<DateTime> GetLastUpdatedDate(TimeDbContext context)
+    private static async Task<DateTime> GetLastUpdatedDateTime(ApplicationDbContext context)
     {
         var taskDate = await context.Tasks
             .OrderByDescending(t => t.UpdatedAt)
@@ -383,21 +364,9 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
     {
         var results = new List<OptimizationResult>();
 
-        // Optimize Admin DB
-        var adminResult = await OptimizeDatabase(_adminContext, "Admin");
-        results.Add(adminResult);
-
-        // Optimize Projects DB
-        var projectsResult = await OptimizeDatabase(_projectsContext, "Projects");
-        results.Add(projectsResult);
-
-        // Optimize Time DB
-        var timeResult = await OptimizeDatabase(_timeContext, "Time");
-        results.Add(timeResult);
-
-        // Optimize Reports DB
-        var reportsResult = await OptimizeDatabase(_reportsContext, "Reports");
-        results.Add(reportsResult);
+        // Optimize Unified DB (covers all)
+        var result = await OptimizeDatabase(_context, "Unified DB");
+        results.Add(result);
 
         return results;
     }
@@ -406,21 +375,9 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
     {
         var results = new List<OptimizationResult>();
 
-        // Vacuum Admin DB
-        var adminResult = await VacuumDatabase(_adminContext, "Admin");
-        results.Add(adminResult);
-
-        // Vacuum Projects DB
-        var projectsResult = await VacuumDatabase(_projectsContext, "Projects");
-        results.Add(projectsResult);
-
-        // Vacuum Time DB
-        var timeResult = await VacuumDatabase(_timeContext, "Time");
-        results.Add(timeResult);
-
-        // Vacuum Reports DB
-        var reportsResult = await VacuumDatabase(_reportsContext, "Reports");
-        results.Add(reportsResult);
+        // Vacuum Unified DB
+        var result = await VacuumDatabase(_context, "Unified DB");
+        results.Add(result);
 
         return results;
     }
@@ -429,21 +386,9 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
     {
         var results = new List<OptimizationResult>();
 
-        // Reindex Admin DB
-        var adminResult = await ReindexDatabase(_adminContext, "Admin");
-        results.Add(adminResult);
-
-        // Reindex Projects DB
-        var projectsResult = await ReindexDatabase(_projectsContext, "Projects");
-        results.Add(projectsResult);
-
-        // Reindex Time DB
-        var timeResult = await ReindexDatabase(_timeContext, "Time");
-        results.Add(timeResult);
-
-        // Reindex Reports DB
-        var reportsResult = await ReindexDatabase(_reportsContext, "Reports");
-        results.Add(reportsResult);
+        // Reindex Unified DB
+        var result = await ReindexDatabase(_context, "Unified DB");
+        results.Add(result);
 
         return results;
     }
@@ -455,30 +400,9 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
         {
             new BackupInfo
             {
-                Database = "Admin",
+                Database = "Unified DB",
                 LastBackup = DateTime.UtcNow.AddDays(-1),
-                BackupSize = 1024 * 1024 * 50, // 50 MB
-                Status = "Success"
-            },
-            new BackupInfo
-            {
-                Database = "Projects",
-                LastBackup = DateTime.UtcNow.AddDays(-1),
-                BackupSize = 1024 * 1024 * 100, // 100 MB
-                Status = "Success"
-            },
-            new BackupInfo
-            {
-                Database = "Time",
-                LastBackup = DateTime.UtcNow.AddDays(-1),
-                BackupSize = 1024 * 1024 * 200, // 200 MB
-                Status = "Success"
-            },
-            new BackupInfo
-            {
-                Database = "Reports",
-                LastBackup = DateTime.UtcNow.AddDays(-1),
-                BackupSize = 1024 * 1024 * 75, // 75 MB
+                BackupSize = 1024 * 1024 * 425, // 425 MB
                 Status = "Success"
             }
         };

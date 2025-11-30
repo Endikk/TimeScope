@@ -3,8 +3,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateTaskDto } from '@/lib/api/services';
-import { Project } from '@/lib/api/services/projects.service';
-import { User } from '@/lib/api/services/users.service';
+import { Project } from '@/types/project';
+import { User } from '@/types/user';
 
 interface TaskFormProps {
   formData: CreateTaskDto;

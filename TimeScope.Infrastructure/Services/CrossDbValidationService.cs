@@ -5,41 +5,34 @@ using Microsoft.EntityFrameworkCore;
 namespace TimeScope.Infrastructure.Services;
 
 /// <summary>
-/// Implémentation du service de validation cross-database
+/// Implémentation du service de validation cross-database (maintenant unifié)
 /// </summary>
 public class CrossDbValidationService : ICrossDbValidationService
 {
-    private readonly AdminDbContext _adminContext;
-    private readonly ProjectsDbContext _projectsContext;
-    private readonly TimeDbContext _timeContext;
+    private readonly ApplicationDbContext _context;
 
-    public CrossDbValidationService(
-        AdminDbContext adminContext,
-        ProjectsDbContext projectsContext,
-        TimeDbContext timeContext)
+    public CrossDbValidationService(ApplicationDbContext context)
     {
-        _adminContext = adminContext;
-        _projectsContext = projectsContext;
-        _timeContext = timeContext;
+        _context = context;
     }
 
     public async Task<bool> UserExistsAsync(Guid userId)
     {
-        return await _adminContext.Users
+        return await _context.Users
             .IgnoreQueryFilters()
             .AnyAsync(u => u.Id == userId && !u.IsDeleted);
     }
 
     public async Task<bool> ProjectExistsAsync(Guid projectId)
     {
-        return await _projectsContext.Projects
+        return await _context.Projects
             .IgnoreQueryFilters()
             .AnyAsync(p => p.Id == projectId && !p.IsDeleted);
     }
 
     public async Task<bool> ThemeExistsAsync(Guid themeId)
     {
-        return await _projectsContext.Themes
+        return await _context.Themes
             .IgnoreQueryFilters()
             .AnyAsync(t => t.Id == themeId && !t.IsDeleted);
     }
@@ -78,14 +71,14 @@ public class CrossDbValidationService : ICrossDbValidationService
         var report = new OrphanReport();
 
         // Récupérer tous les IDs valides
-        var validUserIdsList = await _adminContext.Users
+        var validUserIdsList = await _context.Users
             .IgnoreQueryFilters()
             .Where(u => !u.IsDeleted)
             .Select(u => u.Id)
             .ToListAsync();
         var validUserIds = new HashSet<Guid>(validUserIdsList);
 
-        var validProjectIdsList = await _projectsContext.Projects
+        var validProjectIdsList = await _context.Projects
             .IgnoreQueryFilters()
             .Where(p => !p.IsDeleted)
             .Select(p => p.Id)
@@ -93,7 +86,7 @@ public class CrossDbValidationService : ICrossDbValidationService
         var validProjectIds = new HashSet<Guid>(validProjectIdsList);
 
         // Vérifier les tâches
-        var tasks = await _timeContext.Tasks
+        var tasks = await _context.Tasks
             .IgnoreQueryFilters()
             .Where(t => !t.IsDeleted)
             .Select(t => new { t.Id, t.ProjectId, t.AssigneeId })
@@ -113,7 +106,7 @@ public class CrossDbValidationService : ICrossDbValidationService
         }
 
         // Vérifier les entrées de temps
-        var timeEntries = await _timeContext.TimeEntries
+        var timeEntries = await _context.TimeEntries
             .IgnoreQueryFilters()
             .Where(te => !te.IsDeleted)
             .Select(te => new { te.Id, te.UserId })

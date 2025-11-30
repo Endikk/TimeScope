@@ -10,33 +10,13 @@ import apiClient from '../client';
 /**
  * User entity representing an authenticated user
  */
+import { User } from '@/types/user';
+
 /**
- * User entity - Matches backend UserDto
- * Note: This should match TimeScope.Core.Interfaces.IAuthService.UserDto
+ * User entity representing an authenticated user
  */
-export interface User {
-  /** Unique user identifier (Guid from backend, serialized as string) */
-  id: string;
-  /** User's first name */
-  firstName: string;
-  /** User's last name */
-  lastName: string;
-  /** User's email address */
-  email: string;
-  /** Optional avatar URL */
-  avatar?: string;
-  /** Optional banner URL */
-  banner?: string;
-  /** User's role in the system - matches backend UserRole enum */
-  role: 'Admin' | 'Manager' | 'Employee';
-  /** Whether the user account is active */
-  isActive: boolean;
-  /** Professional Information */
-  phoneNumber?: string;
-  jobTitle?: string;
-  department?: string;
-  hireDate?: string;
-}
+// Re-export User for backward compatibility if needed, or just use the imported one
+export type { User };
 
 /**
  * Login credentials required for authentication
