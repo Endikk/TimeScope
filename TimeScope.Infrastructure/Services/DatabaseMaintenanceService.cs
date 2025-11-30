@@ -34,19 +34,17 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
                 Name = "Projects (Unified)",
                 ProjectsCount = await _context.Projects.CountAsync(),
                 GroupsCount = await _context.Groups.CountAsync(),
-                ThemesCount = await _context.Themes.CountAsync(),
+                TasksCount = await _context.Tasks.CountAsync(),
                 TotalRecords = await _context.Projects.CountAsync() +
                                await _context.Groups.CountAsync() +
-                               await _context.Themes.CountAsync(),
+                               await _context.Tasks.CountAsync(),
                 LastUpdated = await GetLastUpdatedDateProjects(_context)
             },
             TimeDatabase = new DatabaseInfo
             {
                 Name = "Time (Unified)",
-                TasksCount = await _context.Tasks.CountAsync(),
                 TimeEntriesCount = await _context.TimeEntries.CountAsync(),
-                TotalRecords = await _context.Tasks.CountAsync() +
-                               await _context.TimeEntries.CountAsync(),
+                TotalRecords = await _context.TimeEntries.CountAsync(),
                 LastUpdated = await GetLastUpdatedDateTime(_context)
             },
             ReportsDatabase = new DatabaseInfo
@@ -124,22 +122,21 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
                 TablesCount = 3,
                 TotalRecords = await _context.Projects.CountAsync() +
                               await _context.Groups.CountAsync() +
-                              await _context.Themes.CountAsync(),
+                              await _context.Tasks.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
                     { "Projects", await _context.Projects.CountAsync() },
                     { "Groups", await _context.Groups.CountAsync() },
-                    { "Themes", await _context.Themes.CountAsync() }
+                    { "Tasks", await _context.Tasks.CountAsync() }
                 }
             },
             TimeDatabase = new DatabaseSummary
             {
                 Name = "Time",
-                TablesCount = 2,
-                TotalRecords = await _context.Tasks.CountAsync() + await _context.TimeEntries.CountAsync(),
+                TablesCount = 1,
+                TotalRecords = await _context.TimeEntries.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "Tasks", await _context.Tasks.CountAsync() },
                     { "TimeEntries", await _context.TimeEntries.CountAsync() }
                 }
             },
@@ -195,15 +192,14 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
             DatabaseName = "Projects",
             RecordsCleaned = await _context.Projects.Where(p => p.IsDeleted).CountAsync() +
                             await _context.Groups.Where(g => g.IsDeleted).CountAsync() +
-                            await _context.Themes.Where(t => t.IsDeleted).CountAsync()
+                            await _context.Tasks.Where(t => t.IsDeleted).CountAsync()
         };
         result.DatabaseResults.Add(projectsCleanup);
 
         var timeCleanup = new DatabaseCleanupResult
         {
             DatabaseName = "Time",
-            RecordsCleaned = await _context.Tasks.Where(t => t.IsDeleted).CountAsync() +
-                            await _context.TimeEntries.Where(te => te.IsDeleted).CountAsync()
+            RecordsCleaned = await _context.TimeEntries.Where(te => te.IsDeleted).CountAsync()
         };
         result.DatabaseResults.Add(timeCleanup);
 
@@ -288,27 +284,22 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
             .Select(g => g.UpdatedAt)
             .FirstOrDefaultAsync();
 
-        var themeDate = await context.Themes
-            .OrderByDescending(t => t.UpdatedAt)
-            .Select(t => t.UpdatedAt)
-            .FirstOrDefaultAsync();
-
-        return new[] { projectDate ?? DateTime.UtcNow, groupDate ?? DateTime.UtcNow, themeDate ?? DateTime.UtcNow, DateTime.UtcNow }.Max();
-    }
-
-    private static async Task<DateTime> GetLastUpdatedDateTime(ApplicationDbContext context)
-    {
         var taskDate = await context.Tasks
             .OrderByDescending(t => t.UpdatedAt)
             .Select(t => t.UpdatedAt)
             .FirstOrDefaultAsync();
 
+        return new[] { projectDate ?? DateTime.UtcNow, groupDate ?? DateTime.UtcNow, taskDate ?? DateTime.UtcNow, DateTime.UtcNow }.Max();
+    }
+
+    private static async Task<DateTime> GetLastUpdatedDateTime(ApplicationDbContext context)
+    {
         var entryDate = await context.TimeEntries
             .OrderByDescending(te => te.UpdatedAt)
             .Select(te => te.UpdatedAt)
             .FirstOrDefaultAsync();
 
-        return new[] { taskDate ?? DateTime.UtcNow, entryDate ?? DateTime.UtcNow, DateTime.UtcNow }.Max();
+        return entryDate ?? DateTime.UtcNow;
     }
 
     #endregion

@@ -60,24 +60,23 @@ export default function DatabaseMaintenancePageAPI() {
 
           <DatabaseStatsCard
             title="Base Projects"
-            description="Projets, groupes et thèmes"
+            description="Projets, groupes et tâches"
             icon={Database}
             iconColor="text-purple-500"
             rows={[
               { label: 'Projets', value: stats.projectsDatabase.projectsCount ?? 0 },
               { label: 'Groupes', value: stats.projectsDatabase.groupsCount ?? 0 },
-              { label: 'Thèmes', value: stats.projectsDatabase.themesCount ?? 0 },
+              { label: 'Tâches', value: stats.projectsDatabase.tasksCount ?? 0 },
               { label: 'Total enregistrements', value: stats.projectsDatabase.totalRecords ?? 0 },
             ]}
           />
 
           <DatabaseStatsCard
             title="Base Time"
-            description="Tâches et entrées de temps"
+            description="Entrées de temps"
             icon={Database}
             iconColor="text-green-500"
             rows={[
-              { label: 'Tâches', value: stats.timeDatabase.tasksCount ?? 0 },
               { label: 'Entrées de temps', value: stats.timeDatabase.timeEntriesCount ?? 0 },
               { label: 'Total enregistrements', value: stats.timeDatabase.totalRecords ?? 0 },
             ]}

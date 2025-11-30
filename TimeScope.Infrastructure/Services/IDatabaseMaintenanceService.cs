@@ -33,7 +33,6 @@ public class DatabaseInfo
     public int ActiveUsersCount { get; set; }
     public int ProjectsCount { get; set; }
     public int GroupsCount { get; set; }
-    public int ThemesCount { get; set; }
     public int TasksCount { get; set; }
     public int TimeEntriesCount { get; set; }
     public int TotalRecords { get; set; }
