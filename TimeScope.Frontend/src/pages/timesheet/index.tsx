@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Download, Trash2, Loader2, FileSpreadsheet } from 'lucide-react';
@@ -21,8 +21,13 @@ interface TimeEntryRow {
   selected: boolean;
 }
 
+// Helper function
+const convertDurationToHours = (duration: string): number => {
+  const [hours, minutes] = duration.split(':').map(Number);
+  return hours + (minutes / 60);
+};
+
 export default function TimesheetPage() {
-  const [timeEntryRows, setTimeEntryRows] = useState<TimeEntryRow[]>([]);
   const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
   const [filterUser, setFilterUser] = useState<string>('all');
   const [filterGroup, setFilterGroup] = useState<string>('all');
@@ -40,16 +45,10 @@ export default function TimesheetPage() {
   const { users, loading: usersLoading } = useUsers();
   const { deleteTimeEntry } = useTimeEntryMutations();
 
-  // Helper function
-  const convertDurationToHours = (duration: string): number => {
-    const [hours, minutes] = duration.split(':').map(Number);
-    return hours + (minutes / 60);
-  };
-
   // Transform API data
-  useEffect(() => {
+  const timeEntryRows = useMemo(() => {
     if (timeEntries && groups && projects && tasks && users) {
-      const transformed = timeEntries.map(entry => {
+      return timeEntries.map(entry => {
         const task = tasks.find(t => t.id === entry.taskId);
         const project = projects.find(p => p.id === task?.projectId);
         const group = groups.find(g => g.id === project?.groupId);
@@ -68,8 +67,8 @@ export default function TimesheetPage() {
           selected: false
         };
       });
-      setTimeEntryRows(transformed);
     }
+    return [];
   }, [timeEntries, groups, projects, tasks, users]);
 
   // Filter and sort entries

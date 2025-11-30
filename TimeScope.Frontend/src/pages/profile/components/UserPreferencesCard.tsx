@@ -62,73 +62,77 @@ interface UserPreferences {
   };
 }
 
+const DEFAULT_ALLOWED_SETTINGS: AllowedSettings = {
+  profile: {
+    allowProfilePicture: true,
+    allowShowEmail: true,
+    allowShowPhone: true,
+  },
+  notifications: {
+    allowEmailOnTaskAssign: true,
+    allowEmailOnTaskUpdate: true,
+    allowEmailOnMention: true,
+    allowDesktopNotifications: true,
+    allowSummaryFrequency: true,
+  },
+  appearance: {
+    allowTheme: true,
+    allowColorScheme: true,
+    allowCompactView: true,
+    allowShowAvatars: true,
+  },
+  regional: {
+    allowLanguage: true,
+    allowTimezone: true,
+    allowDateFormat: true,
+    allowTimeFormat: true,
+  },
+};
+
+const DEFAULT_PREFERENCES: UserPreferences = {
+  profile: {
+    showProfilePicture: true,
+    showEmail: false,
+    showPhone: false,
+  },
+  notifications: {
+    emailOnTaskAssign: true,
+    emailOnTaskUpdate: false,
+    emailOnMention: true,
+    desktopNotifications: true,
+    summaryFrequency: 'daily',
+  },
+  appearance: {
+    theme: 'light',
+    colorScheme: 'blue',
+    compactView: false,
+    showAvatars: true,
+  },
+  regional: {
+    language: 'fr',
+    timezone: 'Europe/Paris',
+    dateFormat: 'DD/MM/YYYY',
+    timeFormat: '24h',
+  },
+};
+
 export function UserPreferencesCard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Autorisations définies par l'admin
-  const [allowedSettings, setAllowedSettings] = useState<AllowedSettings>({
-    profile: {
-      allowProfilePicture: true,
-      allowShowEmail: true,
-      allowShowPhone: true,
-    },
-    notifications: {
-      allowEmailOnTaskAssign: true,
-      allowEmailOnTaskUpdate: true,
-      allowEmailOnMention: true,
-      allowDesktopNotifications: true,
-      allowSummaryFrequency: true,
-    },
-    appearance: {
-      allowTheme: true,
-      allowColorScheme: true,
-      allowCompactView: true,
-      allowShowAvatars: true,
-    },
-    regional: {
-      allowLanguage: true,
-      allowTimezone: true,
-      allowDateFormat: true,
-      allowTimeFormat: true,
-    },
-  });
+  const [allowedSettings, setAllowedSettings] = useState<AllowedSettings>(DEFAULT_ALLOWED_SETTINGS);
 
   // Préférences de l'utilisateur
-  const [preferences, setPreferences] = useState<UserPreferences>({
-    profile: {
-      showProfilePicture: true,
-      showEmail: false,
-      showPhone: false,
-    },
-    notifications: {
-      emailOnTaskAssign: true,
-      emailOnTaskUpdate: false,
-      emailOnMention: true,
-      desktopNotifications: true,
-      summaryFrequency: 'daily',
-    },
-    appearance: {
-      theme: 'light',
-      colorScheme: 'blue',
-      compactView: false,
-      showAvatars: true,
-    },
-    regional: {
-      language: 'fr',
-      timezone: 'Europe/Paris',
-      dateFormat: 'DD/MM/YYYY',
-      timeFormat: '24h',
-    },
-  });
+  const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_PREFERENCES);
 
   const loadSettings = useCallback(async () => {
     try {
       setLoading(true);
       const settings = await settingsService.getAllSettings();
 
-      const newAllowed = { ...allowedSettings };
-      const newPrefs = { ...preferences };
+      const newAllowed = { ...DEFAULT_ALLOWED_SETTINGS };
+      const newPrefs = { ...DEFAULT_PREFERENCES };
 
       settings.forEach((setting: AppSetting) => {
         const keys = setting.key.split('.');
@@ -247,7 +251,7 @@ export function UserPreferencesCard() {
 
   // Vérifier si aucune option n'est autorisée
   const noOptionsAvailable = !hasAnyAllowed('profile') && !hasAnyAllowed('notifications') &&
-                             !hasAnyAllowed('appearance') && !hasAnyAllowed('regional');
+    !hasAnyAllowed('appearance') && !hasAnyAllowed('regional');
 
   if (loading) {
     return (

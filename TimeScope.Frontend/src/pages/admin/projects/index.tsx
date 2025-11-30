@@ -40,6 +40,7 @@ export default function ProjectsManagementPageSimple() {
       setIsAddProjectOpen(false);
       setNewProject({ name: '', description: '' });
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -49,6 +50,7 @@ export default function ProjectsManagementPageSimple() {
         await deleteProject(id);
         await refetchProjects();
       } catch (error) {
+        console.error(error);
       }
     }
   };
@@ -60,6 +62,7 @@ export default function ProjectsManagementPageSimple() {
       setIsAddGroupOpen(false);
       setNewGroup({ name: '', description: '' });
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -69,6 +72,7 @@ export default function ProjectsManagementPageSimple() {
         await deleteGroup(id);
         await refetchGroups();
       } catch (error) {
+        console.error(error);
       }
     }
   };
@@ -91,6 +95,7 @@ export default function ProjectsManagementPageSimple() {
         estimatedTime: '00:00:00'
       });
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -100,6 +105,7 @@ export default function ProjectsManagementPageSimple() {
         await deleteTask(id);
         await refetchTasks();
       } catch (error) {
+        console.error(error);
       }
     }
   };

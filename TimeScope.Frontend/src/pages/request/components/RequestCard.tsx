@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -45,7 +46,7 @@ export function RequestCard({
   STATUS_CONFIG
 }: RequestCardProps) {
   const StatusIcon = STATUS_CONFIG[request.status]?.icon || AlertTriangle
-  const RequestIcon = getRequestIcon(request.requestType)
+  const icon = getRequestIcon(request.requestType)
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -53,7 +54,7 @@ export function RequestCard({
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <RequestIcon className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
+              {createElement(icon, { className: "h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" })}
               <CardTitle className="text-base md:text-xl truncate">{request.title}</CardTitle>
             </div>
             <CardDescription className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-wrap text-xs md:text-sm">

@@ -25,6 +25,8 @@ export interface User {
   email: string;
   /** Optional avatar URL */
   avatar?: string;
+  /** Optional banner URL */
+  banner?: string;
   /** User's role in the system - matches backend UserRole enum */
   role: 'Admin' | 'Manager' | 'Employee';
   /** Whether the user account is active */

@@ -7,11 +7,11 @@ import { ActivityStatsCard } from './components/ActivityStatsCard';
 import { SecurityCard } from './components/SecurityCard';
 import { UserPreferencesCard } from './components/UserPreferencesCard';
 import { profileApiService, UserStatsResponse } from '@/lib/api/services/profile.service';
-import { tokenStorage } from '@/lib/api/services/auth.service';
+import { tokenStorage, User } from '@/lib/api/services/auth.service';
 
 export default function ProfilePage() {
   const { user: authUser } = useAuth();
-  const [user, setUser] = useState<any>(authUser);
+  const [user, setUser] = useState<User | null>(authUser);
   const [isEditingPersonalInfo, setIsEditingPersonalInfo] = useState(false);
   const [activityStats, setActivityStats] = useState<UserStatsResponse>({
     tasksCompleted: 0,
@@ -48,7 +48,7 @@ export default function ProfilePage() {
     };
 
     loadUserData();
-  }, [authUser?.id]);
+  }, [authUser?.id, authUser]);
 
   const handleUploadPhoto = async () => {
     if (!user?.id) return;
@@ -230,15 +230,17 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto">
         {/* Profile Header */}
-        <div className="bg-card rounded-lg shadow-sm mb-8">
-          <ProfileHeader
-            user={user}
-            onUploadPhoto={handleUploadPhoto}
-            onUploadBanner={handleUploadBanner}
-            onDeletePhoto={handleDeletePhoto}
-            onDeleteBanner={handleDeleteBanner}
-          />
-        </div>
+        {user && (
+          <div className="bg-card rounded-lg shadow-sm mb-8">
+            <ProfileHeader
+              user={user}
+              onUploadPhoto={handleUploadPhoto}
+              onUploadBanner={handleUploadBanner}
+              onDeletePhoto={handleDeletePhoto}
+              onDeleteBanner={handleDeleteBanner}
+            />
+          </div>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 pb-8">

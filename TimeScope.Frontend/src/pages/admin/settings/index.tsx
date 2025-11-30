@@ -7,69 +7,73 @@ import { UserSettingsCard } from './components/UserSettingsCard';
 import { settingsService, AppSetting } from '@/lib/api/services/settings.service';
 import { toast } from 'sonner';
 
+const DEFAULT_ADMIN_SETTINGS = {
+  security: {
+    requireStrongPassword: true,
+    twoFactorAuth: false,
+    sessionTimeout: 60,
+    maxLoginAttempts: 5,
+  },
+  timeTracking: {
+    workStartTime: '08:00',
+    workEndTime: '17:00',
+    defaultBreakDuration: 60,
+    requireTimeEntry: true,
+    autoClockOut: false,
+  },
+  users: {
+    allowSelfRegistration: false,
+    emailVerification: true,
+    defaultRole: 'Employee',
+  },
+  notifications: {
+    emailEnabled: true,
+    taskReminders: true,
+    dailySummary: false,
+  },
+  system: {
+    maintenanceMode: false,
+    logRetentionDays: 90,
+    autoBackup: true,
+  },
+};
+
+const DEFAULT_USER_SETTINGS = {
+  profile: {
+    allowProfilePicture: true,
+    allowShowEmail: true,
+    allowShowPhone: true,
+  },
+  notifications: {
+    allowEmailOnTaskAssign: true,
+    allowEmailOnTaskUpdate: true,
+    allowEmailOnMention: true,
+    allowDesktopNotifications: true,
+    allowSummaryFrequency: true,
+  },
+  appearance: {
+    allowTheme: true,
+    allowColorScheme: true,
+    allowCompactView: true,
+    allowShowAvatars: true,
+  },
+  regional: {
+    allowLanguage: true,
+    allowTimezone: true,
+    allowDateFormat: true,
+    allowTimeFormat: true,
+  },
+};
+
 export default function SettingsPageAPI() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Paramètres Admin (globaux pour toute l'application)
-  const [adminSettings, setAdminSettings] = useState({
-    security: {
-      requireStrongPassword: true,
-      twoFactorAuth: false,
-      sessionTimeout: 60,
-      maxLoginAttempts: 5,
-    },
-    timeTracking: {
-      workStartTime: '08:00',
-      workEndTime: '17:00',
-      defaultBreakDuration: 60,
-      requireTimeEntry: true,
-      autoClockOut: false,
-    },
-    users: {
-      allowSelfRegistration: false,
-      emailVerification: true,
-      defaultRole: 'Employee',
-    },
-    notifications: {
-      emailEnabled: true,
-      taskReminders: true,
-      dailySummary: false,
-    },
-    system: {
-      maintenanceMode: false,
-      logRetentionDays: 90,
-      autoBackup: true,
-    },
-  });
+  const [adminSettings, setAdminSettings] = useState(DEFAULT_ADMIN_SETTINGS);
 
   // Autorisations Employé (ce que l'admin permet aux employés de configurer)
-  const [userSettings, setUserSettings] = useState({
-    profile: {
-      allowProfilePicture: true,
-      allowShowEmail: true,
-      allowShowPhone: true,
-    },
-    notifications: {
-      allowEmailOnTaskAssign: true,
-      allowEmailOnTaskUpdate: true,
-      allowEmailOnMention: true,
-      allowDesktopNotifications: true,
-      allowSummaryFrequency: true,
-    },
-    appearance: {
-      allowTheme: true,
-      allowColorScheme: true,
-      allowCompactView: true,
-      allowShowAvatars: true,
-    },
-    regional: {
-      allowLanguage: true,
-      allowTimezone: true,
-      allowDateFormat: true,
-      allowTimeFormat: true,
-    },
-  });
+  const [userSettings, setUserSettings] = useState(DEFAULT_USER_SETTINGS);
 
   const handleAdminSettingUpdate = (key: string, value: any) => {
     const keys = key.split('.');
@@ -114,8 +118,8 @@ export default function SettingsPageAPI() {
       const settings = await settingsService.getAllSettings();
 
       // Convertir les paramètres du backend vers la structure locale
-      const adminSettingsFromBackend = { ...adminSettings };
-      const userSettingsFromBackend = { ...userSettings };
+      const adminSettingsFromBackend = { ...DEFAULT_ADMIN_SETTINGS };
+      const userSettingsFromBackend = { ...DEFAULT_USER_SETTINGS };
 
       settings.forEach((setting: AppSetting) => {
         const keys = setting.key.split('.');

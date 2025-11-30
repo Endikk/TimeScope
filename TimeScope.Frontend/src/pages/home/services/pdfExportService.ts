@@ -59,57 +59,53 @@ export async function exportToPDF(options: ExportPDFOptions): Promise<void> {
   // Helper: fetch an SVG from public path and rasterize to PNG dataURL
   // Also returns dimensions to help with aspect ratio
   async function svgUrlToPngDataUrl(svgUrl: string): Promise<LogoInfo> {
-    try {
-      const response = await fetch(svgUrl)
-      if (!response.ok) throw new Error('SVG fetch failed')
-      const svgText = await response.text()
+    const response = await fetch(svgUrl)
+    if (!response.ok) throw new Error('SVG fetch failed')
+    const svgText = await response.text()
 
-      const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' })
-      const url = URL.createObjectURL(svgBlob)
+    const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
 
-      return await new Promise<LogoInfo>((resolve, reject) => {
-        const img = new Image()
-        img.crossOrigin = 'anonymous'
-        img.onload = () => {
-          try {
-            // We use a high resolution canvas for good quality
-            const scale = 4 // Higher scale for better quality
-            const width = img.width * scale
-            const height = img.height * scale
+    return await new Promise<LogoInfo>((resolve, reject) => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => {
+        try {
+          // We use a high resolution canvas for good quality
+          const scale = 4 // Higher scale for better quality
+          const width = img.width * scale
+          const height = img.height * scale
 
-            const canvas = document.createElement('canvas')
-            canvas.width = width
-            canvas.height = height
-            const ctx = canvas.getContext('2d')!
-            ctx.drawImage(img, 0, 0, width, height)
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, width, height)
 
-            URL.revokeObjectURL(url)
-            resolve({
-              dataUrl: canvas.toDataURL('image/png'),
-              width: img.width,
-              height: img.height,
-              aspectRatio: img.width / img.height
-            })
-          } catch (err) {
-            URL.revokeObjectURL(url)
-            reject(err)
-          }
-        }
-        img.onerror = (e) => {
           URL.revokeObjectURL(url)
-          reject(e)
+          resolve({
+            dataUrl: canvas.toDataURL('image/png'),
+            width: img.width,
+            height: img.height,
+            aspectRatio: img.width / img.height
+          })
+        } catch (err) {
+          URL.revokeObjectURL(url)
+          reject(err)
         }
-        img.src = url
-      })
-    } catch (err) {
-      throw err
-    }
+      }
+      img.onerror = (e) => {
+        URL.revokeObjectURL(url)
+        reject(e)
+      }
+      img.src = url
+    })
   }
 
   let logoInfo: LogoInfo | null = null
   try {
     logoInfo = await svgUrlToPngDataUrl('/assets/images/1.svg')
-  } catch (err) {
+  } catch {
     logoInfo = null
   }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useUsers, useUserMutations } from "@/lib/hooks/use-users"
 import type { User as ApiUser, CreateUserDto } from "@/lib/api/services/users.service"
 import { roleNumberToString } from "@/lib/api/services/users.service"
@@ -129,7 +129,13 @@ export default function UserManagement() {
   const { users: apiUsers, loading: loadingUsers, error: errorUsers, refetch } = useUsers()
   const { createUser, updateUser, deleteUser } = useUserMutations()
 
-  const [users, setUsers] = useState<User[]>(initialUsers)
+  const users = useMemo(() => {
+    if (apiUsers && apiUsers.length > 0) {
+      return apiUsers.map(apiUserToLocal)
+    }
+    return initialUsers
+  }, [apiUsers])
+
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRole, setFilterRole] = useState<string>("all")
   const [filterStatus, setFilterStatus] = useState<string>("all")
@@ -157,12 +163,6 @@ export default function UserManagement() {
     department: "",
     hireDate: "",
   })
-
-  useEffect(() => {
-    if (apiUsers && apiUsers.length > 0) {
-      setUsers(apiUsers.map(apiUserToLocal))
-    }
-  }, [apiUsers])
 
   const filteredUsers = users.filter(user => {
     const matchesSearch =

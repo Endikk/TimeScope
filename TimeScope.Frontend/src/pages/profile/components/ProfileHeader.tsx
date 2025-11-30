@@ -1,9 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Camera, ImageIcon, Trash2 } from 'lucide-react';
+import { User } from '@/lib/api/services/auth.service';
 
 interface ProfileHeaderProps {
-  user: any;
+  user: User;
   onUploadPhoto: () => void;
   onUploadBanner: () => void;
   onDeletePhoto: () => void;

@@ -89,7 +89,7 @@ export function ProfileDropdown({
                 <p className="text-xs text-muted-foreground leading-none truncate">
                   {email}
                 </p>
-                <Badge variant={getRoleBadgeVariant() as any} className="w-fit text-xs mt-1">
+                <Badge variant={getRoleBadgeVariant()} className="w-fit text-xs mt-1">
                   <Shield className="mr-1 h-3 w-3" />
                   {role}
                 </Badge>
