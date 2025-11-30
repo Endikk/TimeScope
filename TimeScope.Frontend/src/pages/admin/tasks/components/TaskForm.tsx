@@ -3,12 +3,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateTaskDto } from '@/lib/api/services';
+import { Project } from '@/lib/api/services/projects.service';
+import { User } from '@/lib/api/services/users.service';
 
 interface TaskFormProps {
   formData: CreateTaskDto;
   setFormData: (data: CreateTaskDto) => void;
-  projects: any[];
-  users: any[];
+  projects: Project[];
+  users: User[];
 }
 
 export function TaskForm({ formData, setFormData, projects, users }: TaskFormProps) {
@@ -77,7 +79,7 @@ export function TaskForm({ formData, setFormData, projects, users }: TaskFormPro
           <Label htmlFor="status">Statut</Label>
           <Select
             value={formData.status}
-            onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+            onValueChange={(value: "EnAttente" | "EnCours" | "Termine") => setFormData({ ...formData, status: value })}
           >
             <SelectTrigger>
               <SelectValue />
@@ -93,7 +95,7 @@ export function TaskForm({ formData, setFormData, projects, users }: TaskFormPro
           <Label htmlFor="precision">Précision</Label>
           <Select
             value={formData.precision}
-            onValueChange={(value: any) => setFormData({ ...formData, precision: value })}
+            onValueChange={(value: "Low" | "Medium" | "High") => setFormData({ ...formData, precision: value })}
           >
             <SelectTrigger>
               <SelectValue />
@@ -109,7 +111,7 @@ export function TaskForm({ formData, setFormData, projects, users }: TaskFormPro
           <Label htmlFor="priority">Priorité</Label>
           <Select
             value={formData.priority}
-            onValueChange={(value: any) => setFormData({ ...formData, priority: value })}
+            onValueChange={(value: "Low" | "Medium" | "High") => setFormData({ ...formData, priority: value })}
           >
             <SelectTrigger>
               <SelectValue />

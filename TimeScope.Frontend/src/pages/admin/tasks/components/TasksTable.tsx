@@ -5,10 +5,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Edit, Trash2, Users, Calendar, AlertCircle, TrendingUp } from 'lucide-react';
+import { Task } from '@/lib/types';
+import { ReactNode } from 'react';
 
 interface TasksTableProps {
-  filteredTasks: any[];
-  onEdit: (task: any) => void;
+  filteredTasks: Task[];
+  onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
   getProjectName: (id: string) => string;
   getUserName: (id: string | undefined) => string;
@@ -28,7 +30,7 @@ const getStatusBadge = (status: string) => {
 };
 
 const getPriorityBadge = (priority: string) => {
-  const priorityMap: Record<string, { color: string; icon: any }> = {
+  const priorityMap: Record<string, { color: string; icon: ReactNode | null }> = {
     'Low': { color: 'bg-gray-100 text-gray-800', icon: null },
     'Medium': { color: 'bg-orange-100 text-orange-800', icon: <TrendingUp className="h-3 w-3" /> },
     'High': { color: 'bg-red-100 text-red-800', icon: <AlertCircle className="h-3 w-3" /> },

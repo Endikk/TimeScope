@@ -4,9 +4,36 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { User, Bell, Palette, Globe, Loader2 } from 'lucide-react';
 
+interface UserSettings {
+  profile?: {
+    allowProfilePicture?: boolean;
+    allowShowEmail?: boolean;
+    allowShowPhone?: boolean;
+  };
+  notifications?: {
+    allowEmailOnTaskAssign?: boolean;
+    allowEmailOnTaskUpdate?: boolean;
+    allowEmailOnMention?: boolean;
+    allowDesktopNotifications?: boolean;
+    allowSummaryFrequency?: boolean;
+  };
+  appearance?: {
+    allowTheme?: boolean;
+    allowColorScheme?: boolean;
+    allowCompactView?: boolean;
+    allowShowAvatars?: boolean;
+  };
+  regional?: {
+    allowLanguage?: boolean;
+    allowTimezone?: boolean;
+    allowDateFormat?: boolean;
+    allowTimeFormat?: boolean;
+  };
+}
+
 interface UserSettingsCardProps {
-  settings: any;
-  onUpdate: (key: string, value: any) => void;
+  settings: UserSettings;
+  onUpdate: (key: string, value: unknown) => void;
   onSave: () => Promise<void>;
   saving: boolean;
 }

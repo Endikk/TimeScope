@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { ListTodo, Plus } from 'lucide-react';
 import { TaskForm } from './TaskForm';
 import { CreateTaskDto } from '@/lib/api/services';
+import { Project } from '@/lib/api/services/projects.service';
+import { User } from '@/lib/api/services/users.service';
 
 interface TasksHeaderProps {
   isCreateDialogOpen: boolean;
@@ -11,8 +13,8 @@ interface TasksHeaderProps {
   setFormData: (data: CreateTaskDto) => void;
   onCreateTask: () => void;
   onResetForm: () => void;
-  projects: any[];
-  users: any[];
+  projects: Project[];
+  users: User[];
 }
 
 export function TasksHeader({

@@ -4,6 +4,7 @@ import { useTasks, useTaskMutations } from '@/lib/hooks/use-tasks';
 import { useProjects } from '@/lib/hooks/use-projects';
 import { useUsers } from '@/lib/hooks/use-users';
 import type { CreateTaskDto } from '@/lib/api/services';
+import type { Task } from '@/lib/types';
 import { TasksHeader } from './components/TasksHeader';
 import { StatsCards } from './components/StatsCards';
 import { TaskFilters } from './components/TaskFilters';
@@ -16,7 +17,7 @@ export default function TasksManagementPage() {
   const [filterPrecision, setFilterPrecision] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // API Hooks
   const { tasks, loading: tasksLoading, refetch: refetchTasks } = useTasks();
@@ -64,7 +65,7 @@ export default function TasksManagementPage() {
     await refetchTasks();
   };
 
-  const openEditDialog = (task: any) => {
+  const openEditDialog = (task: Task) => {
     setSelectedTask(task);
     setFormData({
       name: task.name,
@@ -73,7 +74,7 @@ export default function TasksManagementPage() {
       assigneeId: task.assignee || '',
       status: task.status,
       precision: task.precision,
-      priority: task.priority,
+      priority: task.priority || 'Medium',
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
       estimatedTime: task.timeSpent || '00:00:00'
     });
@@ -97,7 +98,7 @@ export default function TasksManagementPage() {
   // Filter tasks
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = filterStatus === 'all' || task.status === filterStatus;
     const matchesPrecision = filterPrecision === 'all' || task.precision === filterPrecision;
     return matchesSearch && matchesStatus && matchesPrecision;

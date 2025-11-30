@@ -100,7 +100,7 @@ export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePho
           </h1>
           <p className="text-muted-foreground mt-1">{user?.email}</p>
           <div className="flex items-center gap-2 mt-3">
-            <Badge variant={getRoleBadgeVariant() as any} className="text-sm">
+            <Badge variant={getRoleBadgeVariant()} className="text-sm">
               <Shield className="mr-1.5 h-3.5 w-3.5" />
               {user?.role}
             </Badge>

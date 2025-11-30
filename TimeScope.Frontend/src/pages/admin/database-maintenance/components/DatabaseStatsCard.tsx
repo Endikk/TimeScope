@@ -5,7 +5,7 @@ import { LucideIcon } from 'lucide-react';
 interface DatabaseStats {
   totalRecords: number;
   lastUpdated: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface DatabaseStatsCardProps {

@@ -6,6 +6,18 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Search, Plus } from "lucide-react"
 
+interface NewUser {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+  role: "Admin" | "Manager" | "Employee"
+  phoneNumber?: string
+  jobTitle?: string
+  department?: string
+  hireDate?: string
+}
+
 interface UserFiltersProps {
   searchTerm: string
   filterRole: string
@@ -15,18 +27,8 @@ interface UserFiltersProps {
   onStatusChange: (value: string) => void
   isAddDialogOpen: boolean
   onAddDialogChange: (open: boolean) => void
-  newUser: {
-    firstName: string
-    lastName: string
-    email: string
-    password: string
-    role: "Admin" | "Manager" | "Employee"
-    phoneNumber?: string
-    jobTitle?: string
-    department?: string
-    hireDate?: string
-  }
-  onNewUserChange: (user: any) => void
+  newUser: NewUser
+  onNewUserChange: (user: NewUser) => void
   onAddUser: () => void
 }
 
@@ -100,7 +102,7 @@ export function UserFilters({
                   <Input
                     id="firstName"
                     value={newUser.firstName}
-                    onChange={(e) => onNewUserChange({...newUser, firstName: e.target.value})}
+                    onChange={(e) => onNewUserChange({ ...newUser, firstName: e.target.value })}
                     placeholder="Jean"
                   />
                 </div>
@@ -109,7 +111,7 @@ export function UserFilters({
                   <Input
                     id="lastName"
                     value={newUser.lastName}
-                    onChange={(e) => onNewUserChange({...newUser, lastName: e.target.value})}
+                    onChange={(e) => onNewUserChange({ ...newUser, lastName: e.target.value })}
                     placeholder="Dupont"
                   />
                 </div>
@@ -119,7 +121,7 @@ export function UserFilters({
                     id="email"
                     type="email"
                     value={newUser.email}
-                    onChange={(e) => onNewUserChange({...newUser, email: e.target.value})}
+                    onChange={(e) => onNewUserChange({ ...newUser, email: e.target.value })}
                     placeholder="jean.dupont@timescope.com"
                   />
                 </div>
@@ -129,7 +131,7 @@ export function UserFilters({
                     id="password"
                     type="password"
                     value={newUser.password}
-                    onChange={(e) => onNewUserChange({...newUser, password: e.target.value})}
+                    onChange={(e) => onNewUserChange({ ...newUser, password: e.target.value })}
                     placeholder="********"
                   />
                 </div>
@@ -137,7 +139,7 @@ export function UserFilters({
                   <Label htmlFor="role">Rôle</Label>
                   <Select
                     value={newUser.role}
-                    onValueChange={(value) => onNewUserChange({...newUser, role: value as "Admin" | "Manager" | "Employee"})}
+                    onValueChange={(value) => onNewUserChange({ ...newUser, role: value as "Admin" | "Manager" | "Employee" })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -155,7 +157,7 @@ export function UserFilters({
                     id="phoneNumber"
                     type="tel"
                     value={newUser.phoneNumber || ''}
-                    onChange={(e) => onNewUserChange({...newUser, phoneNumber: e.target.value})}
+                    onChange={(e) => onNewUserChange({ ...newUser, phoneNumber: e.target.value })}
                     placeholder="+33 6 12 34 56 78"
                   />
                 </div>
@@ -164,7 +166,7 @@ export function UserFilters({
                   <Input
                     id="jobTitle"
                     value={newUser.jobTitle || ''}
-                    onChange={(e) => onNewUserChange({...newUser, jobTitle: e.target.value})}
+                    onChange={(e) => onNewUserChange({ ...newUser, jobTitle: e.target.value })}
                     placeholder="Développeur Full Stack"
                   />
                 </div>
@@ -173,7 +175,7 @@ export function UserFilters({
                   <Input
                     id="department"
                     value={newUser.department || ''}
-                    onChange={(e) => onNewUserChange({...newUser, department: e.target.value})}
+                    onChange={(e) => onNewUserChange({ ...newUser, department: e.target.value })}
                     placeholder="Développement"
                   />
                 </div>
@@ -183,7 +185,7 @@ export function UserFilters({
                     id="hireDate"
                     type="date"
                     value={newUser.hireDate || ''}
-                    onChange={(e) => onNewUserChange({...newUser, hireDate: e.target.value})}
+                    onChange={(e) => onNewUserChange({ ...newUser, hireDate: e.target.value })}
                   />
                 </div>
               </div>

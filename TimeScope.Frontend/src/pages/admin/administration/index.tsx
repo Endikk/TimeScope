@@ -32,7 +32,7 @@ export default function AdministrationPageAPI() {
     setIsExporting(true);
     try {
       await exportHook.exportData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
     }
     setIsExporting(false);

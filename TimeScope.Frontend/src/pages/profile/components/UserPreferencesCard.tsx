@@ -136,7 +136,7 @@ export function UserPreferencesCard() {
 
       settings.forEach((setting: AppSetting) => {
         const keys = setting.key.split('.');
-        let value: any = setting.value;
+        let value: string | number | boolean = setting.value;
 
         // Convertir la valeur selon le type
         if (setting.dataType === 'boolean') {
@@ -150,7 +150,7 @@ export function UserPreferencesCard() {
           const category = keys[1] as keyof AllowedSettings;
           const field = keys[2];
           if (newAllowed[category]) {
-            (newAllowed[category] as any)[field] = value;
+            (newAllowed[category] as Record<string, boolean>)[field] = value as boolean;
           }
         }
         // Charger les préférences utilisateur (userPref.*)
@@ -158,7 +158,7 @@ export function UserPreferencesCard() {
           const category = keys[1] as keyof UserPreferences;
           const field = keys[2];
           if (newPrefs[category]) {
-            (newPrefs[category] as any)[field] = value;
+            (newPrefs[category] as Record<string, string | number | boolean>)[field] = value;
           }
         }
       });
@@ -177,11 +177,11 @@ export function UserPreferencesCard() {
     loadSettings();
   }, [loadSettings]);
 
-  const handlePreferenceUpdate = (key: string, value: any) => {
+  const handlePreferenceUpdate = (key: string, value: string | number | boolean) => {
     const keys = key.split('.');
     setPreferences(prev => {
       const newPrefs = { ...prev };
-      let current: any = newPrefs;
+      let current: Record<string, any> = newPrefs;
 
       for (let i = 0; i < keys.length - 1; i++) {
         current[keys[i]] = { ...current[keys[i]] };
@@ -203,7 +203,7 @@ export function UserPreferencesCard() {
       const settingsToSave: { key: string; value: string; category: string; dataType: string; isPublic: boolean }[] = [];
 
       Object.entries(preferences).forEach(([category, values]) => {
-        Object.entries(values as Record<string, any>).forEach(([field, value]) => {
+        Object.entries(values as Record<string, string | number | boolean>).forEach(([field, value]) => {
           const key = `userPref.${category}.${field}`;
           const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
           settingsToSave.push({

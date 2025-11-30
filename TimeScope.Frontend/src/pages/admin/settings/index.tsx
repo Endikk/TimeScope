@@ -75,11 +75,11 @@ export default function SettingsPageAPI() {
   // Autorisations Employé (ce que l'admin permet aux employés de configurer)
   const [userSettings, setUserSettings] = useState(DEFAULT_USER_SETTINGS);
 
-  const handleAdminSettingUpdate = (key: string, value: any) => {
+  const handleAdminSettingUpdate = (key: string, value: string | number | boolean) => {
     const keys = key.split('.');
     setAdminSettings(prev => {
       const newSettings = { ...prev };
-      let current: any = newSettings;
+      let current: Record<string, any> = newSettings;
 
       for (let i = 0; i < keys.length - 1; i++) {
         current[keys[i]] = { ...current[keys[i]] };
@@ -93,11 +93,11 @@ export default function SettingsPageAPI() {
     console.log(`Paramètre admin mis à jour: ${key} = ${value}`);
   };
 
-  const handleUserSettingUpdate = (key: string, value: any) => {
+  const handleUserSettingUpdate = (key: string, value: string | number | boolean) => {
     const keys = key.split('.');
     setUserSettings(prev => {
       const newSettings = { ...prev };
-      let current: any = newSettings;
+      let current: Record<string, any> = newSettings;
 
       for (let i = 0; i < keys.length - 1; i++) {
         current[keys[i]] = { ...current[keys[i]] };
@@ -123,7 +123,7 @@ export default function SettingsPageAPI() {
 
       settings.forEach((setting: AppSetting) => {
         const keys = setting.key.split('.');
-        let value: any = setting.value;
+        let value: string | number | boolean = setting.value;
 
         // Convertir la valeur selon le type
         if (setting.dataType === 'boolean') {
@@ -137,13 +137,13 @@ export default function SettingsPageAPI() {
           const category = keys[1];
           const field = keys[2];
           if (adminSettingsFromBackend[category as keyof typeof adminSettingsFromBackend]) {
-            (adminSettingsFromBackend[category as keyof typeof adminSettingsFromBackend] as any)[field] = value;
+            (adminSettingsFromBackend[category as keyof typeof adminSettingsFromBackend] as Record<string, string | number | boolean>)[field] = value;
           }
         } else if (keys[0] === 'allowed' && keys.length >= 3) {
           const category = keys[1];
           const field = keys[2];
           if (userSettingsFromBackend[category as keyof typeof userSettingsFromBackend]) {
-            (userSettingsFromBackend[category as keyof typeof userSettingsFromBackend] as any)[field] = value;
+            (userSettingsFromBackend[category as keyof typeof userSettingsFromBackend] as Record<string, string | number | boolean>)[field] = value;
           }
         }
       });
@@ -171,7 +171,7 @@ export default function SettingsPageAPI() {
       const settingsToSave: { key: string; value: string; category: string; dataType: string; isPublic: boolean }[] = [];
 
       Object.entries(adminSettings).forEach(([category, values]) => {
-        Object.entries(values as Record<string, any>).forEach(([field, value]) => {
+        Object.entries(values as Record<string, string | number | boolean>).forEach(([field, value]) => {
           const key = `admin.${category}.${field}`;
           const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
           settingsToSave.push({
@@ -229,7 +229,7 @@ export default function SettingsPageAPI() {
       const settingsToSave: { key: string; value: string; category: string; dataType: string; isPublic: boolean }[] = [];
 
       Object.entries(userSettings).forEach(([category, values]) => {
-        Object.entries(values as Record<string, any>).forEach(([field, value]) => {
+        Object.entries(values as Record<string, string | number | boolean>).forEach(([field, value]) => {
           const key = `allowed.${category}.${field}`;
           const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
           settingsToSave.push({

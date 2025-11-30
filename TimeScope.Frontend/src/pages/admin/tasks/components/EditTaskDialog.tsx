@@ -2,6 +2,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { TaskForm } from './TaskForm';
 import { CreateTaskDto } from '@/lib/api/services';
+import { Project } from '@/lib/api/services/projects.service';
+import { User } from '@/lib/api/services/users.service';
 
 interface EditTaskDialogProps {
   isOpen: boolean;
@@ -9,8 +11,8 @@ interface EditTaskDialogProps {
   formData: CreateTaskDto;
   setFormData: (data: CreateTaskDto) => void;
   onSave: () => void;
-  projects: any[];
-  users: any[];
+  projects: Project[];
+  users: User[];
 }
 
 export function EditTaskDialog({

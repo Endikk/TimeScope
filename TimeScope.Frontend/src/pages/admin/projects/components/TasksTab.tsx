@@ -94,7 +94,7 @@ export function TasksTab({
                     <Label>Statut</Label>
                     <Select
                       value={newTask.status}
-                      onValueChange={(value: any) => onNewTaskChange({ ...newTask, status: value })}
+                      onValueChange={(value: "EnAttente" | "EnCours" | "Termine") => onNewTaskChange({ ...newTask, status: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -110,7 +110,7 @@ export function TasksTab({
                     <Label>Priorité</Label>
                     <Select
                       value={newTask.priority}
-                      onValueChange={(value: any) => onNewTaskChange({ ...newTask, priority: value })}
+                      onValueChange={(value: "Low" | "Medium" | "High") => onNewTaskChange({ ...newTask, priority: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />

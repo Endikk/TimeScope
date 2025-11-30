@@ -6,9 +6,40 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Shield, Clock, Users, Database, Mail, Loader2 } from 'lucide-react';
 
+interface Settings {
+  security?: {
+    requireStrongPassword?: boolean;
+    twoFactorAuth?: boolean;
+    sessionTimeout?: number;
+    maxLoginAttempts?: number;
+  };
+  timeTracking?: {
+    workStartTime?: string;
+    workEndTime?: string;
+    defaultBreakDuration?: number;
+    requireTimeEntry?: boolean;
+    autoClockOut?: boolean;
+  };
+  users?: {
+    allowSelfRegistration?: boolean;
+    emailVerification?: boolean;
+    defaultRole?: string;
+  };
+  notifications?: {
+    emailEnabled?: boolean;
+    taskReminders?: boolean;
+    dailySummary?: boolean;
+  };
+  system?: {
+    maintenanceMode?: boolean;
+    logRetentionDays?: number;
+    autoBackup?: boolean;
+  };
+}
+
 interface AdminSettingsCardProps {
-  settings: any;
-  onUpdate: (key: string, value: any) => void;
+  settings: Settings;
+  onUpdate: (key: string, value: unknown) => void;
   onSave: () => Promise<void>;
   saving: boolean;
 }

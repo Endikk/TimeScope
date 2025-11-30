@@ -218,11 +218,12 @@ export default function ProfilePage() {
       });
 
       alert('Mot de passe changé avec succès');
-    } catch (error: any) {
-      if (error?.response?.status === 401) {
+    } catch (error) {
+      const err = error as any;
+      if (err?.response?.status === 401) {
         throw new Error('Mot de passe actuel incorrect');
       }
-      throw new Error(error?.response?.data?.message || 'Erreur lors du changement de mot de passe');
+      throw new Error(err?.response?.data?.message || 'Erreur lors du changement de mot de passe');
     }
   };
 
