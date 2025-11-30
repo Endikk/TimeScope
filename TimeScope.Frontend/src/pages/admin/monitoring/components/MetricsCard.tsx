@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Cpu, HardDrive, RefreshCw } from 'lucide-react';
+import { Cpu, HardDrive } from 'lucide-react';
+import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from 'react';
 
 interface SystemMetrics {
   cpuUsage: number;
@@ -12,82 +14,125 @@ interface MetricsCardProps {
   metrics: SystemMetrics | null;
 }
 
-export function MetricsCard({ loading, metrics }: MetricsCardProps) {
-  const getCpuColor = (usage: number) => {
-    if (usage < 50) return 'bg-green-500';
-    if (usage < 80) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
+interface MetricHistory {
+  timestamp: number;
+  cpu: number;
+  memory: number;
+}
 
-  const getMemoryColor = (memory: number) => {
-    if (memory < 1000) return 'bg-green-500';
-    if (memory < 2000) return 'bg-yellow-500';
-    return 'bg-red-500';
+export function MetricsCard({ loading, metrics }: MetricsCardProps) {
+  const [history, setHistory] = useState<MetricHistory[]>([]);
+
+  useEffect(() => {
+    if (metrics) {
+      setHistory(prev => {
+        const newPoint = {
+          timestamp: Date.now(),
+          cpu: metrics.cpuUsage ?? 0,
+          memory: metrics.memoryUsed ?? 0
+        };
+        const newHistory = [...prev, newPoint];
+        if (newHistory.length > 30) newHistory.shift(); // Keep last 30 points (approx 1 min at 2s interval)
+        return newHistory;
+      });
+    }
+  }, [metrics]);
+
+  const getCpuColor = (usage: number) => {
+    if (usage < 50) return 'text-green-500';
+    if (usage < 80) return 'text-yellow-500';
+    return 'text-red-500';
   };
 
   return (
-    <div className="grid gap-3 md:gap-6 grid-cols-1 sm:grid-cols-2">
-      <Card className="border-2 hover:shadow-lg transition-all">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 md:px-6">
-          <CardTitle className="text-sm md:text-base font-medium">Utilisation CPU</CardTitle>
-          <Cpu className="h-4 w-4 md:h-5 md:w-5 text-blue-600 shrink-0" />
+    <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2">
+      {/* CPU Card */}
+      <Card className="border shadow-sm hover:shadow-md transition-all">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
+          <Cpu className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="px-3 md:px-6">
-          {loading ? (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              <span className="text-xs md:text-sm">Chargement...</span>
-            </div>
-          ) : metrics ? (
-            <div className="space-y-3">
-              <div className="text-2xl md:text-3xl font-bold">
-                {metrics.cpuUsage.toFixed(1)}%
+        <CardContent>
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-end justify-between">
+              <div className="flex flex-col">
+                <span className={`text-2xl font-bold ${getCpuColor(metrics?.cpuUsage ?? 0)}`}>
+                  {metrics?.cpuUsage?.toFixed(1) ?? '0.0'}%
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {(metrics?.cpuUsage ?? 0) < 50 ? 'Normal Load' : 'High Load'}
+                </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 md:h-3">
-                <div
-                  className={`${getCpuColor(metrics.cpuUsage)} h-2 md:h-3 rounded-full transition-all duration-500`}
-                  style={{ width: `${Math.min(metrics.cpuUsage, 100)}%` }}
-                />
-              </div>
-              <Badge variant={metrics.cpuUsage < 80 ? 'default' : 'destructive'} className="text-xs">
-                {metrics.cpuUsage < 50 ? 'Normal' : metrics.cpuUsage < 80 ? 'Modéré' : 'Élevé'}
+              <Badge variant={(metrics?.cpuUsage ?? 0) < 80 ? 'outline' : 'destructive'}>
+                {(metrics?.cpuUsage ?? 0) < 80 ? 'Healthy' : 'Critical'}
               </Badge>
             </div>
-          ) : (
-            <p className="text-xs md:text-sm text-muted-foreground">Aucune donnée disponible</p>
-          )}
+            <div className="h-[80px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={history}>
+                  <defs>
+                    <linearGradient id="colorCpu" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <Area
+                    type="monotone"
+                    dataKey="cpu"
+                    stroke="#3b82f6"
+                    fillOpacity={1}
+                    fill="url(#colorCpu)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <Card className="border-2 hover:shadow-lg transition-all">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 md:px-6">
-          <CardTitle className="text-sm md:text-base font-medium">Mémoire Utilisée</CardTitle>
-          <HardDrive className="h-4 w-4 md:h-5 md:w-5 text-purple-600 shrink-0" />
+      {/* Memory Card */}
+      <Card className="border shadow-sm hover:shadow-md transition-all">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Memory Usage</CardTitle>
+          <HardDrive className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="px-3 md:px-6">
-          {loading ? (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              <span className="text-xs md:text-sm">Chargement...</span>
-            </div>
-          ) : metrics ? (
-            <div className="space-y-3">
-              <div className="text-2xl md:text-3xl font-bold">
-                {metrics.memoryUsed} <span className="text-sm md:text-base text-muted-foreground">MB</span>
+        <CardContent>
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-end justify-between">
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold">
+                  {metrics?.memoryUsed ?? 0} <span className="text-sm font-normal text-muted-foreground">MB</span>
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  of 4096 MB Total
+                </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 md:h-3">
-                <div
-                  className={`${getMemoryColor(metrics.memoryUsed)} h-2 md:h-3 rounded-full transition-all duration-500`}
-                  style={{ width: `${Math.min((metrics.memoryUsed / 4000) * 100, 100)}%` }}
-                />
-              </div>
-              <Badge variant={metrics.memoryUsed < 2000 ? 'default' : 'destructive'} className="text-xs">
-                {metrics.memoryUsed < 1000 ? 'Faible' : metrics.memoryUsed < 2000 ? 'Modéré' : 'Élevé'}
+              <Badge variant="outline">
+                {((metrics?.memoryUsed ?? 0) / 4096 * 100).toFixed(0)}% Used
               </Badge>
             </div>
-          ) : (
-            <p className="text-xs md:text-sm text-muted-foreground">Aucune donnée disponible</p>
-          )}
+            <div className="h-[80px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={history}>
+                  <defs>
+                    <linearGradient id="colorMem" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <Area
+                    type="monotone"
+                    dataKey="memory"
+                    stroke="#8b5cf6"
+                    fillOpacity={1}
+                    fill="url(#colorMem)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

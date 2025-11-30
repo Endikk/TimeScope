@@ -103,6 +103,8 @@ services:
       - ConnectionStrings__TimeConnection=Host=postgres-time;Port=5432;Database=timescope_time;Username=svc_timescope_time;Password=Time8s60N5h7dd;
       - ConnectionStrings__ReportsConnection=Host=postgres-reports;Port=5432;Database=timescope_reports;Username=svc_timescope_reports;Password=Reports8s60N5;
       - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       postgres-admin:
         condition: service_healthy

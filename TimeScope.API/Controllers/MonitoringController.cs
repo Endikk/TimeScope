@@ -92,6 +92,74 @@ public class MonitoringController : ControllerBase
             return StatusCode(500, new { message = "An error occurred while retrieving diagnostics" });
         }
     }
+
+    [HttpGet("info")]
+    public ActionResult<SystemInfo> GetSystemInfo()
+    {
+        try
+        {
+            var info = _monitoringService.GetSystemInfo();
+            return Ok(info);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving system info");
+            return StatusCode(500, new { message = "An error occurred while retrieving system info" });
+        }
+    }
+
+    [HttpGet("logs")]
+    public ActionResult<LogsResponse> GetLogs([FromQuery] int limit = 100)
+    {
+        try
+        {
+            var logs = _monitoringService.GetLogs(limit);
+            return Ok(logs);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving logs");
+            return StatusCode(500, new { message = "An error occurred while retrieving logs" });
+        }
+    }
+    [HttpGet("stream")]
+    [Produces("text/event-stream")]
+    public async Task StreamMonitoring(CancellationToken cancellationToken)
+    {
+        Response.Headers.Append("Content-Type", "text/event-stream");
+        Response.Headers.Append("Cache-Control", "no-cache");
+        Response.Headers.Append("Connection", "keep-alive");
+
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var systemMetrics = _monitoringService.GetSystemMetrics();
+                var dockerMetrics = await _monitoringService.GetDockerMetricsAsync();
+                
+                var data = new
+                {
+                    system = systemMetrics,
+                    docker = dockerMetrics
+                };
+
+                var options = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(data, options);
+                await Response.WriteAsync($"data: {json}\n\n", cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+
+                await Task.Delay(1000, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Client disconnected
+        }
+    }
 }
 
 public class SystemMetrics

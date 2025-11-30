@@ -59,6 +59,32 @@ export interface GarbageCollectionResult {
   freedMB: number;
 }
 
+export interface ContainerMetrics {
+  id: string;
+  name: string;
+  image: string;
+  state: string;
+  status: string;
+  cpuUsage?: number;
+  memoryUsage?: number;
+  memoryLimit?: number;
+  memoryUsagePercent?: number;
+}
+
+export interface DockerMetrics {
+  totalContainers: number;
+  runningContainers: number;
+  stoppedContainers: number;
+  pausedContainers: number;
+  containers: ContainerMetrics[];
+  timestamp: string;
+}
+
+export interface StreamData {
+  system: SystemMetrics;
+  docker: DockerMetrics;
+}
+
 // Service
 class MonitoringService {
   private readonly BASE_URL = '/monitoring';

@@ -1,5 +1,9 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Docker.DotNet;
+using Docker.DotNet.Models;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace TimeScope.Infrastructure.Services;
 
@@ -8,6 +12,112 @@ public class MonitoringService : IMonitoringService
     private static readonly DateTime _startTime = DateTime.UtcNow;
     private static DateTime _lastCpuCheck = DateTime.UtcNow;
     private static TimeSpan _lastCpuTime = TimeSpan.Zero;
+    private readonly DockerClient _dockerClient;
+    private readonly ILogger<MonitoringService> _logger;
+
+    public MonitoringService(ILogger<MonitoringService> logger)
+    {
+        _logger = logger;
+        // Auto-detect Docker socket based on OS
+        var dockerUri = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? new Uri("npipe://./pipe/docker_engine")
+            : new Uri("unix:///var/run/docker.sock");
+
+        _dockerClient = new DockerClientConfiguration(dockerUri).CreateClient();
+    }
+
+    public async Task<DockerMetrics> GetDockerMetricsAsync()
+    {
+        try
+        {
+            var containers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters { All = true });
+            
+            var metrics = new DockerMetrics
+            {
+                TotalContainers = containers.Count,
+                RunningContainers = containers.Count(c => c.State == "running"),
+                StoppedContainers = containers.Count(c => c.State == "exited"),
+                PausedContainers = containers.Count(c => c.State == "paused"),
+                Timestamp = DateTime.UtcNow
+            };
+
+            var tasks = containers.Select(async container =>
+            {
+                var containerMetric = new ContainerMetrics
+                {
+                    Id = container.ID.Substring(0, 12),
+                    Name = container.Names.FirstOrDefault()?.TrimStart('/') ?? "Unknown",
+                    Image = container.Image,
+                    State = container.State,
+                    Status = container.Status
+                };
+
+                if (container.State == "running")
+                {
+                    var sw = Stopwatch.StartNew();
+                    try
+                    {
+                        // Get stats (stream=false for snapshot)
+                        // Add timeout to prevent hanging
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)); // Increased timeout slightly
+                        var statsStream = await _dockerClient.Containers.GetContainerStatsAsync(container.ID, new ContainerStatsParameters { Stream = false }, cts.Token);
+
+                        using (var reader = new StreamReader(statsStream))
+                        {
+                            var json = await reader.ReadToEndAsync();
+                            // Use Newtonsoft.Json for correct deserialization of Docker models
+                            var stats = JsonConvert.DeserializeObject<ContainerStatsResponse>(json);
+
+                            if (stats != null)
+                            {
+                                // Calculate CPU Usage
+                                var cpuDelta = stats.CPUStats.CPUUsage.TotalUsage - stats.PreCPUStats.CPUUsage.TotalUsage;
+                                var systemCpuDelta = stats.CPUStats.SystemUsage - stats.PreCPUStats.SystemUsage;
+                                var cpuCount = stats.CPUStats.OnlineCPUs > 0 ? (int)stats.CPUStats.OnlineCPUs : Environment.ProcessorCount;
+
+                                if (systemCpuDelta > 0 && cpuDelta > 0)
+                                {
+                                    containerMetric.CpuUsage = (double)cpuDelta / systemCpuDelta * cpuCount * 100.0;
+                                }
+
+                                // Calculate Memory Usage
+                                containerMetric.MemoryUsage = (long)stats.MemoryStats.Usage;
+                                containerMetric.MemoryLimit = (long)stats.MemoryStats.Limit;
+                                if (containerMetric.MemoryLimit > 0)
+                                {
+                                    containerMetric.MemoryUsagePercent = (double)containerMetric.MemoryUsage / containerMetric.MemoryLimit * 100.0;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to get stats for container {ContainerId} ({ContainerName})", container.ID.Substring(0, 12), containerMetric.Name);
+                    }
+                    finally
+                    {
+                        sw.Stop();
+                        if (sw.ElapsedMilliseconds > 500)
+                        {
+                            _logger.LogWarning("Slow stats fetch for container {ContainerName}: {Elapsed}ms", containerMetric.Name, sw.ElapsedMilliseconds);
+                        }
+                    }
+                }
+                return containerMetric;
+            });
+
+            var results = await Task.WhenAll(tasks);
+            metrics.Containers.AddRange(results);
+
+            return metrics;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching Docker metrics");
+            // Return empty metrics if Docker is not available
+            return new DockerMetrics { Timestamp = DateTime.UtcNow };
+        }
+    }
 
     public SystemMetrics GetSystemMetrics()
     {
@@ -141,6 +251,23 @@ public class MonitoringService : IMonitoringService
             PrivateMemory = process.PrivateMemorySize64,
             VirtualMemory = process.VirtualMemorySize64,
             TotalProcessorTime = process.TotalProcessorTime
+        };
+    }
+
+    public LogsResponse GetLogs(int limit)
+    {
+        // Dummy implementation since we don't have a log store yet
+        var logs = new List<LogEntry>
+        {
+            new LogEntry { Timestamp = DateTime.UtcNow, Level = "Information", Message = "System monitoring started", Source = "TimeScope.Monitoring" },
+            new LogEntry { Timestamp = DateTime.UtcNow.AddSeconds(-5), Level = "Information", Message = "Docker client initialized", Source = "TimeScope.Infrastructure" },
+            new LogEntry { Timestamp = DateTime.UtcNow.AddSeconds(-10), Level = "Information", Message = "Application started", Source = "TimeScope.API" }
+        };
+
+        return new LogsResponse
+        {
+            Logs = logs,
+            Total = logs.Count
         };
     }
 
