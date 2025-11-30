@@ -57,7 +57,7 @@ export function SecurityCard({ onPasswordChange }: SecurityCardProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
+          <Shield className="h-5 w-5 text-indigo-600" />
           Sécurité et Confidentialité
         </CardTitle>
         <CardDescription>
@@ -90,7 +90,7 @@ export function SecurityCard({ onPasswordChange }: SecurityCardProps) {
           </div>
 
           {showPasswordFields && (
-            <div className="space-y-4 pl-6 border-l-2 border-primary/20">
+            <div className="space-y-4 pl-6 border-l-2 border-indigo-200">
               {error && (
                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
                   {error}

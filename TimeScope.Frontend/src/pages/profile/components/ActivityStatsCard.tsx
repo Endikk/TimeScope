@@ -15,7 +15,7 @@ export function ActivityStatsCard({ stats }: ActivityStatsCardProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
+          <BarChart3 className="h-5 w-5 text-indigo-600" />
           Statistiques d'Activité
         </CardTitle>
         <CardDescription>
@@ -27,9 +27,9 @@ export function ActivityStatsCard({ stats }: ActivityStatsCardProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Tâches terminées</span>
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-indigo-500" />
             </div>
-            <p className="text-2xl font-bold text-green-600">{stats.tasksCompleted}</p>
+            <p className="text-2xl font-bold text-indigo-600">{stats.tasksCompleted}</p>
           </div>
 
           <div className="space-y-2">
@@ -43,17 +43,17 @@ export function ActivityStatsCard({ stats }: ActivityStatsCardProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Heures totales</span>
-              <Clock className="h-4 w-4 text-purple-500" />
+              <Clock className="h-4 w-4 text-indigo-400" />
             </div>
-            <p className="text-2xl font-bold text-purple-600">{stats.totalHours}h</p>
+            <p className="text-2xl font-bold text-indigo-500">{stats.totalHours}h</p>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Projets</span>
-              <BarChart3 className="h-4 w-4 text-orange-500" />
+              <BarChart3 className="h-4 w-4 text-blue-400" />
             </div>
-            <p className="text-2xl font-bold text-orange-600">{stats.projectsCount}</p>
+            <p className="text-2xl font-bold text-blue-500">{stats.projectsCount}</p>
           </div>
         </div>
       </CardContent>

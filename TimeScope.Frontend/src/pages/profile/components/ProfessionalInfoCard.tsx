@@ -37,7 +37,7 @@ export function ProfessionalInfoCard({ user }: ProfessionalInfoCardProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Briefcase className="h-5 w-5 text-primary" />
+          <Briefcase className="h-5 w-5 text-indigo-600" />
           Informations Professionnelles
         </CardTitle>
         <CardDescription>

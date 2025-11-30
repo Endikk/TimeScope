@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { REQUEST_TYPES } from "@/pages/contact/components/RequestTypeCards"
 import { contactFormSchema, ContactFormValues, PRIORITY_LEVELS } from "@/lib/types/form"
-import { CURRENT_USER } from "@/lib/config/user"
 import { requestsService } from "@/lib/api/services/requests.service"
 import {
   Send,
@@ -36,8 +35,8 @@ export default function Contact() {
       description: "",
       justification: "",
       priority: "medium" as const,
-      name: CURRENT_USER.name,
-      email: CURRENT_USER.email,
+      name: "",
+      email: "",
     },
   })
 
@@ -64,8 +63,8 @@ export default function Contact() {
           description: "",
           justification: "",
           priority: "medium" as const,
-          name: CURRENT_USER.name,
-          email: CURRENT_USER.email,
+          name: "",
+          email: "",
         })
         setIsSubmitted(false)
         setTicketId("")
@@ -106,12 +105,12 @@ export default function Contact() {
       </div>
     )
   }
-  
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-2 md:p-4 pt-0">
       <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
         <div className="max-w-4xl mx-auto space-y-4 md:space-y-6 p-3 md:p-6">
-          
+
           {/* Header */}
           <PageHeader
             icon={MessageSquare}
@@ -133,7 +132,7 @@ export default function Contact() {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  
+
                   {/* Informations personnelles */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <FormField
@@ -152,7 +151,7 @@ export default function Contact() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="email"
@@ -319,7 +318,7 @@ export default function Contact() {
                       <span className="sm:hidden">{isSubmitting ? "Envoi..." : "Envoyer"}</span>
                     </Button>
                   </div>
-                  
+
                 </form>
               </Form>
             </CardContent>

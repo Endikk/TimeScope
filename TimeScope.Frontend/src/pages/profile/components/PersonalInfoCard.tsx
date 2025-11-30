@@ -76,7 +76,7 @@ export function PersonalInfoCard({ user, isEditing, onSave, onEdit }: PersonalIn
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5 text-primary" />
+              <UserIcon className="h-5 w-5 text-indigo-600" />
               Informations Personnelles
             </CardTitle>
             <CardDescription>

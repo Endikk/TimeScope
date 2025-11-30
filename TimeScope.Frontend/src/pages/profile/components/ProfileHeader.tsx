@@ -39,7 +39,7 @@ export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePho
             style={{ backgroundImage: `url(${user.banner})` }}
           />
         ) : (
-          <div className="h-48 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-t-lg" />
+          <div className="h-48 bg-gradient-to-br from-indigo-600 via-indigo-500 to-blue-500 rounded-t-lg" />
         )}
         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
@@ -69,14 +69,14 @@ export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePho
           <div className="absolute -inset-2 bg-white rounded-full" />
           <Avatar className="relative h-36 w-36 border-4 border-background shadow-xl">
             <AvatarImage src={user?.avatar} alt={`${user?.firstName} ${user?.lastName}`} />
-            <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-400 to-purple-600 text-white">
+            <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-indigo-500 to-indigo-700 text-white">
               {getInitials()}
             </AvatarFallback>
           </Avatar>
           <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
             <button
               onClick={onUploadPhoto}
-              className="p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-105 transform"
+              className="p-2 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 hover:scale-105 transform transition-all"
             >
               <Camera className="h-4 w-4" />
             </button>

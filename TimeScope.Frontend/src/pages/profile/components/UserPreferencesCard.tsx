@@ -257,7 +257,7 @@ export function UserPreferencesCard() {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
         </CardContent>
       </Card>
     );
@@ -268,7 +268,7 @@ export function UserPreferencesCard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-primary" />
+            <Settings className="h-5 w-5 text-indigo-600" />
             Mes Préférences
           </CardTitle>
         </CardHeader>
@@ -289,7 +289,7 @@ export function UserPreferencesCard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-primary" />
+              <Settings className="h-5 w-5 text-indigo-600" />
               Préférences de Profil
             </CardTitle>
             <CardDescription>
@@ -353,7 +353,7 @@ export function UserPreferencesCard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
+              <Bell className="h-5 w-5 text-indigo-600" />
               Notifications
             </CardTitle>
             <CardDescription>
@@ -453,7 +453,7 @@ export function UserPreferencesCard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5 text-primary" />
+              <Palette className="h-5 w-5 text-indigo-600" />
               Apparence
             </CardTitle>
             <CardDescription>
@@ -541,7 +541,7 @@ export function UserPreferencesCard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
+              <Globe className="h-5 w-5 text-indigo-600" />
               Préférences Régionales
             </CardTitle>
             <CardDescription>
@@ -633,7 +633,7 @@ export function UserPreferencesCard() {
       <div className="flex justify-end">
         <Button
           size="lg"
-          className="w-full md:w-auto"
+          className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white"
           onClick={savePreferences}
           disabled={saving}
         >
