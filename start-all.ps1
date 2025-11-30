@@ -6,9 +6,21 @@ Write-Host "   TimeScope - Demarrage Docker         " -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Recuperer la branche courante
+$currentBranch = git rev-parse --abbrev-ref HEAD
+Write-Host "Branche detectee : $currentBranch" -ForegroundColor Cyan
+
 # Demarrer tous les services via Docker Compose
 Write-Host "Demarrage des services..." -ForegroundColor Yellow
-docker-compose up -d --build
+
+if ($currentBranch -eq "develop") {
+    Write-Host "Mode DEVELOPPEMENT active (Hot Reload)" -ForegroundColor Magenta
+    docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+}
+else {
+    Write-Host "Mode PRODUCTION active" -ForegroundColor Blue
+    docker-compose up -d --build
+}
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
