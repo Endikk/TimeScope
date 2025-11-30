@@ -13,6 +13,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { HomeHeader } from "@/pages/home/components/HomeHeader"
 import { MonthlyStats } from "@/pages/home/components/MonthlyStats"
 import { QuickActions } from "@/pages/home/components/QuickActions"
@@ -115,6 +125,8 @@ export default function Home() {
 
   // Export states
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
   const [exportGroupId, setExportGroupId] = useState<string>('all')
 
   // API Hooks
@@ -286,13 +298,12 @@ export default function Home() {
     }
   }
 
-  const handleDeleteAllEntries = async () => {
+  const handleDeleteAllEntries = () => {
     if (selectedDates.size === 0) return
+    setIsDeleteDialogOpen(true)
+  }
 
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer toutes les entrées pour les ${selectedDates.size} dates sélectionnées ?`)) {
-      return
-    }
-
+  const confirmDeleteAll = async () => {
     const targetDates = Array.from(selectedDates)
     const entriesToDelete = localEntries.filter(entry => targetDates.includes(entry.date))
 
@@ -301,6 +312,7 @@ export default function Home() {
     }
 
     await refetchEntries()
+    setIsDeleteDialogOpen(false)
   }
 
   // Multi-select functions
@@ -1009,6 +1021,26 @@ export default function Home() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Êtes-vous sûr de vouloir supprimer toutes les entrées pour les <span className="font-semibold text-foreground">{selectedDates.size} dates sélectionnées</span> ?
+                  <br />
+                  Cette action est irréversible.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDeleteAll} className="bg-red-600 hover:bg-red-700 text-white">
+                  Supprimer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {/* Export PDF Dialog */}
           <ExportDialog
