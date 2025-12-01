@@ -25,7 +25,7 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère tous les projets depuis la base Projects
+    /// Liste tous les projets disponibles
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
@@ -43,7 +43,7 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère tous les groupes depuis la base Projects
+    /// Liste tous les groupes de projets
     /// </summary>
     [HttpGet("groups")]
     public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
@@ -61,7 +61,7 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère tous les thèmes depuis la base Projects
+    /// Liste tous les thèmes
     /// </summary>
     [HttpGet("themes")]
     public async Task<ActionResult<IEnumerable<Theme>>> GetThemes()
@@ -79,8 +79,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Crée un nouveau projet dans la base Projects
+    /// Crée un nouveau projet (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpPost]
     public async Task<ActionResult<Project>> CreateProject([FromBody] CreateProjectDto dto)
     {
@@ -112,8 +113,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Crée un nouveau groupe dans la base Projects
+    /// Crée un nouveau groupe (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpPost("groups")]
     public async Task<ActionResult<Group>> CreateGroup([FromBody] CreateGroupDto dto)
     {
@@ -144,8 +146,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Crée un nouveau thème dans la base Projects
+    /// Crée un nouveau thème (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpPost("themes")]
     public async Task<ActionResult<Theme>> CreateTheme([FromBody] CreateThemeDto dto)
     {
@@ -179,8 +182,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Met à jour un projet existant
+    /// Met à jour un projet (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateProject(Guid id, [FromBody] UpdateProjectDto dto)
     {
@@ -208,8 +212,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Supprime un projet (soft delete)
+    /// Supprime un projet (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProject(Guid id)
     {
@@ -229,8 +234,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Met à jour un groupe existant
+    /// Met à jour un groupe (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpPut("groups/{id}")]
     public async Task<ActionResult> UpdateGroup(Guid id, [FromBody] UpdateGroupDto dto)
     {
@@ -257,8 +263,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Supprime un groupe (soft delete)
+    /// Supprime un groupe (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpDelete("groups/{id}")]
     public async Task<ActionResult> DeleteGroup(Guid id)
     {
@@ -278,8 +285,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Met à jour un thème existant
+    /// Met à jour un thème (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpPut("themes/{id}")]
     public async Task<ActionResult> UpdateTheme(Guid id, [FromBody] UpdateThemeDto dto)
     {
@@ -309,8 +317,9 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Supprime un thème (soft delete)
+    /// Supprime un thème (Admin/Manager uniquement)
     /// </summary>
+    [Authorize(Roles = "Admin,Manager")]
     [HttpDelete("themes/{id}")]
     public async Task<ActionResult> DeleteTheme(Guid id)
     {

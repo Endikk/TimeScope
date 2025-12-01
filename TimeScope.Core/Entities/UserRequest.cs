@@ -1,5 +1,8 @@
 namespace TimeScope.Core.Entities;
 
+/// <summary>
+/// Demande utilisateur (support, feature, bug report)
+/// </summary>
 public class UserRequest : BaseEntity
 {
     public string Name { get; set; } = string.Empty;

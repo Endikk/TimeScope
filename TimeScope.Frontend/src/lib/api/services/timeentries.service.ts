@@ -3,7 +3,7 @@ import { TimeEntry } from '@/types/time-entry';
 
 export interface CreateTimeEntryDto {
   taskId: string;
-  // userId removed - automatically assigned from authenticated user
+  // userId retiré - automatiquement assigné depuis l'utilisateur authentifié
   date: string;
   duration: string; // Format: "HH:mm:ss"
   notes?: string;

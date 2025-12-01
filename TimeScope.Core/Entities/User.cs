@@ -11,13 +11,13 @@ public class User : BaseEntity
     public UserRole Role { get; set; }
     public bool IsActive { get; set; } = true;
 
-    // Professional Information
+    // Informations professionnelles
     public string? PhoneNumber { get; set; }
     public string? JobTitle { get; set; }
     public string? Department { get; set; }
     public DateTime? HireDate { get; set; }
 
-    // Security - Password Management
+    // Sécurité et gestion des mots de passe
     /// <summary>
     /// Date du dernier changement de mot de passe
     /// </summary>
@@ -53,7 +53,7 @@ public class User : BaseEntity
     /// </summary>
     public string? TwoFactorSecret { get; set; }
 
-    // Relations
+    // Relations avec les autres entités
     public ICollection<WorkTask> AssignedTasks { get; set; } = new List<WorkTask>();
     public ICollection<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();
 }

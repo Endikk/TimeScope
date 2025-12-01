@@ -1,6 +1,9 @@
 import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
 
+/**
+ * Props du composant PageHeader
+ */
 interface PageHeaderProps {
   icon: LucideIcon;
   title: string;
@@ -9,6 +12,9 @@ interface PageHeaderProps {
   gradient?: string;
 }
 
+/**
+ * Composant d'en-tête de page standardisé
+ */
 export function PageHeader({
   icon: Icon,
   title,

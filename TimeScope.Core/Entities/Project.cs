@@ -1,5 +1,8 @@
 namespace TimeScope.Core.Entities;
 
+/// <summary>
+/// Représente un projet client ou interne
+/// </summary>
 public class Project : BaseEntity
 {
     public string Name { get; set; } = string.Empty;

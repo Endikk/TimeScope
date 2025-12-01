@@ -79,7 +79,7 @@ public class AdministrationService : IAdministrationService
             Tests = new List<ConnectionTest>()
         };
 
-        // Test Unified DB
+        // Test de la base de données unifiée
         result.Tests.Add(await TestConnectionAsync("Unified DB", _context));
 
         result.AllSuccessful = result.Tests.All(t => t.Success);
@@ -95,7 +95,7 @@ public class AdministrationService : IAdministrationService
             DatabaseResults = new List<DatabaseCleanupResult>()
         };
 
-        // Admin DB
+        // Base Admin
         var deletedUsers = await _context.Users.Where(u => u.IsDeleted).CountAsync();
         var deletedSettings = await _context.AppSettings.Where(s => s.IsDeleted).CountAsync();
         result.DatabaseResults.Add(new DatabaseCleanupResult
@@ -105,7 +105,7 @@ public class AdministrationService : IAdministrationService
             Details = $"{deletedUsers} users, {deletedSettings} settings"
         });
 
-        // Projects DB
+        // Base Projets
         var deletedProjects = await _context.Projects.Where(p => p.IsDeleted).CountAsync();
         var deletedGroups = await _context.Groups.Where(g => g.IsDeleted).CountAsync();
         var deletedThemes = await _context.Themes.Where(t => t.IsDeleted).CountAsync();
@@ -116,7 +116,7 @@ public class AdministrationService : IAdministrationService
             Details = $"{deletedProjects} projects, {deletedGroups} groups, {deletedThemes} themes"
         });
 
-        // Time DB
+        // Base Temps
         var deletedTasks = await _context.Tasks.Where(t => t.IsDeleted).CountAsync();
         var deletedEntries = await _context.TimeEntries.Where(te => te.IsDeleted).CountAsync();
         result.DatabaseResults.Add(new DatabaseCleanupResult

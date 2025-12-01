@@ -4,8 +4,8 @@ using TimeScope.Core.Entities;
 namespace TimeScope.Infrastructure.Data;
 
 /// <summary>
-/// Unified DbContext for the entire application.
-/// Consolidates Admin, Projects, Time, and Reports contexts to enforce Foreign Keys.
+/// DbContext unifié pour toute l'application.
+/// Consolide les contextes Admin, Projects, Time et Reports pour appliquer les clés étrangères.
 /// </summary>
 public class ApplicationDbContext : DbContext
 {
@@ -40,7 +40,7 @@ public class ApplicationDbContext : DbContext
         // Configure User
         modelBuilder.Entity<User>(entity =>
         {
-            entity.ToTable("Users"); // Unified schema, no schema prefix needed or use "public"
+            entity.ToTable("Users"); // Schéma unifié, pas de préfixe nécessaire
             entity.HasKey(e => e.Id);
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
@@ -50,7 +50,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Role).IsRequired();
             entity.Property(e => e.IsActive).IsRequired();
 
-            // Professional Information
+            // Informations professionnelles
             entity.Property(e => e.PhoneNumber).HasMaxLength(20);
             entity.Property(e => e.JobTitle).HasMaxLength(100);
             entity.Property(e => e.Department).HasMaxLength(100);
@@ -58,7 +58,7 @@ public class ApplicationDbContext : DbContext
 
             entity.HasQueryFilter(e => !e.IsDeleted);
 
-            // Navigation properties enabled!
+            // Propriétés de navigation activées !
             entity.HasMany(e => e.AssignedTasks)
                   .WithOne(t => t.Assignee)
                   .HasForeignKey(t => t.AssigneeId)

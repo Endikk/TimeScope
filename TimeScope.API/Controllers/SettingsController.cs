@@ -19,6 +19,9 @@ public class SettingsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Récupère la configuration globale
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AppSetting>>> GetAllSettings(
         [FromQuery] string? category = null,
@@ -42,6 +45,9 @@ public class SettingsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère un paramètre spécifique par sa clé
+    /// </summary>
     [HttpGet("{key}")]
     public async Task<ActionResult<AppSetting>> GetSettingByKey(string key)
     {
@@ -61,6 +67,9 @@ public class SettingsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Liste les catégories de paramètres disponibles
+    /// </summary>
     [HttpGet("categories")]
     public async Task<ActionResult<IEnumerable<string>>> GetCategories()
     {
@@ -76,7 +85,11 @@ public class SettingsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Crée un nouveau paramètre (Admin uniquement)
+    /// </summary>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<AppSetting>> CreateSetting([FromBody] CreateSettingDto dto)
     {
         try
@@ -109,7 +122,11 @@ public class SettingsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Met à jour un paramètre (Admin uniquement)
+    /// </summary>
     [HttpPut("{key}")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> UpdateSetting(string key, [FromBody] UpdateSettingDto dto)
     {
         try
@@ -140,7 +157,11 @@ public class SettingsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Supprime un paramètre (Admin uniquement)
+    /// </summary>
     [HttpDelete("{key}")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteSetting(string key)
     {
         try
@@ -162,7 +183,11 @@ public class SettingsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Réinitialise tous les paramètres aux valeurs par défaut (Admin uniquement)
+    /// </summary>
     [HttpPost("reset-defaults")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> ResetToDefaults()
     {
         try

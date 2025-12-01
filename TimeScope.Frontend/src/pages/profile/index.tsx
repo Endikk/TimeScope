@@ -20,29 +20,29 @@ export default function ProfilePage() {
     projectsCount: 0,
   });
 
-  // Load fresh user data and statistics on mount
+  // Chargement des données utilisateur fraîches et des statistiques au montage
   useEffect(() => {
     const loadUserData = async () => {
       if (!authUser?.id) return;
 
       try {
-        // Load fresh user data from API
+        // Chargement des données utilisateur depuis l'API
         const freshUserData = await profileApiService.getUserProfile(authUser.id);
         setUser(freshUserData);
 
-        // Update localStorage with fresh data
+        // Mise à jour du localStorage avec les données fraîches
         tokenStorage.save(
           tokenStorage.getToken() || '',
           tokenStorage.getRefreshToken() || '',
           freshUserData
         );
 
-        // Load user stats
+        // Chargement des statistiques utilisateur
         const stats = await profileApiService.getUserStats(authUser.id);
         setActivityStats(stats);
       } catch (error) {
         console.error('Failed to load user data:', error);
-        // Fall back to auth context user if API fails
+        // Repli sur l'utilisateur du contexte d'auth si l'API échoue
         setUser(authUser);
       }
     };
@@ -53,7 +53,7 @@ export default function ProfilePage() {
   const handleUploadPhoto = async () => {
     if (!user?.id) return;
 
-    // Create file input
+    // Création de l'input file
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -62,7 +62,7 @@ export default function ProfilePage() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      // Validate file size (max 5MB)
+      // Validation de la taille du fichier (max 5 Mo)
       if (file.size > 5 * 1024 * 1024) {
         alert('La taille du fichier ne doit pas dépasser 5 Mo');
         return;
@@ -71,7 +71,7 @@ export default function ProfilePage() {
       try {
         const updatedUser = await profileApiService.uploadAvatar(user.id, file);
 
-        // Update user in localStorage
+        // Mise à jour de l'utilisateur dans le localStorage
         tokenStorage.save(
           tokenStorage.getToken() || '',
           tokenStorage.getRefreshToken() || '',
@@ -79,7 +79,7 @@ export default function ProfilePage() {
         );
 
         alert('Photo de profil mise à jour avec succès');
-        // Reload page to refresh user context
+        // Rechargement de la page pour rafraîchir le contexte utilisateur
         window.location.reload();
       } catch (error) {
         console.error('Failed to upload avatar:', error);
@@ -93,7 +93,7 @@ export default function ProfilePage() {
   const handleUploadBanner = async () => {
     if (!user?.id) return;
 
-    // Create file input
+    // Création de l'input file
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -102,7 +102,7 @@ export default function ProfilePage() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      // Validate file size (max 10MB for banners)
+      // Validation de la taille du fichier (max 10 Mo pour les bannières)
       if (file.size > 10 * 1024 * 1024) {
         alert('La taille du fichier ne doit pas dépasser 10 Mo');
         return;
@@ -111,7 +111,7 @@ export default function ProfilePage() {
       try {
         const updatedUser = await profileApiService.uploadBanner(user.id, file);
 
-        // Update user in localStorage
+        // Mise à jour de l'utilisateur dans le localStorage
         tokenStorage.save(
           tokenStorage.getToken() || '',
           tokenStorage.getRefreshToken() || '',
@@ -119,7 +119,7 @@ export default function ProfilePage() {
         );
 
         alert('Bannière mise à jour avec succès');
-        // Reload page to refresh user context
+        // Rechargement de la page pour rafraîchir le contexte utilisateur
         window.location.reload();
       } catch (error) {
         console.error('Failed to upload banner:', error);
@@ -138,7 +138,7 @@ export default function ProfilePage() {
     try {
       const updatedUser = await profileApiService.deleteAvatar(user.id);
 
-      // Update user in localStorage
+      // Mise à jour de l'utilisateur dans le localStorage
       tokenStorage.save(
         tokenStorage.getToken() || '',
         tokenStorage.getRefreshToken() || '',
@@ -161,7 +161,7 @@ export default function ProfilePage() {
     try {
       const updatedUser = await profileApiService.deleteBanner(user.id);
 
-      // Update user in localStorage
+      // Mise à jour de l'utilisateur dans le localStorage
       tokenStorage.save(
         tokenStorage.getToken() || '',
         tokenStorage.getRefreshToken() || '',
@@ -184,7 +184,7 @@ export default function ProfilePage() {
     try {
       const updatedUser = await profileApiService.updateProfile(user.id, data);
 
-      // Update user in localStorage
+      // Mise à jour de l'utilisateur dans le localStorage
       tokenStorage.save(
         tokenStorage.getToken() || '',
         tokenStorage.getRefreshToken() || '',
@@ -194,7 +194,7 @@ export default function ProfilePage() {
       setIsEditingPersonalInfo(false);
       alert('Informations mises à jour avec succès');
 
-      // Reload page to refresh user context
+      // Rechargement de la page pour rafraîchir le contexte utilisateur
       window.location.reload();
     } catch (error) {
       console.error('Failed to update profile:', error);
@@ -230,7 +230,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto">
-        {/* Profile Header */}
+        {/* En-tête de profil */}
         {user && (
           <div className="bg-card rounded-lg shadow-sm mb-8">
             <ProfileHeader
@@ -243,9 +243,9 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Main Content Grid */}
+        {/* Grille de contenu principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 pb-8">
-          {/* Left Column - Spans 2 columns on large screens */}
+          {/* Colonne gauche - S'étend sur 2 colonnes sur les grands écrans */}
           <div className="lg:col-span-2 space-y-6">
             <PersonalInfoCard
               user={user}
@@ -260,7 +260,7 @@ export default function ProfilePage() {
             <UserPreferencesCard />
           </div>
 
-          {/* Right Column - Spans 1 column on large screens */}
+          {/* Colonne droite - S'étend sur 1 colonne sur les grands écrans */}
           <div className="lg:col-span-1 space-y-6">
             <ActivityStatsCard stats={activityStats} />
           </div>

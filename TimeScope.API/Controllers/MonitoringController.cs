@@ -18,6 +18,9 @@ public class MonitoringController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Récupère les métriques système actuelles (CPU, RAM, Disque)
+    /// </summary>
     [HttpGet("metrics")]
     public ActionResult<SystemMetrics> GetSystemMetrics()
     {
@@ -33,6 +36,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Vérifie l'état de santé global de l'application
+    /// </summary>
     [HttpGet("health")]
     public ActionResult<HealthStatus> GetHealthStatus()
     {
@@ -48,6 +54,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère le temps de fonctionnement de l'application
+    /// </summary>
     [HttpGet("uptime")]
     public ActionResult<UptimeInfo> GetUptime()
     {
@@ -63,6 +72,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Informations sur l'environnement d'exécution
+    /// </summary>
     [HttpGet("environment")]
     public ActionResult<EnvironmentInfo> GetEnvironmentInfo()
     {
@@ -78,6 +90,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Données de diagnostic détaillées (Threads, Handles, Mémoire)
+    /// </summary>
     [HttpGet("diagnostics")]
     public ActionResult<DiagnosticsInfo> GetDiagnostics()
     {
@@ -93,6 +108,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Informations complètes sur le système
+    /// </summary>
     [HttpGet("info")]
     public ActionResult<SystemInfo> GetSystemInfo()
     {
@@ -108,6 +126,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère les derniers logs de l'application
+    /// </summary>
     [HttpGet("logs")]
     public ActionResult<LogsResponse> GetLogs([FromQuery] int limit = 100)
     {
@@ -122,6 +143,9 @@ public class MonitoringController : ControllerBase
             return StatusCode(500, new { message = "An error occurred while retrieving logs" });
         }
     }
+    /// <summary>
+    /// Flux SSE (Server-Sent Events) pour le monitoring en temps réel
+    /// </summary>
     [HttpGet("stream")]
     [Produces("text/event-stream")]
     public async Task StreamMonitoring(CancellationToken cancellationToken)

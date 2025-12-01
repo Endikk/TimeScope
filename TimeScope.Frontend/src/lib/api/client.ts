@@ -22,7 +22,7 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false, // Pas besoin de cookies, on utilise JWT
+  withCredentials: false, // Pas de cookies, utilisation de JWT
 });
 
 // Variable pour éviter les rafraîchissements multiples en parallèle
@@ -44,7 +44,7 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Intercepteur de requête - Ajouter le token JWT et logger
+// Intercepteur de requête - Ajout du token JWT et logging
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
@@ -53,7 +53,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Log request in development
+    // Log de la requête en développement
     apiLogger.request(config.method?.toUpperCase() || 'GET', config.url || '', config.data);
 
     return config;
@@ -63,10 +63,10 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Intercepteur de réponse - Gérer les erreurs et le refresh token
+// Intercepteur de réponse - Gestion des erreurs et du rafraîchissement du token
 apiClient.interceptors.response.use(
   (response) => {
-    // Log successful response in development
+    // Log de la réponse réussie en développement
     apiLogger.response(
       response.config.method?.toUpperCase() || 'GET',
       response.config.url || '',
@@ -78,31 +78,31 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Log API error
+    // Log de l'erreur API
     apiLogger.error(
       originalRequest?.method?.toUpperCase() || 'UNKNOWN',
       originalRequest?.url || '',
       error
     );
 
-    // Si l'erreur n'est pas 401 ou pas de config, rejeter directement
+    // Si l'erreur n'est pas 401 ou s'il n'y a pas de config, rejet direct
     if (!originalRequest || error.response?.status !== 401) {
       return Promise.reject(transformError(error));
     }
 
-    // Si c'est une tentative de refresh qui échoue, déconnecter
+    // Si l'échec provient d'une tentative de rafraîchissement, déconnexion
     if (originalRequest.url?.includes('/auth/refresh')) {
       handleLogout();
       return Promise.reject(transformError(error));
     }
 
-    // Si déjà tenté de rafraîchir, déconnecter
+    // Si une tentative de rafraîchissement a déjà eu lieu, déconnexion
     if (originalRequest._retry) {
       handleLogout();
       return Promise.reject(transformError(error));
     }
 
-    // Si un refresh est déjà en cours, mettre en queue
+    // Si un rafraîchissement est déjà en cours, mise en file d'attente
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
@@ -130,18 +130,18 @@ apiClient.interceptors.response.use(
     }
 
     try {
-      // Tenter de rafraîchir le token
+      // Tentative de rafraîchissement du token
       const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
         refreshToken: refreshToken,
       });
 
       const { token: newToken, refreshToken: newRefreshToken } = response.data;
 
-      // Mettre à jour les tokens
+      // Mise à jour des tokens
       localStorage.setItem('token', newToken);
       localStorage.setItem('refreshToken', newRefreshToken);
 
-      // Mettre à jour le header de la requête originale
+      // Mise à jour du header de la requête originale
       if (originalRequest.headers) {
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
       }
@@ -149,7 +149,7 @@ apiClient.interceptors.response.use(
       processQueue(null, newToken);
       isRefreshing = false;
 
-      // Réessayer la requête originale
+      // Nouvelle tentative de la requête originale
       return apiClient(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError as Error, null);
@@ -160,19 +160,19 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Fonction pour déconnecter l'utilisateur
+// Déconnexion de l'utilisateur
 const handleLogout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
 
-  // Rediriger vers la page de login
+  // Redirection vers la page de connexion
   if (typeof window !== 'undefined') {
     window.location.href = '/login';
   }
 };
 
-// Transformer les erreurs Axios en format standard
+// Transformation des erreurs Axios en format standard
 const transformError = (error: AxiosError): ApiError => {
   if (error.response) {
     // Le serveur a répondu avec un code d'erreur
@@ -184,7 +184,7 @@ const transformError = (error: AxiosError): ApiError => {
       details: error.response.data,
     };
   } else if (error.request) {
-    // La requête a été faite mais pas de réponse
+    // La requête a été envoyée mais aucune réponse n'a été reçue
     return {
       message: 'Impossible de contacter le serveur. Vérifiez votre connexion internet.',
       code: 'NETWORK_ERROR',

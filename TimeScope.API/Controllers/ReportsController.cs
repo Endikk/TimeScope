@@ -19,6 +19,9 @@ public class ReportsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Consulte les journaux d'audit
+    /// </summary>
     [HttpGet("audit-logs")]
     public async Task<ActionResult<IEnumerable<AuditLog>>> GetAuditLogs(
         [FromQuery] int? limit = 100,
@@ -43,6 +46,9 @@ public class ReportsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Enregistre une nouvelle entrée d'audit
+    /// </summary>
     [HttpPost("audit-logs")]
     public async Task<ActionResult<AuditLog>> CreateAuditLog([FromBody] CreateAuditLogDto dto)
     {
@@ -72,6 +78,9 @@ public class ReportsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère les statistiques globales
+    /// </summary>
     [HttpGet("statistics")]
     public async Task<ActionResult<ReportStatistics>> GetStatistics(
         [FromQuery] DateTime? startDate = null,
@@ -89,6 +98,9 @@ public class ReportsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Résumé de l'activité récente
+    /// </summary>
     [HttpGet("activity")]
     public async Task<ActionResult<IEnumerable<ActivitySummary>>> GetActivitySummary(
         [FromQuery] int days = 7)
@@ -105,6 +117,9 @@ public class ReportsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Classement des utilisateurs les plus actifs
+    /// </summary>
     [HttpGet("top-users")]
     public async Task<ActionResult<IEnumerable<UserActivity>>> GetTopUsers(
         [FromQuery] int limit = 10,

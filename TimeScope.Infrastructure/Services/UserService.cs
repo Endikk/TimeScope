@@ -24,7 +24,7 @@ public class UserService : IUserService
 
     public async Task<User> CreateUserAsync(CreateUserCommand command)
     {
-        // Règles métier : validation
+        // Validation des règles métier
         ValidateEmail(command.Email);
         ValidatePassword(command.Password);
 
@@ -38,29 +38,29 @@ public class UserService : IUserService
             throw new ArgumentException("Last name is required");
         }
 
-        // Vérifier si l'email existe déjà
+        // Vérification de l'unicité de l'email
         var existingUser = await _adminUow.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == command.Email.Trim().ToLowerInvariant());
         if (existingUser != null)
         {
             throw new ArgumentException("Un utilisateur avec cet email existe déjà");
         }
 
-        // Logique métier : hash du password avec BCrypt
+        // Hachage du mot de passe
         var passwordHash = _passwordHasher.HashPassword(command.Password);
 
-        // Parse UserRole from string
+        // Parsing du rôle utilisateur
         if (!Enum.TryParse<UserRole>(command.Role, true, out var userRole))
         {
             throw new ArgumentException($"Invalid role: {command.Role}");
         }
 
-        // Parse HireDate if provided
+        // Parsing de la date d'embauche si fournie
         DateTime? hireDate = null;
         if (!string.IsNullOrWhiteSpace(command.HireDate))
         {
             if (DateTime.TryParse(command.HireDate, out var parsedDate))
             {
-                // Convert to UTC for PostgreSQL compatibility
+                // Conversion en UTC pour PostgreSQL
                 hireDate = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc);
             }
         }
@@ -96,7 +96,7 @@ public class UserService : IUserService
             throw new KeyNotFoundException($"User with ID {id} not found");
         }
 
-        // Règles métier : validation
+        // Validation des champs modifiables
         if (!string.IsNullOrWhiteSpace(command.Email))
         {
             ValidateEmail(command.Email);
@@ -118,7 +118,7 @@ public class UserService : IUserService
             user.IsActive = command.IsActive.Value;
         }
 
-        // Update professional information
+        // Mise à jour des informations professionnelles
         if (command.PhoneNumber != null)
         {
             user.PhoneNumber = string.IsNullOrWhiteSpace(command.PhoneNumber) ? null : command.PhoneNumber.Trim();
@@ -136,7 +136,7 @@ public class UserService : IUserService
 
         if (command.HireDate.HasValue)
         {
-            // Convert to UTC for PostgreSQL compatibility
+            // Conversion en UTC
             user.HireDate = DateTime.SpecifyKind(command.HireDate.Value, DateTimeKind.Utc);
         }
 
@@ -180,16 +180,16 @@ public class UserService : IUserService
             throw new KeyNotFoundException($"User with ID {command.UserId} not found");
         }
 
-        // Verify current password
+        // Vérification du mot de passe actuel
         if (!_passwordHasher.VerifyPassword(command.CurrentPassword, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Current password is incorrect");
         }
 
-        // Validate new password
+        // Validation du nouveau mot de passe
         ValidatePassword(command.NewPassword);
 
-        // Hash new password
+        // Hachage du nouveau mot de passe
         user.PasswordHash = _passwordHasher.HashPassword(command.NewPassword);
 
         await _adminUow.Users.UpdateAsync(user);
@@ -198,7 +198,7 @@ public class UserService : IUserService
 
     public async Task<UserStatsDto?> GetUserStatsAsync(Guid userId)
     {
-        // Verify user exists
+        // Vérification de l'existence de l'utilisateur
         var user = await _adminUow.Users.GetByIdAsync(userId);
         if (user == null)
         {
@@ -210,7 +210,7 @@ public class UserService : IUserService
         double totalHours = 0;
         int projectsCount = 0;
 
-        // Get tasks statistics if TimeUnitOfWork is available
+        // Récupération des statistiques de tâches (si TimeDB disponible)
         if (_timeUow != null)
         {
             try
@@ -221,7 +221,7 @@ public class UserService : IUserService
                 tasksCompleted = userTasks.Count(t => t.Status == Core.Entities.TaskStatus.Termine);
                 tasksInProgress = userTasks.Count(t => t.Status == Core.Entities.TaskStatus.EnCours);
 
-                // Calculate total hours from time entries
+                // Calcul du temps total passé
                 var allTimeEntries = await _timeUow.TimeEntries.GetAllAsync();
                 var userTimeEntries = allTimeEntries.Where(te => te.UserId == userId);
 
@@ -232,23 +232,22 @@ public class UserService : IUserService
             }
             catch
             {
-                // If TimeDB is not available, use default values
+                // Si TimeDB indisponible, on utilise les valeurs par défaut
             }
         }
 
-        // Get projects count if ProjectsUnitOfWork is available
+        // Récupération du nombre de projets (si ProjectsDB disponible)
         if (_projectsUow != null)
         {
             try
             {
                 var allProjects = await _projectsUow.Projects.GetAllAsync();
-                // Count all projects (since Project entity doesn't have OwnerId or Members)
-                // This could be enhanced when the schema supports user-project relationships
+                // Compte tous les projets (amélioration future : filtrer par membre)
                 projectsCount = allProjects.Count();
             }
             catch
             {
-                // If ProjectsDB is not available, use default value
+                // Si ProjectsDB indisponible, valeur par défaut
             }
         }
 

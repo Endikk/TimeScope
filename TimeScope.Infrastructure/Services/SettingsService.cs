@@ -14,7 +14,7 @@ public class SettingsService : ISettingsService
 
     public async Task<AppSetting> CreateSettingAsync(CreateSettingCommand command)
     {
-        // Règles métier : validation
+        // Validation des règles métier
         if (string.IsNullOrWhiteSpace(command.Key))
         {
             throw new ArgumentException("Setting key is required");
@@ -30,7 +30,7 @@ public class SettingsService : ISettingsService
             throw new ArgumentException("Setting category is required");
         }
 
-        // Vérifier si la clé existe déjà
+        // Vérification de l'unicité de la clé
         var allSettings = await _adminUow.AppSettings.GetAllAsync();
         var existing = allSettings.FirstOrDefault(s => s.Key == command.Key && !s.IsDeleted);
         
@@ -65,7 +65,7 @@ public class SettingsService : ISettingsService
             throw new KeyNotFoundException($"Setting with key '{key}' not found");
         }
 
-        // Mise à jour conditionnelle
+        // Mise à jour conditionnelle des valeurs
         if (!string.IsNullOrWhiteSpace(command.Value))
         {
             setting.Value = command.Value.Trim();
@@ -109,7 +109,7 @@ public class SettingsService : ISettingsService
             return false;
         }
 
-        // Soft delete
+        // Suppression logique (Soft delete)
         setting.IsDeleted = true;
         setting.UpdatedAt = DateTime.UtcNow;
 
@@ -160,14 +160,14 @@ public class SettingsService : ISettingsService
 
     public async Task<int> ResetToDefaultsAsync()
     {
-        // Supprimer tous les paramètres existants (hard delete)
+        // Suppression de tous les paramètres existants (suppression physique)
         var allSettings = await _adminUow.AppSettings.GetAllAsync();
         foreach (var setting in allSettings)
         {
             await _adminUow.AppSettings.DeleteAsync(setting.Id);
         }
 
-        // Ajouter les paramètres par défaut
+        // Ajout des paramètres par défaut
         var defaultSettings = GetDefaultSettings();
         foreach (var setting in defaultSettings)
         {

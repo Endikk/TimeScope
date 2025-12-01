@@ -177,8 +177,8 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
             DatabaseResults = new List<DatabaseCleanupResult>()
         };
 
-        // Note: Cette implémentation compte les enregistrements marqués comme supprimés
-        // En production, vous pourriez vouloir les supprimer définitivement
+        // Note : Cette implémentation compte les enregistrements marqués comme supprimés
+        // En production, il serait préférable de les supprimer définitivement (hard delete)
         
         var adminCleanup = new DatabaseCleanupResult
         {
@@ -355,7 +355,7 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
     {
         var results = new List<OptimizationResult>();
 
-        // Optimize Unified DB (covers all)
+        // Optimisation de la base unifiée
         var result = await OptimizeDatabase(_context, "Unified DB");
         results.Add(result);
 
@@ -366,7 +366,7 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
     {
         var results = new List<OptimizationResult>();
 
-        // Vacuum Unified DB
+        // Vacuum de la base unifiée
         var result = await VacuumDatabase(_context, "Unified DB");
         results.Add(result);
 
@@ -377,7 +377,7 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
     {
         var results = new List<OptimizationResult>();
 
-        // Reindex Unified DB
+        // Réindexation de la base unifiée
         var result = await ReindexDatabase(_context, "Unified DB");
         results.Add(result);
 
@@ -386,7 +386,7 @@ public class DatabaseMaintenanceService : IDatabaseMaintenanceService
 
     public async Task<IEnumerable<BackupInfo>> GetBackupInfoAsync()
     {
-        // Placeholder - en production, ceci devrait récupérer les vraies informations de backup
+        // Placeholder - En production, ceci devrait récupérer les vraies informations de sauvegarde
         var backups = new List<BackupInfo>
         {
             new BackupInfo

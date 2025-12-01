@@ -1,5 +1,8 @@
 namespace TimeScope.Core.Entities;
 
+/// <summary>
+/// Entrée de temps (log) sur une tâche
+/// </summary>
 public class TimeEntry : BaseEntity
 {
     public Guid TaskId { get; set; }

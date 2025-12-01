@@ -18,9 +18,9 @@ export function useTimeEntries() {
       const data = await timeEntriesService.getAllTimeEntries();
       setTimeEntries(data);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch time entries';
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors du chargement des entrées de temps';
       setError(errorMessage);
-      console.error('Error fetching time entries:', err);
+      console.error('Erreur lors du chargement des entrées de temps :', err);
     } finally {
       setLoading(false);
     }
@@ -50,9 +50,9 @@ export function useTimeEntry(id: string) {
       const data = await timeEntriesService.getTimeEntryById(id);
       setTimeEntry(data);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch time entry';
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors du chargement de l\'entrée de temps';
       setError(errorMessage);
-      console.error('Error fetching time entry:', err);
+      console.error('Erreur lors du chargement de l\'entrée de temps :', err);
     } finally {
       setLoading(false);
     }
@@ -83,9 +83,9 @@ export function useTimeEntryMutations() {
       const newEntry = await timeEntriesService.createTimeEntry(entryData);
       return newEntry;
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to create time entry';
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la création de l\'entrée de temps';
       setError(errorMessage);
-      console.error('Error creating time entry:', err);
+      console.error('Erreur lors de la création de l\'entrée de temps :', err);
       return null;
     } finally {
       setLoading(false);
@@ -99,9 +99,9 @@ export function useTimeEntryMutations() {
       await timeEntriesService.updateTimeEntry(id, entryData);
       return true;
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to update time entry';
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la mise à jour de l\'entrée de temps';
       setError(errorMessage);
-      console.error('Error updating time entry:', err);
+      console.error('Erreur lors de la mise à jour de l\'entrée de temps :', err);
       return false;
     } finally {
       setLoading(false);
@@ -115,9 +115,9 @@ export function useTimeEntryMutations() {
       await timeEntriesService.deleteTimeEntry(id);
       return true;
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to delete time entry';
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la suppression de l\'entrée de temps';
       setError(errorMessage);
-      console.error('Error deleting time entry:', err);
+      console.error('Erreur lors de la suppression de l\'entrée de temps :', err);
       return false;
     } finally {
       setLoading(false);

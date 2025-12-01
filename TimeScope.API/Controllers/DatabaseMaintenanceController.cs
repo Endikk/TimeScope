@@ -20,6 +20,9 @@ public class DatabaseMaintenanceController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Vérifie l'état de santé des bases de données
+    /// </summary>
     [HttpGet("health")]
     public async Task<ActionResult> GetDatabaseHealth()
     {
@@ -35,6 +38,9 @@ public class DatabaseMaintenanceController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère les statistiques détaillées (taille, tables, lignes)
+    /// </summary>
     [HttpGet("stats")]
     public async Task<ActionResult> GetDatabaseStatistics()
     {
@@ -50,6 +56,9 @@ public class DatabaseMaintenanceController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Lance l'optimisation des bases de données
+    /// </summary>
     [HttpPost("optimize")]
     public async Task<ActionResult> OptimizeDatabases()
     {
@@ -65,6 +74,9 @@ public class DatabaseMaintenanceController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Exécute un VACUUM sur les bases PostgreSQL pour récupérer l'espace
+    /// </summary>
     [HttpPost("vacuum")]
     public async Task<ActionResult> VacuumDatabases()
     {
@@ -80,6 +92,9 @@ public class DatabaseMaintenanceController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Reconstruit les index pour améliorer les performances
+    /// </summary>
     [HttpPost("reindex")]
     public async Task<ActionResult> ReindexDatabases()
     {
@@ -95,6 +110,9 @@ public class DatabaseMaintenanceController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère les informations sur les sauvegardes
+    /// </summary>
     [HttpGet("backup-info")]
     public async Task<ActionResult> GetBackupInfo()
     {

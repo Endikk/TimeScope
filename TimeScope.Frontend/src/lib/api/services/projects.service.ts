@@ -44,7 +44,7 @@ export interface UpdateThemeDto {
 class ProjectsService {
   private readonly endpoint = '/projects';
 
-  // Projects
+  // Projets
   async getAllProjects(): Promise<Project[]> {
     const response = await apiClient.get<Project[]>(this.endpoint);
     return response.data;
@@ -63,7 +63,7 @@ class ProjectsService {
     await apiClient.delete(`${this.endpoint}/${id}`);
   }
 
-  // Groups
+  // Groupes
   async getAllGroups(): Promise<Group[]> {
     const response = await apiClient.get<Group[]>(`${this.endpoint}/groups`);
     return response.data;
@@ -82,7 +82,7 @@ class ProjectsService {
     await apiClient.delete(`${this.endpoint}/groups/${id}`);
   }
 
-  // Themes
+  // Thèmes
   async getAllThemes(): Promise<Theme[]> {
     const response = await apiClient.get<Theme[]>(`${this.endpoint}/themes`);
     return response.data;

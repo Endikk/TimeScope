@@ -14,7 +14,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
+// Configuration des logs avec Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -24,17 +24,17 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Add services to the container
-builder.Services.AddHttpContextAccessor(); // Required for IpAddress tracking in AuthService
+// Ajout des services au conteneur d'injection de dépendances
+builder.Services.AddHttpContextAccessor(); // Nécessaire pour récupérer l'IP dans AuthService
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Configure JSON serialization to use camelCase for property names
+        // Utilisation du camelCase pour le JSON
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
-        // Ignore circular references to avoid serialization errors
+        // Gestion des références circulaires
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        // Serialize enums as strings instead of integers
+        // Conversion des enums en chaînes de caractères
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 builder.Services.AddEndpointsApiExplorer();
@@ -42,7 +42,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "TimeScope API", Version = "v1" });
     
-    // Configuration pour JWT dans Swagger
+    // Configuration de l'authentification JWT pour Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
@@ -68,22 +68,22 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configure Database
+// Configuration de la base de données
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register Specialized Unit of Work for each database
+// Enregistrement des Unit of Work spécialisés
 builder.Services.AddScoped<IAdminUnitOfWork, AdminUnitOfWork>();
 builder.Services.AddScoped<IProjectsUnitOfWork, ProjectsUnitOfWork>();
 builder.Services.AddScoped<ITimeUnitOfWork, TimeUnitOfWork>();
 builder.Services.AddScoped<IReportsUnitOfWork, ReportsUnitOfWork>();
 
-// Register Security Services
+// Services de sécurité
 builder.Services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Register Business Logic Services (Clean Architecture)
+// Services métier (Clean Architecture)
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
@@ -91,25 +91,25 @@ builder.Services.AddScoped<ITimeEntryService, TimeEntryService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
-// Register Infrastructure Services
+// Services d'infrastructure
 builder.Services.AddScoped<IMonitoringService, MonitoringService>();
 builder.Services.AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
 builder.Services.AddScoped<IAdministrationService, AdministrationService>();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ICrossDbValidationService, CrossDbValidationService>();
 
-// Note: Legacy IUnitOfWork is deprecated - use specialized UnitOfWork instead
+// Note : L'ancien IUnitOfWork est obsolète, on utilise les versions spécialisées
 
-// Configure AutoMapper
+// Configuration d'AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Configure FluentValidation
+// Configuration de la validation (FluentValidation)
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-// Configure MediatR
+// Configuration de MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-// Configure JWT Authentication
+// Configuration de l'authentification JWT
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("JWT Issuer not configured");
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("JWT Audience not configured");
@@ -135,7 +135,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Configure CORS for Next.js frontend
+// Configuration CORS pour le frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
@@ -148,14 +148,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Global exception handling (must be first in pipeline)
+// Gestion globale des exceptions (doit être en premier)
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
@@ -165,7 +165,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Initialize database with seed data
+// Initialisation de la base de données avec les données de test
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

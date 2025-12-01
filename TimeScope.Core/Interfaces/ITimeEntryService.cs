@@ -4,10 +4,29 @@ namespace TimeScope.Core.Interfaces;
 
 public interface ITimeEntryService
 {
+    /// <summary>
+    /// Crée une nouvelle entrée de temps
+    /// </summary>
     Task<TimeEntry> CreateTimeEntryAsync(CreateTimeEntryCommand command);
+
+    /// <summary>
+    /// Met à jour une entrée de temps existante
+    /// </summary>
     Task<TimeEntry> UpdateTimeEntryAsync(Guid id, UpdateTimeEntryCommand command);
+
+    /// <summary>
+    /// Supprime une entrée de temps
+    /// </summary>
     Task<bool> DeleteTimeEntryAsync(Guid id);
+
+    /// <summary>
+    /// Récupère une entrée de temps par son ID
+    /// </summary>
     Task<TimeEntry?> GetTimeEntryByIdAsync(Guid id);
+
+    /// <summary>
+    /// Liste les entrées de temps selon des critères
+    /// </summary>
     Task<IEnumerable<TimeEntry>> GetTimeEntriesAsync(TimeEntryFilter filter);
 }
 

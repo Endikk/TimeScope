@@ -4,16 +4,59 @@ namespace TimeScope.Core.Interfaces;
 
 public interface IUserService
 {
+    /// <summary>
+    /// Crée un nouvel utilisateur
+    /// </summary>
     Task<User> CreateUserAsync(CreateUserCommand command);
+
+    /// <summary>
+    /// Met à jour les informations d'un utilisateur
+    /// </summary>
     Task<User> UpdateUserAsync(Guid id, UpdateUserCommand command);
+
+    /// <summary>
+    /// Supprime un utilisateur (soft delete)
+    /// </summary>
     Task<bool> DeleteUserAsync(Guid id);
+
+    /// <summary>
+    /// Récupère un utilisateur par son ID
+    /// </summary>
     Task<User?> GetUserByIdAsync(Guid id);
+
+    /// <summary>
+    /// Liste tous les utilisateurs
+    /// </summary>
     Task<IEnumerable<User>> GetAllUsersAsync();
+
+    /// <summary>
+    /// Change le mot de passe d'un utilisateur
+    /// </summary>
     Task ChangePasswordAsync(ChangePasswordCommand command);
+
+    /// <summary>
+    /// Calcule les statistiques d'activité d'un utilisateur
+    /// </summary>
     Task<UserStatsDto?> GetUserStatsAsync(Guid userId);
+
+    /// <summary>
+    /// Met à jour l'avatar (image de profil)
+    /// </summary>
     Task<User> UpdateAvatarAsync(Guid id, string base64Image);
+
+    /// <summary>
+    /// Met à jour la bannière de profil
+    /// </summary>
     Task<User> UpdateBannerAsync(Guid id, string base64Image);
+
+    /// <summary>
+    /// Supprime l'avatar
+    /// </summary>
     Task<User> DeleteAvatarAsync(Guid id);
+
+    /// <summary>
+    /// Supprime la bannière
+    /// </summary>
     Task<User> DeleteBannerAsync(Guid id);
 }
 

@@ -55,7 +55,7 @@ class UsersService {
   private readonly endpoint = '/users';
 
   /**
-   * Helper to normalize user data from API
+   * Normalisation des données utilisateur depuis l'API
    */
   private normalizeUser(data: ApiUserResponse): User {
     return {

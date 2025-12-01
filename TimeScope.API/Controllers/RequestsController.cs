@@ -21,7 +21,7 @@ public class RequestsController : ControllerBase
     }
 
     /// <summary>
-    /// Crée une nouvelle demande utilisateur (pas d'authentification requise pour la page contact)
+    /// Soumet une nouvelle demande (accessible sans connexion)
     /// </summary>
     [HttpPost]
     [AllowAnonymous]
@@ -48,7 +48,7 @@ public class RequestsController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère toutes les demandes (Admin seulement)
+    /// Liste toutes les demandes (Admin/Manager uniquement)
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,Manager")]
@@ -67,7 +67,7 @@ public class RequestsController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère une demande par ID (Admin ou propriétaire)
+    /// Consulte une demande spécifique
     /// </summary>
     [HttpGet("{id}")]
     [Authorize]
@@ -81,6 +81,13 @@ public class RequestsController : ControllerBase
                 return NotFound(new { error = $"Request with ID {id} not found" });
             }
 
+            // Vérification : seul l'auteur ou un admin peut voir la demande
+            var currentUserEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (currentUserEmail != null && request.Email != currentUserEmail && !User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            {
+                return Forbid();
+            }
+
             return Ok(request);
         }
         catch (Exception ex)
@@ -91,7 +98,7 @@ public class RequestsController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère les demandes par statut (Admin seulement)
+    /// Filtre les demandes par statut (Admin/Manager uniquement)
     /// </summary>
     [HttpGet("status/{status}")]
     [Authorize(Roles = "Admin,Manager")]
@@ -115,12 +122,19 @@ public class RequestsController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère les demandes par email (Admin ou propriétaire)
+    /// Recherche les demandes d'un utilisateur par email
     /// </summary>
     [HttpGet("email/{email}")]
     [Authorize]
     public async Task<ActionResult<IEnumerable<UserRequest>>> GetRequestsByEmail(string email)
     {
+        // Vérification : on ne peut chercher que ses propres demandes (sauf Admin/Manager)
+        var currentUserEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        if (currentUserEmail != null && email != currentUserEmail && !User.IsInRole("Admin") && !User.IsInRole("Manager"))
+        {
+            return Forbid();
+        }
+
         try
         {
             var requests = await _requestService.GetRequestsByEmailAsync(email);
@@ -139,7 +153,7 @@ public class RequestsController : ControllerBase
     }
 
     /// <summary>
-    /// Met à jour le statut d'une demande (Admin seulement)
+    /// Met à jour le statut d'une demande (Admin/Manager uniquement)
     /// </summary>
     [HttpPatch("{id}/status")]
     [Authorize(Roles = "Admin,Manager")]
@@ -172,7 +186,7 @@ public class RequestsController : ControllerBase
     }
 
     /// <summary>
-    /// Supprime une demande (Admin seulement - soft delete)
+    /// Supprime une demande (Admin uniquement)
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]

@@ -51,13 +51,13 @@ import { LocalTimeEntry, NewTimeEntry } from "./types"
 
 
 
-// Helper function to convert duration string to hours
+// Fonction utilitaire pour convertir une durée en heures
 const convertDurationToHours = (duration: string): number => {
   const [hours, minutes] = duration.split(':').map(Number)
   return hours + (minutes / 60)
 }
 
-// Helper function to convert hours to duration string
+// Fonction utilitaire pour convertir des heures en chaîne de durée
 const convertHoursToDuration = (hours: number): string => {
   const h = Math.floor(hours)
   const m = Math.round((hours - h) * 60)
@@ -92,18 +92,18 @@ export default function Home() {
   const [joursFeries, setJoursFeries] = useState<Set<string>>(new Set())
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
-  // Multi-selection states
+  // États pour la multi-sélection
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set())
   const [copiedEntries, setCopiedEntries] = useState<LocalTimeEntry[]>([])
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
 
-  // Export states
+  // États pour l'export
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const [exportGroupId, setExportGroupId] = useState<string>('all')
 
-  // API Hooks
+  // Hooks API
   const { groups, loading: groupsLoading } = useGroups()
   const { projects, loading: projectsLoading } = useProjects()
   const { themes } = useThemes()
@@ -111,7 +111,7 @@ export default function Home() {
   const { timeEntries, loading: entriesLoading, refetch: refetchEntries } = useTimeEntries()
   const { createTimeEntry, updateTimeEntry, deleteTimeEntry } = useTimeEntryMutations()
 
-  // Transform API entries to local format for display
+  // Transformation des entrées API au format local pour l'affichage
   const localEntries = useMemo(() => {
     if (timeEntries && groups && projects && themes && tasks) {
       return timeEntries.map(entry => {
@@ -193,16 +193,16 @@ export default function Home() {
   }
 
   const addTimeEntry = async () => {
-    // Déterminer les dates cibles
+    // Détermination des dates cibles
     const targetDates = selectedDates.size > 0 ? Array.from(selectedDates) : (selectedDate ? [selectedDate] : [])
 
     if (targetDates.length === 0 || !newEntry.groupeId || !newEntry.projetId || !newEntry.taskId || newEntry.heures <= 0) {
       return
     }
 
-    // Ajouter l'entrée pour chaque date sélectionnée
+    // Ajout de l'entrée pour chaque date sélectionnée
     for (const targetDate of targetDates) {
-      // Vérifier si c'est un jour non travaillé
+      // Vérification si c'est un jour non travaillé
       const date = new Date(targetDate)
       if (isNonWorkingDay(date.getFullYear(), date.getMonth(), date.getDate())) {
         continue
@@ -210,7 +210,7 @@ export default function Home() {
 
       const createDto: CreateTimeEntryDto = {
         taskId: newEntry.taskId,
-        // userId removed - automatically assigned from authenticated user
+        // userId retiré - automatiquement assigné depuis l'utilisateur authentifié
         date: targetDate,
         duration: convertHoursToDuration(newEntry.heures),
         notes: newEntry.description
@@ -242,7 +242,7 @@ export default function Home() {
     const updateDto: UpdateTimeEntryDto = {
       id: editingEntry.id,
       taskId: editFormData.taskId,
-      // userId removed - automatically assigned from authenticated user
+      // userId retiré - automatiquement assigné depuis l'utilisateur authentifié
       date: editingEntry.date,
       duration: convertHoursToDuration(editFormData.heures),
       notes: editFormData.description
@@ -289,7 +289,7 @@ export default function Home() {
     setIsDeleteDialogOpen(false)
   }
 
-  // Multi-select functions
+  // Fonctions de multi-sélection
   const handleToggleDateSelection = (dateStr: string, ctrlKey: boolean) => {
     MultiSelectHelpers.toggleDateSelection(
       dateStr,
@@ -300,7 +300,7 @@ export default function Home() {
       setSelectedDate
     )
 
-    // Only open sheet if NOT in multi-select mode and NOT using modifier key
+    // Ouvrir le panneau latéral uniquement si PAS en mode multi-sélection et PAS de touche modificateur
     if (!isMultiSelectMode && !ctrlKey) {
       setIsSheetOpen(true)
     }
@@ -319,29 +319,29 @@ export default function Home() {
       return
     }
 
-    // 1. Find the earliest date in the source (copied) entries
+    // 1. Trouver la date la plus ancienne dans les entrées sources (copiées)
     const sourceDates = copiedEntries.map(e => new Date(e.date).getTime())
     const minSourceDate = new Date(Math.min(...sourceDates))
 
-    // 2. Determine target start points
-    // If multiple dates are selected, we treat EACH selected date as a "start point" for the paste pattern
+    // 2. Déterminer les points de départ cibles
+    // Si plusieurs dates sont sélectionnées, chaque date sélectionnée est un "point de départ" pour le collage
     const targetStartDates = Array.from(selectedDates).map(d => new Date(d))
 
     for (const targetStartDate of targetStartDates) {
       for (const entry of copiedEntries) {
-        // Calculate offset in days from the source start date
+        // Calcul du décalage en jours depuis la date de début source
         const entryDate = new Date(entry.date)
         const diffTime = entryDate.getTime() - minSourceDate.getTime()
         const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
 
-        // Calculate new date: Target Start + Offset
+        // Calcul de la nouvelle date : Début cible + Décalage
         const newDate = new Date(targetStartDate)
         newDate.setDate(newDate.getDate() + diffDays)
 
-        // Format as YYYY-MM-DD
+        // Formatage en YYYY-MM-DD
         const newDateStr = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
 
-        // Skip non-working days if needed (optional, but good for safety)
+        // Ignorer les jours non travaillés si nécessaire (optionnel, mais plus sûr)
         if (isNonWorkingDay(newDate.getFullYear(), newDate.getMonth(), newDate.getDate())) {
           continue
         }
@@ -463,15 +463,15 @@ export default function Home() {
                   const y = today.getFullYear()
                   const m = today.getMonth()
 
-                  // Set visible month/year to today
+                  // Définir le mois/année visible sur aujourd'hui
                   setSelectedYear(y)
                   setSelectedMonth(m)
 
-                  // Also set the selected date so the day is highlighted
+                  // Sélectionner également la date pour que le jour soit mis en évidence
                   const todayStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
                   setSelectedDate(todayStr)
 
-                  // If in week view, compute the week index so the week containing today is shown
+                  // Si en vue semaine, calculer l'index de la semaine pour afficher celle contenant aujourd'hui
                   if (viewMode === 'week') {
                     const firstDay = new Date(y, m, 1)
                     const firstDayOfWeek = (firstDay.getDay() + 6) % 7 // Lundi = 0
@@ -479,7 +479,7 @@ export default function Home() {
                     firstMonday.setDate(1 - firstDayOfWeek)
 
                     const startOfToday = new Date(y, m, today.getDate())
-                    // normalize times
+                    // normalisation des heures
                     firstMonday.setHours(0, 0, 0, 0)
                     startOfToday.setHours(0, 0, 0, 0)
 
@@ -508,11 +508,11 @@ export default function Home() {
                 isMultiSelectMode={isMultiSelectMode}
               />
 
-              {/* Multi-select control panel */}
+              {/* Panneau de contrôle multi-sélection */}
               <div className="mt-4 border-t pt-4">
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
 
-                  {/* Left: Selection Controls */}
+                  {/* Gauche : Contrôles de sélection */}
                   <div className="flex items-center gap-3 w-full lg:w-auto">
                     <Button
                       variant={isMultiSelectMode ? "default" : "outline"}
@@ -553,7 +553,7 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* Right: Actions */}
+                  {/* Droite : Actions */}
                   <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
                     {selectedDates.size > 0 && (
                       <Button
@@ -614,7 +614,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Instructions / Feedback */}
+                {/* Instructions / Retours */}
                 <div className="mt-3 space-y-2">
                   {isMultiSelectMode && selectedDates.size === 0 && (
                     <p className="text-xs text-indigo-600 flex items-center gap-1.5">
@@ -656,7 +656,7 @@ export default function Home() {
           />
 
 
-          {/* Edit Time Entry Dialog */}
+          {/* Dialogue de modification d'entrée de temps */}
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
@@ -765,7 +765,7 @@ export default function Home() {
             </DialogContent>
           </Dialog>
 
-          {/* Delete Confirmation Dialog */}
+          {/* Dialogue de confirmation de suppression */}
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -785,7 +785,7 @@ export default function Home() {
             </AlertDialogContent>
           </AlertDialog>
 
-          {/* Export PDF Dialog */}
+          {/* Dialogue d'export PDF */}
           <ExportDialog
             open={isExportDialogOpen}
             onOpenChange={setIsExportDialogOpen}

@@ -37,7 +37,7 @@ public class AuthService : IAuthService
     {
         try
         {
-            // Récupérer l'utilisateur par email (optimisé - requête DB directe)
+            // Récupération de l'utilisateur par email (optimisé)
             var user = await _adminUow.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDto.Email.ToLower());
 
             if (user == null || !user.IsActive)
@@ -46,7 +46,7 @@ public class AuthService : IAuthService
                 return null;
             }
 
-            // Vérifier le mot de passe avec BCrypt
+            // Vérification du mot de passe (BCrypt)
             if (!_passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash))
             {
                 _logger.LogWarning("Invalid password for email: {Email}", loginDto.Email);
@@ -57,7 +57,7 @@ public class AuthService : IAuthService
             var token = GenerateJwtToken(user);
             var refreshTokenValue = GenerateRefreshToken();
 
-            // Créer et stocker le refresh token en base de données
+            // Création et stockage du refresh token
             var refreshToken = new RefreshToken
             {
                 Token = refreshTokenValue,
@@ -100,7 +100,7 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto?> RefreshTokenAsync(string refreshTokenValue)
     {
-        // Trouver le refresh token en base de données
+        // Recherche du refresh token en base
         var refreshTokens = await _adminUow.RefreshTokens.FindAsync(rt => rt.Token == refreshTokenValue);
         var refreshToken = refreshTokens.FirstOrDefault();
 
@@ -110,7 +110,7 @@ public class AuthService : IAuthService
             return null;
         }
 
-        // Récupérer l'utilisateur
+        // Récupération de l'utilisateur associé
         var user = await _adminUow.Users.GetByIdAsync(refreshToken.UserId);
         if (user == null || !user.IsActive)
         {
@@ -118,12 +118,12 @@ public class AuthService : IAuthService
             return null;
         }
 
-        // Révoquer l'ancien token
+        // Révocation de l'ancien token
         refreshToken.RevokedAt = DateTime.UtcNow;
         refreshToken.RevokedByIp = GetIpAddress();
         refreshToken.ReasonRevoked = "Replaced by new token";
 
-        // Générer un nouveau token JWT et refresh token
+        // Génération des nouveaux tokens
         var newJwtToken = GenerateJwtToken(user);
         var newRefreshTokenValue = GenerateRefreshToken();
 

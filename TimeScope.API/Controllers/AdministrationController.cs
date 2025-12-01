@@ -20,6 +20,9 @@ public class AdministrationController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Récupère un résumé de l'état des bases de données
+    /// </summary>
     [HttpGet("databases/summary")]
     public async Task<ActionResult<DatabasesSummary>> GetDatabasesSummary()
     {
@@ -35,6 +38,9 @@ public class AdministrationController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Teste la connexion à toutes les bases de données configurées
+    /// </summary>
     [HttpGet("databases/test-connections")]
     public async Task<ActionResult<ConnectionTestResult>> TestDatabaseConnections()
     {
@@ -50,6 +56,9 @@ public class AdministrationController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Nettoie définitivement les enregistrements supprimés (soft delete)
+    /// </summary>
     [HttpPost("cleanup/soft-deleted")]
     public async Task<ActionResult<CleanupResult>> CleanupSoftDeleted()
     {
@@ -68,6 +77,9 @@ public class AdministrationController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère les statistiques d'utilisation du système
+    /// </summary>
     [HttpGet("usage/statistics")]
     public async Task<ActionResult<UsageStatistics>> GetUsageStatistics()
     {
@@ -83,6 +95,9 @@ public class AdministrationController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Exporte les données système pour analyse
+    /// </summary>
     [HttpGet("export/system-data")]
     public async Task<ActionResult<ExportResult>> ExportSystemData()
     {

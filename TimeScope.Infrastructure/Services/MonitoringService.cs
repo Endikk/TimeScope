@@ -18,7 +18,7 @@ public class MonitoringService : IMonitoringService
     public MonitoringService(ILogger<MonitoringService> logger)
     {
         _logger = logger;
-        // Auto-detect Docker socket based on OS
+        // Détection automatique du socket Docker selon l'OS
         var dockerUri = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? new Uri("npipe://./pipe/docker_engine")
             : new Uri("unix:///var/run/docker.sock");
@@ -57,36 +57,38 @@ public class MonitoringService : IMonitoringService
                     var sw = Stopwatch.StartNew();
                     try
                     {
-                        // Get stats (stream=false for snapshot)
-                        // Add timeout to prevent hanging
-                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)); // Increased timeout slightly
-                        var statsStream = await _dockerClient.Containers.GetContainerStatsAsync(container.ID, new ContainerStatsParameters { Stream = false }, cts.Token);
+                        // Récupération des stats (stream=false pour un instantané)
+                        // Ajout d'un timeout pour éviter le blocage
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        
+                        // Utilisation de la nouvelle signature avec IProgress pour récupérer les stats typées
+                        ContainerStatsResponse? stats = null;
+                        var progress = new Progress<ContainerStatsResponse>(s => stats = s);
+                        
+                        await _dockerClient.Containers.GetContainerStatsAsync(
+                            container.ID, 
+                            new ContainerStatsParameters { Stream = false }, 
+                            progress,
+                            cts.Token);
 
-                        using (var reader = new StreamReader(statsStream))
+                        if (stats != null)
                         {
-                            var json = await reader.ReadToEndAsync();
-                            // Use Newtonsoft.Json for correct deserialization of Docker models
-                            var stats = JsonConvert.DeserializeObject<ContainerStatsResponse>(json);
+                            // Calcul de l'utilisation CPU
+                            var cpuDelta = stats.CPUStats.CPUUsage.TotalUsage - stats.PreCPUStats.CPUUsage.TotalUsage;
+                            var systemCpuDelta = stats.CPUStats.SystemUsage - stats.PreCPUStats.SystemUsage;
+                            var cpuCount = stats.CPUStats.OnlineCPUs > 0 ? (int)stats.CPUStats.OnlineCPUs : Environment.ProcessorCount;
 
-                            if (stats != null)
+                            if (systemCpuDelta > 0 && cpuDelta > 0)
                             {
-                                // Calculate CPU Usage
-                                var cpuDelta = stats.CPUStats.CPUUsage.TotalUsage - stats.PreCPUStats.CPUUsage.TotalUsage;
-                                var systemCpuDelta = stats.CPUStats.SystemUsage - stats.PreCPUStats.SystemUsage;
-                                var cpuCount = stats.CPUStats.OnlineCPUs > 0 ? (int)stats.CPUStats.OnlineCPUs : Environment.ProcessorCount;
+                                containerMetric.CpuUsage = (double)cpuDelta / systemCpuDelta * cpuCount * 100.0;
+                            }
 
-                                if (systemCpuDelta > 0 && cpuDelta > 0)
-                                {
-                                    containerMetric.CpuUsage = (double)cpuDelta / systemCpuDelta * cpuCount * 100.0;
-                                }
-
-                                // Calculate Memory Usage
-                                containerMetric.MemoryUsage = (long)stats.MemoryStats.Usage;
-                                containerMetric.MemoryLimit = (long)stats.MemoryStats.Limit;
-                                if (containerMetric.MemoryLimit > 0)
-                                {
-                                    containerMetric.MemoryUsagePercent = (double)containerMetric.MemoryUsage / containerMetric.MemoryLimit * 100.0;
-                                }
+                            // Calcul de l'utilisation Mémoire
+                            containerMetric.MemoryUsage = (long)stats.MemoryStats.Usage;
+                            containerMetric.MemoryLimit = (long)stats.MemoryStats.Limit;
+                            if (containerMetric.MemoryLimit > 0)
+                            {
+                                containerMetric.MemoryUsagePercent = (double)containerMetric.MemoryUsage / containerMetric.MemoryLimit * 100.0;
                             }
                         }
                     }
@@ -114,7 +116,7 @@ public class MonitoringService : IMonitoringService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching Docker metrics");
-            // Return empty metrics if Docker is not available
+            // Retourne des métriques vides si Docker n'est pas disponible
             return new DockerMetrics { Timestamp = DateTime.UtcNow };
         }
     }

@@ -20,8 +20,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère tous les utilisateurs depuis la base Admin
-    /// Accessible par Admin et Manager
+    /// Liste tous les utilisateurs (Admin/Manager uniquement)
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,Manager")]
@@ -40,8 +39,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère un utilisateur par son ID depuis la base Admin
-    /// Accessible par tous les utilisateurs authentifiés
+    /// Récupère un utilisateur spécifique
     /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<User>> GetUser(Guid id)
@@ -65,8 +63,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Crée un nouvel utilisateur dans la base Admin
-    /// Accessible uniquement par Admin
+    /// Crée un nouvel utilisateur (Admin uniquement)
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -111,8 +108,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Met à jour un utilisateur existant dans la base Admin
-    /// Accessible par Admin et Manager
+    /// Met à jour un utilisateur (Admin/Manager uniquement)
     /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Manager")]
@@ -165,8 +161,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Supprime (soft delete) un utilisateur de la base Admin
-    /// Accessible uniquement par Admin
+    /// Supprime un utilisateur (Admin uniquement)
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
@@ -193,12 +188,18 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Change le mot de passe d'un utilisateur
-    /// Accessible par l'utilisateur lui-même
+    /// Change le mot de passe de l'utilisateur
     /// </summary>
     [HttpPost("{id}/change-password")]
     public async Task<ActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto dto)
     {
+        // Vérification de sécurité : on ne peut changer que son propre mot de passe
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
         try
         {
             var command = new ChangePasswordCommand
@@ -237,8 +238,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère les statistiques d'activité d'un utilisateur
-    /// Accessible par tous les utilisateurs authentifiés
+    /// Statistiques d'activité de l'utilisateur
     /// </summary>
     [HttpGet("{id}/stats")]
     public async Task<ActionResult<UserStatsDto>> GetUserStats(Guid id)
@@ -262,11 +262,18 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Upload de l'avatar de l'utilisateur (stocké en base64)
+    /// Met à jour l'avatar
     /// </summary>
     [HttpPost("{id}/avatar")]
     public async Task<ActionResult<User>> UploadAvatar(Guid id, IFormFile avatar)
     {
+        // Vérification : modification de son propre profil uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
         try
         {
             if (avatar == null || avatar.Length == 0)
@@ -312,11 +319,18 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Upload de la bannière de l'utilisateur (stockée en base64)
+    /// Met à jour la bannière
     /// </summary>
     [HttpPost("{id}/banner")]
     public async Task<ActionResult<User>> UploadBanner(Guid id, IFormFile banner)
     {
+        // Vérification : modification de son propre profil uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
         try
         {
             if (banner == null || banner.Length == 0)
@@ -362,11 +376,18 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Supprime l'avatar de l'utilisateur
+    /// Supprime l'avatar
     /// </summary>
     [HttpDelete("{id}/avatar")]
     public async Task<ActionResult<User>> DeleteAvatar(Guid id)
     {
+        // Vérification : modification de son propre profil uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
         try
         {
             var user = await _userService.DeleteAvatarAsync(id);
@@ -388,11 +409,18 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Supprime la bannière de l'utilisateur
+    /// Supprime la bannière
     /// </summary>
     [HttpDelete("{id}/banner")]
     public async Task<ActionResult<User>> DeleteBanner(Guid id)
     {
+        // Vérification : modification de son propre profil uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
         try
         {
             var user = await _userService.DeleteBannerAsync(id);
