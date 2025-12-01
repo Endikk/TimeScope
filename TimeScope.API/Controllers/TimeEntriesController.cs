@@ -19,6 +19,9 @@ public class TimeEntriesController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Liste les entrées de temps (filtrage possible)
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TimeEntryDto>>> GetAllTimeEntries(
         [FromQuery] Guid? userId = null,
@@ -26,6 +29,15 @@ public class TimeEntriesController : ControllerBase
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
+        // Sécurité : Si on filtre par userId, on vérifie que c'est bien l'utilisateur courant ou un admin
+        if (userId.HasValue)
+        {
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (currentUserId != null && userId.ToString() != currentUserId && !User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            {
+                return Forbid();
+            }
+        }
         try
         {
             var filter = new TimeEntryFilter
@@ -62,6 +74,9 @@ public class TimeEntriesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère une entrée de temps spécifique
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<TimeEntryDto>> GetTimeEntry(Guid id)
     {
@@ -98,6 +113,9 @@ public class TimeEntriesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Crée une nouvelle entrée de temps
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<TimeEntryDto>> CreateTimeEntry([FromBody] CreateTimeEntryDto dto)
     {
@@ -143,6 +161,9 @@ public class TimeEntriesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Met à jour une entrée de temps
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTimeEntry(Guid id, [FromBody] UpdateTimeEntryDto dto)
     {
@@ -181,6 +202,9 @@ public class TimeEntriesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Supprime une entrée de temps
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTimeEntry(Guid id)
     {

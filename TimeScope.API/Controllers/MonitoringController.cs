@@ -18,6 +18,9 @@ public class MonitoringController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Récupère les métriques système actuelles (CPU, RAM, Disque)
+    /// </summary>
     [HttpGet("metrics")]
     public ActionResult<SystemMetrics> GetSystemMetrics()
     {
@@ -33,6 +36,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Vérifie l'état de santé global de l'application
+    /// </summary>
     [HttpGet("health")]
     public ActionResult<HealthStatus> GetHealthStatus()
     {
@@ -48,6 +54,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère le temps de fonctionnement de l'application
+    /// </summary>
     [HttpGet("uptime")]
     public ActionResult<UptimeInfo> GetUptime()
     {
@@ -63,6 +72,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Informations sur l'environnement d'exécution
+    /// </summary>
     [HttpGet("environment")]
     public ActionResult<EnvironmentInfo> GetEnvironmentInfo()
     {
@@ -78,6 +90,9 @@ public class MonitoringController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Données de diagnostic détaillées (Threads, Handles, Mémoire)
+    /// </summary>
     [HttpGet("diagnostics")]
     public ActionResult<DiagnosticsInfo> GetDiagnostics()
     {
@@ -90,6 +105,83 @@ public class MonitoringController : ControllerBase
         {
             _logger.LogError(ex, "Error retrieving diagnostics");
             return StatusCode(500, new { message = "An error occurred while retrieving diagnostics" });
+        }
+    }
+
+    /// <summary>
+    /// Informations complètes sur le système
+    /// </summary>
+    [HttpGet("info")]
+    public ActionResult<SystemInfo> GetSystemInfo()
+    {
+        try
+        {
+            var info = _monitoringService.GetSystemInfo();
+            return Ok(info);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving system info");
+            return StatusCode(500, new { message = "An error occurred while retrieving system info" });
+        }
+    }
+
+    /// <summary>
+    /// Récupère les derniers logs de l'application
+    /// </summary>
+    [HttpGet("logs")]
+    public ActionResult<LogsResponse> GetLogs([FromQuery] int limit = 100)
+    {
+        try
+        {
+            var logs = _monitoringService.GetLogs(limit);
+            return Ok(logs);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving logs");
+            return StatusCode(500, new { message = "An error occurred while retrieving logs" });
+        }
+    }
+    /// <summary>
+    /// Flux SSE (Server-Sent Events) pour le monitoring en temps réel
+    /// </summary>
+    [HttpGet("stream")]
+    [Produces("text/event-stream")]
+    public async Task StreamMonitoring(CancellationToken cancellationToken)
+    {
+        Response.Headers.Append("Content-Type", "text/event-stream");
+        Response.Headers.Append("Cache-Control", "no-cache");
+        Response.Headers.Append("Connection", "keep-alive");
+
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var systemMetrics = _monitoringService.GetSystemMetrics();
+                var dockerMetrics = await _monitoringService.GetDockerMetricsAsync();
+                
+                var data = new
+                {
+                    system = systemMetrics,
+                    docker = dockerMetrics
+                };
+
+                var options = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(data, options);
+                await Response.WriteAsync($"data: {json}\n\n", cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+
+                await Task.Delay(1000, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Client disconnected
         }
     }
 }

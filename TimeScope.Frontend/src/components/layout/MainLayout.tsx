@@ -15,7 +15,7 @@ import { ProfileDropdown } from "@/components/ui/profile-dropdown"
 export function MainLayout() {
   const location = useLocation()
 
-  // Generate breadcrumbs from current path
+  // Génération du fil d'ariane depuis le chemin actuel
   const generateBreadcrumbs = () => {
     const paths = location.pathname.split("/").filter(Boolean)
 

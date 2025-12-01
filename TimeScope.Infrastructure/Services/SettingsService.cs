@@ -14,7 +14,7 @@ public class SettingsService : ISettingsService
 
     public async Task<AppSetting> CreateSettingAsync(CreateSettingCommand command)
     {
-        // Règles métier : validation
+        // Validation des règles métier
         if (string.IsNullOrWhiteSpace(command.Key))
         {
             throw new ArgumentException("Setting key is required");
@@ -30,7 +30,7 @@ public class SettingsService : ISettingsService
             throw new ArgumentException("Setting category is required");
         }
 
-        // Vérifier si la clé existe déjà
+        // Vérification de l'unicité de la clé
         var allSettings = await _adminUow.AppSettings.GetAllAsync();
         var existing = allSettings.FirstOrDefault(s => s.Key == command.Key && !s.IsDeleted);
         
@@ -65,7 +65,7 @@ public class SettingsService : ISettingsService
             throw new KeyNotFoundException($"Setting with key '{key}' not found");
         }
 
-        // Mise à jour conditionnelle
+        // Mise à jour conditionnelle des valeurs
         if (!string.IsNullOrWhiteSpace(command.Value))
         {
             setting.Value = command.Value.Trim();
@@ -109,7 +109,7 @@ public class SettingsService : ISettingsService
             return false;
         }
 
-        // Soft delete
+        // Suppression logique (Soft delete)
         setting.IsDeleted = true;
         setting.UpdatedAt = DateTime.UtcNow;
 
@@ -160,14 +160,14 @@ public class SettingsService : ISettingsService
 
     public async Task<int> ResetToDefaultsAsync()
     {
-        // Supprimer tous les paramètres existants (hard delete)
+        // Suppression de tous les paramètres existants (suppression physique)
         var allSettings = await _adminUow.AppSettings.GetAllAsync();
         foreach (var setting in allSettings)
         {
             await _adminUow.AppSettings.DeleteAsync(setting.Id);
         }
 
-        // Ajouter les paramètres par défaut
+        // Ajout des paramètres par défaut
         var defaultSettings = GetDefaultSettings();
         foreach (var setting in defaultSettings)
         {
@@ -208,6 +208,151 @@ public class SettingsService : ISettingsService
                 Category = "Application",
                 Description = "Default application language",
                 DataType = "string",
+                IsPublic = true
+            },
+            // Autorisations par défaut pour les employés
+            new AppSetting
+            {
+                Key = "allowed.profile.allowProfilePicture",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure profile picture visibility",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.profile.allowShowEmail",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure email visibility",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.profile.allowShowPhone",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure phone visibility",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowEmailOnTaskAssign",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure task assignment notifications",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowEmailOnTaskUpdate",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure task update notifications",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowEmailOnMention",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure mention notifications",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowDesktopNotifications",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure desktop notifications",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.notifications.allowSummaryFrequency",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure summary frequency",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.appearance.allowTheme",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change theme",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.appearance.allowColorScheme",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change color scheme",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.appearance.allowCompactView",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to enable compact view",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.appearance.allowShowAvatars",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to configure avatar display",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.regional.allowLanguage",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change language",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.regional.allowTimezone",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change timezone",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.regional.allowDateFormat",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change date format",
+                DataType = "boolean",
+                IsPublic = true
+            },
+            new AppSetting
+            {
+                Key = "allowed.regional.allowTimeFormat",
+                Value = "true",
+                Category = "allowed",
+                Description = "Allow employees to change time format",
+                DataType = "boolean",
                 IsPublic = true
             },
             new AppSetting

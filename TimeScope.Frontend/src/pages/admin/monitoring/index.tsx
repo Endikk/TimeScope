@@ -1,25 +1,36 @@
-﻿import { useMonitoring } from '@/lib/hooks/use-monitoring';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { useMonitoring } from '@/lib/hooks/use-monitoring';
+import { MonitoringHeader, MetricsCard, DockerStats, ContainerList } from './components';
+import { Badge } from '@/components/ui/badge';
 
 export default function MonitoringPage() {
-  const { metrics, refetchAll } = useMonitoring(true);
-  
+  const { metrics, docker, isStreaming, refetchAll } = useMonitoring(true, true);
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Monitoring Système</h1>
-        <Button onClick={refetchAll}><RefreshCw className="mr-2 h-4 w-4" />Actualiser</Button>
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 bg-background min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <MonitoringHeader onRefresh={refetchAll} />
+        {isStreaming && (
+          <Badge variant="outline" className="w-fit animate-pulse text-green-600 border-green-600 bg-green-50 dark:bg-green-950/20 px-3 py-1">
+            <span className="mr-2">●</span> Live Monitoring
+          </Badge>
+        )}
       </div>
-      <Card>
-        <CardHeader><CardTitle>Métriques Système</CardTitle></CardHeader>
-        <CardContent>
-          {metrics.loading ? <p>Chargement...</p> : metrics.metrics ? (
-            <div><p>CPU: {metrics.metrics.cpuUsage.toFixed(2)}%</p><p>Memory: {metrics.metrics.memoryUsed} MB</p></div>
-          ) : <p>Aucune donnée</p>}
-        </CardContent>
-      </Card>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          <h3 className="text-lg font-semibold tracking-tight">System Resources</h3>
+          <MetricsCard loading={metrics.loading} metrics={metrics.metrics} />
+        </div>
+        <div className="space-y-6">
+          <h3 className="text-lg font-semibold tracking-tight">Docker Infrastructure</h3>
+          <DockerStats loading={!docker} metrics={docker} />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold tracking-tight">Container Details</h3>
+        <ContainerList containers={docker?.containers || []} />
+      </div>
     </div>
   );
 }

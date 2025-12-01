@@ -30,86 +30,99 @@ interface ExportPDFOptions {
   groupId: string
 }
 
-// Couleurs du thème TimeScope
+// Nouvelle palette de couleurs plus moderne (Slate / Blue)
 const COLORS = {
-  primary: [59, 130, 246] as [number, number, number],      // Bleu principal
-  primaryDark: [37, 99, 235] as [number, number, number],   // Bleu foncé
-  success: [34, 197, 94] as [number, number, number],        // Vert
-  gray: [107, 114, 128] as [number, number, number],         // Gris
-  lightGray: [243, 244, 246] as [number, number, number],    // Gris clair
-  white: [255, 255, 255] as [number, number, number],        // Blanc
-  text: [17, 24, 39] as [number, number, number]             // Texte principal
+  primary: [15, 23, 42] as [number, number, number],       // Slate 900 (Header bg)
+  accent: [59, 130, 246] as [number, number, number],      // Blue 500 (Highlights)
+  secondary: [100, 116, 139] as [number, number, number],  // Slate 500 (Subtitles)
+  text: [51, 65, 85] as [number, number, number],          // Slate 700 (Body text)
+  lightBg: [248, 250, 252] as [number, number, number],    // Slate 50 (Alternating rows)
+  border: [226, 232, 240] as [number, number, number],     // Slate 200 (Borders)
+  white: [255, 255, 255] as [number, number, number],
+  success: [16, 185, 129] as [number, number, number]      // Emerald 500
+}
+
+interface LogoInfo {
+  dataUrl: string
+  width: number
+  height: number
+  aspectRatio: number
 }
 
 export async function exportToPDF(options: ExportPDFOptions): Promise<void> {
   const { entries, groups, monthName, year, groupId } = options
 
   const doc = new jsPDF()
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
 
   // Helper: fetch an SVG from public path and rasterize to PNG dataURL
-  async function svgUrlToPngDataUrl(svgUrl: string, targetWidth: number, targetHeight: number): Promise<string> {
-    try {
-      const response = await fetch(svgUrl)
-      if (!response.ok) throw new Error('SVG fetch failed')
-      const svgText = await response.text()
+  // Also returns dimensions to help with aspect ratio
+  async function svgUrlToPngDataUrl(svgUrl: string): Promise<LogoInfo> {
+    const response = await fetch(svgUrl)
+    if (!response.ok) throw new Error('SVG fetch failed')
+    const svgText = await response.text()
 
-      // Create a blob URL for the SVG and draw it to a canvas
-      const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' })
-      const url = URL.createObjectURL(svgBlob)
+    const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
 
-      return await new Promise<string>((resolve, reject) => {
-        const img = new Image()
-        // Important for CORS; public assets should be same-origin in this app
-        img.crossOrigin = 'anonymous'
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas')
-            canvas.width = targetWidth
-            canvas.height = targetHeight
-            const ctx = canvas.getContext('2d')!
-            // optional background white
-            ctx.fillStyle = 'white'
-            ctx.fillRect(0, 0, canvas.width, canvas.height)
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-            URL.revokeObjectURL(url)
-            resolve(canvas.toDataURL('image/png'))
-          } catch (err) {
-            URL.revokeObjectURL(url)
-            reject(err)
-          }
-        }
-        img.onerror = (e) => {
+    return await new Promise<LogoInfo>((resolve, reject) => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => {
+        try {
+          // We use a high resolution canvas for good quality
+          const scale = 4 // Higher scale for better quality
+          const width = img.width * scale
+          const height = img.height * scale
+
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, width, height)
+
           URL.revokeObjectURL(url)
-          reject(e)
+          resolve({
+            dataUrl: canvas.toDataURL('image/png'),
+            width: img.width,
+            height: img.height,
+            aspectRatio: img.width / img.height
+          })
+        } catch (err) {
+          URL.revokeObjectURL(url)
+          reject(err)
         }
-        img.src = url
-      })
-    } catch (err) {
-      // propagate so caller can fallback
-      throw err
-    }
+      }
+      img.onerror = (e) => {
+        URL.revokeObjectURL(url)
+        reject(e)
+      }
+      img.src = url
+    })
   }
 
-  // Try to rasterize the SVG logo from public assets; fallback to text if it fails
-  let logoDataUrl: string | null = null
+  let logoInfo: LogoInfo | null = null
   try {
-    logoDataUrl = await svgUrlToPngDataUrl('/assets/images/1.svg', 300, 90)
-  } catch (err) {
-    logoDataUrl = null
+    logoInfo = await svgUrlToPngDataUrl('/assets/images/1.svg')
+  } catch {
+    logoInfo = null
   }
 
-  // Grouper par date
-  const entriesByDate = entries.reduce((acc, entry) => {
-    if (!acc[entry.date]) {
-      acc[entry.date] = []
+  // Grouper par Thème
+  const entriesByTheme = entries.reduce((acc, entry) => {
+    const themeName = entry.themeName || 'Sans Thème'
+    if (!acc[themeName]) {
+      acc[themeName] = []
     }
-    acc[entry.date].push(entry)
+    acc[themeName].push(entry)
     return acc
-  }, {} as Record<string, typeof entries>)
+  }, {} as Record<string, LocalTimeEntry[]>)
 
-  // Calculer les statistiques
+  // Calculer les statistiques globales
   const totalHours = entries.reduce((sum, entry) => sum + entry.heures, 0)
-  const workingDaysCount = Object.keys(entriesByDate).length
+  const uniqueDates = new Set(entries.map(e => e.date))
+  const workingDaysCount = uniqueDates.size
 
   // Calculer la répartition par projet
   const projectStats = entries.reduce((acc, entry) => {
@@ -121,380 +134,363 @@ export async function exportToPDF(options: ExportPDFOptions): Promise<void> {
     return acc
   }, {} as Record<string, number>)
 
-  // page dimensions
-  const pageWidth = doc.internal.pageSize.getWidth()
-  const pageHeight = doc.internal.pageSize.getHeight()
-
-  // Get dates from entries
-  const dates = Object.keys(entriesByDate).sort()
+  const dates = entries.map(e => e.date).sort()
   const firstDate = dates.length > 0 ? new Date(dates[0]) : new Date()
   const lastDate = dates.length > 0 ? new Date(dates[dates.length - 1]) : new Date()
 
-  let currentY = 20
-
   // =====================================
-  // PAGE 1 - INFORMATIONS GÉNÉRALES
+  // HEADER HELPER
   // =====================================
+  const drawHeader = () => {
+    // Draw top colored header
+    doc.setFillColor(...COLORS.primary)
+    doc.rect(0, 0, pageWidth, 30, 'F') // Reduced height slightly
 
-  // Header logo
-  if (logoDataUrl) {
-    try {
-      doc.addImage(logoDataUrl, 'PNG', 20, 15, 50, 18)
-    } catch (e) {
+    // Logo
+    if (logoInfo) {
+      const logoH = 15
+      const logoW = logoH * logoInfo.aspectRatio
+      doc.addImage(logoInfo.dataUrl, 'PNG', 15, 7.5, logoW, logoH)
+    } else {
       doc.setFontSize(18)
-      doc.setTextColor(...COLORS.text)
-      doc.text('TimeScope', 20, 25)
+      doc.setTextColor(...COLORS.white)
+      doc.setFont('helvetica', 'bold')
+      doc.text('TimeScope', 20, 20)
     }
-  } else {
-    doc.setFontSize(18)
-    doc.setTextColor(...COLORS.text)
-    doc.text('TimeScope', 20, 25)
+
+    // Document Title in Header
+    doc.setFontSize(16)
+    doc.setTextColor(...COLORS.white)
+    doc.setFont('helvetica', 'bold')
+    const title = "COMPTE RENDU D'ACTIVITÉ"
+    doc.text(title, pageWidth - 20, 15, { align: 'right' })
+
+    doc.setFontSize(10)
+    doc.setTextColor(200, 200, 200)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`${monthName} ${year}`, pageWidth - 20, 22, { align: 'right' })
   }
 
-  currentY = 50
+  const drawFooter = (pageNumber: number) => {
+    const footerY = pageHeight - 10
+    doc.setFontSize(8)
+    doc.setTextColor(...COLORS.secondary)
+    const footerText = `Généré par TimeScope le ${new Date().toLocaleDateString('fr-FR')}`
+    doc.text(footerText, 20, footerY)
+    doc.text(`Page ${pageNumber}`, pageWidth - 20, footerY, { align: 'right' })
+  }
 
-  // Blue bar (full width, prominent)
-  doc.setFillColor(...COLORS.primary)
-  doc.rect(20, currentY, pageWidth - 40, 8, 'F')
-  currentY += 20
+  // =====================================
+  // PAGE 1: GLOBAL SUMMARY
+  // =====================================
 
-  // Title
-  doc.setFontSize(20)
-  doc.setTextColor(...COLORS.text)
-  doc.text(`Compte Rendu d'Activité`, pageWidth / 2, currentY, { align: 'center' })
-  currentY += 10
+  drawHeader()
 
-  doc.setFontSize(13)
-  doc.setTextColor(...COLORS.gray)
-  doc.text(`${monthName} ${year}`, pageWidth / 2, currentY, { align: 'center' })
-  currentY += 20
+  let currentY = 50
 
-  // Section 1: Informations générales
-  doc.setFontSize(11)
+  // SECTION 1: INFORMATIONS
+  doc.setFontSize(14)
   doc.setTextColor(...COLORS.primary)
   doc.setFont('helvetica', 'bold')
-  doc.text('1. Informations générales', 20, currentY)
-  doc.setFont('helvetica', 'normal')
-  currentY += 10
+  doc.text('INFORMATIONS GÉNÉRALES', 20, currentY)
+
+  doc.setDrawColor(...COLORS.accent)
+  doc.setLineWidth(1)
+  doc.line(20, currentY + 2, 95, currentY + 2)
+
+  currentY += 15
+
+  // Info Grid
+  const infoStartX = 20
+  const labelWidth = 50
+  const valueStartX = infoStartX + labelWidth
+  const rowHeight = 10
 
   doc.setFontSize(10)
+
+  // Row 1: Employé
+  doc.setTextColor(...COLORS.secondary)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Employé :', infoStartX, currentY)
   doc.setTextColor(...COLORS.text)
+  doc.setFont('helvetica', 'normal')
+  doc.text('___________________________________', valueStartX, currentY)
 
-  // Nom et prénom (à remplir manuellement)
-  doc.text('Nom et prénom de l\'employé : ___________________________________', 25, currentY)
-  currentY += 10
+  // Row 2: Période
+  currentY += rowHeight
+  doc.setTextColor(...COLORS.secondary)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Période :', infoStartX, currentY)
+  doc.setTextColor(...COLORS.text)
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Du ${firstDate.toLocaleDateString('fr-FR')} au ${lastDate.toLocaleDateString('fr-FR')}`, valueStartX, currentY)
 
-  // Période concernée
-  const periodText = `Période concernée : du ${firstDate.toLocaleDateString('fr-FR')} au ${lastDate.toLocaleDateString('fr-FR')}`
-  doc.text(periodText, 25, currentY)
-  currentY += 8
+  // Row 3: Groupe
+  currentY += rowHeight
+  doc.setTextColor(...COLORS.secondary)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Groupe / Société :', infoStartX, currentY)
+  doc.setTextColor(...COLORS.text)
+  doc.setFont('helvetica', 'normal')
+  const groupNameText = groupId !== 'all' ? (groups.find(g => g.id === groupId)?.name || 'N/A') : 'Tous les groupes'
+  doc.text(groupNameText, valueStartX, currentY)
 
-  // Date de rédaction
-  const redactionDate = `Date de rédaction : ${new Date().toLocaleDateString('fr-FR')}`
-  doc.text(redactionDate, 25, currentY)
-  currentY += 8
+  // Row 4: Date d'émission
+  currentY += rowHeight
+  doc.setTextColor(...COLORS.secondary)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Date d\'émission :', infoStartX, currentY)
+  doc.setTextColor(...COLORS.text)
+  doc.setFont('helvetica', 'normal')
+  doc.text(new Date().toLocaleDateString('fr-FR'), valueStartX, currentY)
 
-  // Société/Groupe
-  if (groupId !== 'all') {
-    const group = groups.find(g => g.id === groupId)
-    doc.text(`Société/Groupe : ${group?.name || 'N/A'}`, 25, currentY)
-  } else {
-    doc.text('Société/Groupe : Toutes les sociétés/groupes', 25, currentY)
-  }
-  currentY += 18
-
-  // Section 2: Commentaires / Observations
-  doc.setFontSize(11)
+  // SECTION 2: SYNTHÈSE (Visual Cards)
+  currentY += 25
+  doc.setFontSize(14)
   doc.setTextColor(...COLORS.primary)
   doc.setFont('helvetica', 'bold')
-  doc.text('2. Commentaires / Observations', 20, currentY)
-  doc.setFont('helvetica', 'normal')
-  currentY += 10
+  doc.text('SYNTHÈSE DU MOIS', 20, currentY)
+  doc.setDrawColor(...COLORS.accent)
+  doc.line(20, currentY + 2, 75, currentY + 2)
 
-  // Cadre blanc pour commentaires (plus grand)
-  doc.setDrawColor(...COLORS.gray)
-  doc.setFillColor(...COLORS.white)
-  doc.setLineWidth(0.5)
-  doc.roundedRect(25, currentY, pageWidth - 50, 60, 3, 3, 'FD')
+  currentY += 15
+
+  // Draw 3 cards
+  const cardWidth = (pageWidth - 40 - 10) / 3
+  const cardHeight = 25
+  let cardX = 20
+
+  // Card 1: Total Heures
+  doc.setFillColor(...COLORS.lightBg)
+  doc.setDrawColor(...COLORS.border)
+  doc.setLineWidth(0.1)
+  doc.roundedRect(cardX, currentY, cardWidth, cardHeight, 3, 3, 'FD')
+
   doc.setFontSize(8)
-  doc.setTextColor(150, 150, 150)
-  doc.text('(Espace réservé aux commentaires, observations ou remarques particulières)', 30, currentY + 8)
+  doc.setTextColor(...COLORS.secondary)
+  doc.text('TOTAL HEURES', cardX + 5, currentY + 8)
 
-  // Start table on a new page
-  doc.addPage()
-
-  // =====================================
-  // PAGE 2+ - TABLEAU DE SUIVI DU TEMPS
-  // =====================================
-
-  currentY = 80 // Start after the header that will be drawn by didDrawPage
-
-  // Préparer les données du tableau
-  const tableData = Object.entries(entriesByDate)
-    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-    .flatMap(([date, dateEntries]) =>
-      dateEntries.map((entry, index) => [
-        index === 0 ? new Date(date).toLocaleDateString('fr-FR', {
-          weekday: 'short',
-          day: '2-digit',
-          month: '2-digit'
-        }) : '',
-        entry.groupeName,
-        entry.projetName,
-        entry.taskName,
-        `${entry.heures.toFixed(1)}h`,
-        entry.description || '-'
-      ])
-    )
-
-  // Générer le tableau avec les couleurs du thème
-  autoTable(doc, {
-    startY: currentY,
-    head: [['Date', 'Groupe', 'Projet', 'Tâche', 'Heures', 'Description']],
-    body: tableData,
-    margin: { left: 20, right: 20 },
-    styles: {
-      fontSize: 8,
-      cellPadding: 4,
-      textColor: COLORS.text,
-      lineColor: [200, 200, 200],
-      lineWidth: 0.1
-    },
-    headStyles: {
-      fillColor: COLORS.primary,
-      textColor: COLORS.white,
-      fontStyle: 'bold',
-      halign: 'center',
-      fontSize: 9
-    },
-    alternateRowStyles: {
-      fillColor: [245, 247, 250]
-    },
-    columnStyles: {
-      0: { 
-        cellWidth: 24, 
-        fontStyle: 'bold', 
-        textColor: COLORS.primaryDark,
-        halign: 'center'
-      },
-      1: { cellWidth: 30, fontSize: 8 },
-      2: { cellWidth: 28, fontSize: 8 },
-      3: { cellWidth: 30, fontSize: 8 },
-      4: { 
-        cellWidth: 18, 
-        halign: 'center', 
-        fontStyle: 'bold', 
-        textColor: COLORS.success,
-        fontSize: 8
-      },
-      5: { cellWidth: 40, fontSize: 7 }
-    },
-    didParseCell: function(data) {
-      // Bordure gauche épaisse pour la colonne date avec date
-      if (data.column.index === 0 && data.cell.text[0] !== '' && data.section === 'body') {
-        data.cell.styles.lineWidth = 2
-        data.cell.styles.lineColor = COLORS.primary
-      }
-    }
-    ,
-    // draw header/footer on each page
-    didDrawPage: function(data) {
-      const pageNumber = data.pageNumber
-      const pageCount = doc.getNumberOfPages()
-
-      // For table pages (page 2 and onwards) show header
-      if (pageNumber >= 2) {
-        // Logo
-        if (logoDataUrl) {
-          try {
-            doc.addImage(logoDataUrl, 'PNG', 20, 15, 50, 18)
-          } catch (e) {
-            // fallback
-            doc.setFontSize(18)
-            doc.setTextColor(...COLORS.text)
-            doc.text('TimeScope', 20, 25)
-          }
-        } else {
-          doc.setFontSize(18)
-          doc.setTextColor(...COLORS.text)
-          doc.text('TimeScope', 20, 25)
-        }
-
-        // Blue bar
-        doc.setFillColor(...COLORS.primary)
-        doc.rect(20, 50, pageWidth - 40, 8, 'F')
-
-        // Section title
-        doc.setFontSize(11)
-        doc.setTextColor(...COLORS.primary)
-        doc.setFont('helvetica', 'bold')
-        doc.text('3. Tableau de suivi du temps', 20, 68)
-        doc.setFont('helvetica', 'normal')
-      }
-
-      // Footer for all pages
-      const footerY = pageHeight - 10
-      doc.setDrawColor(...COLORS.lightGray)
-      doc.setLineWidth(0.3)
-      doc.line(20, footerY - 5, pageWidth - 20, footerY - 5)
-
-      doc.setFontSize(7)
-      doc.setTextColor(...COLORS.gray)
-      const footerText = `Page ${pageNumber}/${pageCount} • Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
-      doc.text(footerText, pageWidth / 2, footerY, { align: 'center' })
-
-      doc.setFontSize(8)
-      doc.setTextColor(...COLORS.primary)
-      doc.text('TimeScope', pageWidth - 20, footerY, { align: 'right' })
-    }
-  })
-
-  // =====================================
-  // PAGE FINALE - SYNTHÈSE ET VALIDATION
-  // =====================================
-
-  // Ajouter une nouvelle page pour la synthèse et validation
-  doc.addPage()
-
-  currentY = 20
-
-  // Header logo
-  if (logoDataUrl) {
-    try {
-      doc.addImage(logoDataUrl, 'PNG', 20, 15, 50, 18)
-    } catch (e) {
-      doc.setFontSize(18)
-      doc.setTextColor(...COLORS.text)
-      doc.text('TimeScope', 20, 25)
-    }
-  } else {
-    doc.setFontSize(18)
-    doc.setTextColor(...COLORS.text)
-    doc.text('TimeScope', 20, 25)
-  }
-
-  currentY = 50
-
-  // Blue bar
-  doc.setFillColor(...COLORS.primary)
-  doc.rect(20, currentY, pageWidth - 40, 8, 'F')
-  currentY += 20
-
-  // Section 4: Synthèse du temps
-  doc.setFontSize(11)
-  doc.setTextColor(...COLORS.primary)
+  doc.setFontSize(14)
+  doc.setTextColor(...COLORS.accent)
   doc.setFont('helvetica', 'bold')
-  doc.text('4. Synthèse du temps', 20, currentY)
-  doc.setFont('helvetica', 'normal')
-  currentY += 12
+  doc.text(`${totalHours.toFixed(1)}h`, cardX + 5, currentY + 18)
 
-  // Stats box with rounded corners
-  doc.setFillColor(...COLORS.primary)
-  doc.roundedRect(25, currentY, pageWidth - 50, 35, 5, 5, 'F')
+  // Card 2: Jours Travaillés
+  cardX += cardWidth + 5
+  doc.setFillColor(...COLORS.lightBg)
+  doc.roundedRect(cardX, currentY, cardWidth, cardHeight, 3, 3, 'FD')
 
-  doc.setFontSize(10)
-  doc.setTextColor(...COLORS.white)
-  doc.text(`Total d'heures travaillées : ${totalHours.toFixed(1)}h`, 35, currentY + 12)
-  doc.text(`Nombre de jours travaillés : ${workingDaysCount}`, 35, currentY + 21)
-  doc.text(`Nombre d'entrées : ${entries.length}`, 35, currentY + 30)
-  currentY += 43
+  doc.setFontSize(8)
+  doc.setTextColor(...COLORS.secondary)
+  doc.setFont('helvetica', 'bold')
+  doc.text('JOURS TRAVAILLÉS', cardX + 5, currentY + 8)
 
-  // Répartition par projet
-  doc.setFontSize(9)
-  doc.setTextColor(...COLORS.text)
-  doc.text('Répartition par projet :', 25, currentY)
-  currentY += 6
+  doc.setFontSize(14)
+  doc.setTextColor(...COLORS.primary)
+  doc.text(`${workingDaysCount}`, cardX + 5, currentY + 18)
 
+  // Card 3: Total Entrées
+  cardX += cardWidth + 5
+  doc.setFillColor(...COLORS.lightBg)
+  doc.roundedRect(cardX, currentY, cardWidth, cardHeight, 3, 3, 'FD')
+
+  doc.setFontSize(8)
+  doc.setTextColor(...COLORS.secondary)
+  doc.setFont('helvetica', 'bold')
+  doc.text('TOTAL ENTRÉES', cardX + 5, currentY + 8)
+
+  doc.setFontSize(14)
+  doc.setTextColor(...COLORS.primary)
+  doc.text(`${entries.length}`, cardX + 5, currentY + 18)
+
+  currentY += cardHeight + 15
+
+  // SECTION 3: RÉPARTITION (Bar Chart)
   const projectEntries = Object.entries(projectStats)
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 10)
+    .slice(0, 10) // Top 10 projects
 
-  for (const [projectName, hours] of projectEntries) {
-    const percentage = ((hours / totalHours) * 100).toFixed(1)
-    doc.setFontSize(9)
-    doc.text(`• ${projectName} : ${hours.toFixed(1)}h (${percentage}%)`, 30, currentY)
-    currentY += 5
+  if (projectEntries.length > 0) {
+    doc.setFontSize(10)
+    doc.setTextColor(...COLORS.secondary)
+    doc.text('Répartition par projet', 20, currentY)
+    currentY += 8
+
+    const maxHours = projectEntries[0][1]
+
+    projectEntries.forEach(([name, hours]) => {
+      // Check for page overflow
+      if (currentY > pageHeight - 30) {
+        drawFooter(doc.getCurrentPageInfo().pageNumber)
+        doc.addPage()
+        drawHeader()
+        currentY = 50
+      }
+
+      // Label
+      doc.setFontSize(9)
+      doc.setTextColor(...COLORS.text)
+      doc.setFont('helvetica', 'normal')
+      const displayName = name.length > 25 ? name.substring(0, 23) + '...' : name
+      doc.text(displayName, 20, currentY + 4)
+
+      // Bar
+      const barX = 80
+      const barMaxW = pageWidth - 100
+      const barW = (hours / maxHours) * barMaxW
+
+      doc.setFillColor(...COLORS.accent)
+      doc.roundedRect(barX, currentY, barW, 5, 1, 1, 'F')
+
+      // Value
+      doc.setFontSize(8)
+      doc.setTextColor(...COLORS.secondary)
+      doc.text(`${hours.toFixed(1)}h`, barX + barW + 2, currentY + 4)
+
+      currentY += 8
+    })
   }
 
-  currentY += 8
+  drawFooter(doc.getCurrentPageInfo().pageNumber)
 
-  // Heures supplémentaires / congés
-  doc.setFontSize(9)
-  doc.text('Heures supplémentaires : ______________', 25, currentY)
-  currentY += 6
-  doc.text('Heures d\'absence / congés : ______________', 25, currentY)
-  currentY += 18
+  // =====================================
+  // PAGES 2+: THEMES
+  // =====================================
 
-  // Section 5: Validation
-  doc.setFontSize(11)
+  const themes = Object.keys(entriesByTheme).sort()
+
+  for (const theme of themes) {
+    doc.addPage()
+    // We want the header to be drawn on every page, including those added by autoTable.
+    // So we'll use didDrawPage for that.
+    // But for the FIRST page of the theme, we need to set the startY correctly.
+
+    // Let's manually draw the header for this first page of the theme
+    drawHeader()
+
+    currentY = 50
+
+    // Theme Title
+    doc.setFontSize(16)
+    doc.setTextColor(...COLORS.primary)
+    doc.setFont('helvetica', 'bold')
+    doc.text(`Thème : ${theme}`, 20, currentY)
+
+    // Theme Stats
+    const themeEntries = entriesByTheme[theme]
+    const themeHours = themeEntries.reduce((sum, e) => sum + e.heures, 0)
+
+    doc.setFontSize(10)
+    doc.setTextColor(...COLORS.secondary)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Total : ${themeHours.toFixed(1)} heures`, 20, currentY + 7)
+
+    currentY += 15
+
+    // Prepare table data for this theme
+    // Sort by date
+    const sortedEntries = themeEntries.sort((a, b) => a.date.localeCompare(b.date))
+
+    const tableData = sortedEntries.map(entry => [
+      new Date(entry.date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' }),
+      entry.projetName,
+      entry.taskName,
+      `${entry.heures.toFixed(1)}h`,
+      entry.description || ''
+    ])
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Date', 'Projet', 'Tâche', 'Durée', 'Description']],
+      body: tableData,
+      theme: 'grid',
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        textColor: COLORS.text,
+        lineColor: COLORS.border,
+        lineWidth: 0,
+        cellPadding: 4,
+      },
+      headStyles: {
+        fillColor: COLORS.lightBg,
+        textColor: COLORS.primary,
+        fontStyle: 'bold',
+        lineWidth: 0,
+        halign: 'left'
+      },
+      columnStyles: {
+        0: { cellWidth: 25, fontStyle: 'bold', textColor: COLORS.primary },
+        1: { cellWidth: 35 },
+        2: { cellWidth: 35 },
+        3: { cellWidth: 20, fontStyle: 'bold', textColor: COLORS.accent, halign: 'right' },
+        4: { cellWidth: 'auto' }
+      },
+      alternateRowStyles: {
+        fillColor: COLORS.white
+      },
+      didDrawCell: function (data) {
+        if (data.section === 'body') {
+          doc.setDrawColor(...COLORS.border)
+          doc.setLineWidth(0.1)
+          doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height)
+        }
+      },
+      didDrawPage: function (data) {
+        // Draw footer on every page
+        drawFooter(doc.getCurrentPageInfo().pageNumber)
+
+        // If this is a new page created by autoTable (not the one we added manually), draw header
+        if (data.pageNumber > 1 && data.cursor && data.cursor.y === data.settings.startY) {
+          drawHeader()
+        }
+      },
+      // Ensure enough margin for header
+      margin: { top: 40, bottom: 20 }
+    })
+  }
+
+  // =====================================
+  // SIGNATURE PAGE
+  // =====================================
+
+  doc.addPage()
+  drawHeader()
+
+  currentY = 50
+
+  doc.setFontSize(14)
   doc.setTextColor(...COLORS.primary)
   doc.setFont('helvetica', 'bold')
-  doc.text('5. Validation', 20, currentY)
-  doc.setFont('helvetica', 'normal')
-  currentY += 10
+  doc.text('VALIDATION ET SIGNATURES', 20, currentY)
+  doc.setDrawColor(...COLORS.accent)
+  doc.line(20, currentY + 2, 85, currentY + 2)
 
-  doc.setFontSize(9)
-  doc.setTextColor(...COLORS.text)
+  currentY += 20
 
-  // Deux colonnes pour les signatures
-  const col1X = 25
-  const col2X = pageWidth / 2 + 10
+  const boxWidth = (pageWidth - 60) / 2
+  const boxHeight = 50
 
-  doc.text('Signature de l\'employé :', col1X, currentY)
-  doc.text('Signature du supérieur :', col2X, currentY)
-  currentY += 3
-
-  // Cadres pour signatures
-  doc.setDrawColor(...COLORS.gray)
+  // Box 1: Employé
+  doc.setDrawColor(...COLORS.border)
   doc.setLineWidth(0.5)
-  doc.rect(col1X, currentY, 75, 22)
-  doc.rect(col2X, currentY, 75, 22)
-  currentY += 25
+  doc.rect(20, currentY, boxWidth, boxHeight)
 
-  doc.text('Date : ________________', col1X, currentY)
-  doc.text('Date : ________________', col2X, currentY)
+  doc.setFontSize(10)
+  doc.setTextColor(...COLORS.secondary)
+  doc.text('Signature de l\'employé', 25, currentY + 10)
+  doc.text('Date :', 25, currentY + boxHeight - 8)
 
-  // Footer pour la dernière page
-  const lastPageNumber = doc.getNumberOfPages()
-  const footerY = pageHeight - 10
-  doc.setDrawColor(...COLORS.lightGray)
-  doc.setLineWidth(0.3)
-  doc.line(20, footerY - 5, pageWidth - 20, footerY - 5)
+  // Box 2: Manager
+  doc.rect(20 + boxWidth + 20, currentY, boxWidth, boxHeight)
 
-  doc.setFontSize(7)
-  doc.setTextColor(...COLORS.gray)
-  const lastFooterText = `Page ${lastPageNumber}/${lastPageNumber} • Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
-  doc.text(lastFooterText, pageWidth / 2, footerY, { align: 'center' })
+  doc.text('Signature du responsable', 25 + boxWidth + 20, currentY + 10)
+  doc.text('Date :', 25 + boxWidth + 20, currentY + boxHeight - 8)
 
-  doc.setFontSize(8)
-  doc.setTextColor(...COLORS.primary)
-  doc.text('TimeScope', pageWidth - 20, footerY, { align: 'right' })
+  drawFooter(doc.getCurrentPageInfo().pageNumber)
 
-  // After table generation we can draw an accurate footer on the intro page (page 1)
-  const finalPageCount = doc.getNumberOfPages()
-  try {
-    doc.setPage(1)
-    const footerY = pageHeight - 10
-    doc.setDrawColor(...COLORS.lightGray)
-    doc.setLineWidth(0.3)
-    doc.line(20, footerY - 5, pageWidth - 20, footerY - 5)
-
-    doc.setFontSize(7)
-    doc.setTextColor(...COLORS.gray)
-    const footerText1 = `Page 1/${finalPageCount} • Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
-    doc.text(footerText1, pageWidth / 2, footerY, { align: 'center' })
-
-    doc.setFontSize(8)
-    doc.setTextColor(...COLORS.primary)
-    doc.text('TimeScope', pageWidth - 20, footerY, { align: 'right' })
-  } catch (e) {
-    // ignore footer errors
-  }
-
-  // Nom du fichier
+  // Save
   const groupName = groupId === 'all' ? 'tous' : groups.find(g => g.id === groupId)?.name || 'export'
   const fileName = `TimeScope_${monthName}_${year}_${groupName}.pdf`
-
-  // Télécharger
   doc.save(fileName)
 }

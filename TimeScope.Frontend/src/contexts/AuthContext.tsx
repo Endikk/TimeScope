@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         }
       } catch (err) {
-        console.error('Auth initialization error:', err);
+        console.error('Erreur d\'initialisation de l\'authentification :', err);
         tokenStorage.clear();
       } finally {
         setIsLoading(false);
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsLoading(true);
       await authApiService.logout();
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error('Erreur lors de la déconnexion :', err);
     } finally {
       // Nettoyer l'état local même en cas d'erreur
       tokenStorage.clear();
@@ -119,10 +119,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth doit être utilisé à l\'intérieur d\'un AuthProvider');
   }
   return context;
 };

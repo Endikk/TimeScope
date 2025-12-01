@@ -9,29 +9,29 @@ interface MonthlyTrackerProps {
   userId: string
 }
 
+// Structure organisationnelle : Groupe(société) > Projet > Activité
+const workStructure = [
+  // Groupe TechCorp
+  { id: "techcorp-crm-dev", groupe: "TechCorp", projet: "CRM System", activite: "Développement", color: "bg-blue-500" },
+  { id: "techcorp-crm-test", groupe: "TechCorp", projet: "CRM System", activite: "Testing", color: "bg-green-500" },
+  { id: "techcorp-crm-maintenance", groupe: "TechCorp", projet: "CRM System", activite: "Maintenance", color: "bg-gray-500" },
+
+  // Groupe DigitalFlow
+  { id: "digital-ecom-dev", groupe: "DigitalFlow", projet: "E-commerce", activite: "Développement", color: "bg-purple-500" },
+  { id: "digital-ecom-design", groupe: "DigitalFlow", projet: "E-commerce", activite: "Design", color: "bg-pink-500" },
+
+  // Activités transversales
+  { id: "general-meetings", groupe: "Général", projet: "Administration", activite: "Réunions", color: "bg-red-500" },
+  { id: "general-formation", groupe: "Général", projet: "RH", activite: "Formation", color: "bg-orange-500" },
+  { id: "general-docs", groupe: "Général", projet: "Documentation", activite: "Documentation", color: "bg-yellow-500" },
+
+  // Freelance
+  { id: "freelance-web-dev", groupe: "Freelance", projet: "Site Web", activite: "Développement", color: "bg-indigo-500" },
+  { id: "freelance-mobile-dev", groupe: "Freelance", projet: "App Mobile", activite: "Développement", color: "bg-cyan-500" }
+]
+
 export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  
-  // Structure organisationnelle : Groupe(société) > Projet > Activité
-  const workStructure = [
-    // Groupe TechCorp
-    { id: "techcorp-crm-dev", groupe: "TechCorp", projet: "CRM System", activite: "Développement", color: "bg-blue-500" },
-    { id: "techcorp-crm-test", groupe: "TechCorp", projet: "CRM System", activite: "Testing", color: "bg-green-500" },
-    { id: "techcorp-crm-maintenance", groupe: "TechCorp", projet: "CRM System", activite: "Maintenance", color: "bg-gray-500" },
-    
-    // Groupe DigitalFlow
-    { id: "digital-ecom-dev", groupe: "DigitalFlow", projet: "E-commerce", activite: "Développement", color: "bg-purple-500" },
-    { id: "digital-ecom-design", groupe: "DigitalFlow", projet: "E-commerce", activite: "Design", color: "bg-pink-500" },
-    
-    // Activités transversales
-    { id: "general-meetings", groupe: "Général", projet: "Administration", activite: "Réunions", color: "bg-red-500" },
-    { id: "general-formation", groupe: "Général", projet: "RH", activite: "Formation", color: "bg-orange-500" },
-    { id: "general-docs", groupe: "Général", projet: "Documentation", activite: "Documentation", color: "bg-yellow-500" },
-    
-    // Freelance
-    { id: "freelance-web-dev", groupe: "Freelance", projet: "Site Web", activite: "Développement", color: "bg-indigo-500" },
-    { id: "freelance-mobile-dev", groupe: "Freelance", projet: "App Mobile", activite: "Développement", color: "bg-cyan-500" }
-  ]
 
   // Génération des données du mois
   const monthData: MonthData = useMemo(() => {
@@ -41,23 +41,24 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
       "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
       "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
     ]
-    
+
     const daysInMonth = new Date(year, month + 1, 0).getDate()
     const firstDayOfWeek = new Date(year, month, 1).getDay()
     const today = new Date()
-    
+
     const themeRows: ThemeRow[] = workStructure.map(item => {
       const days: DayEntry[] = []
-      
+
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day)
         const dayOfWeek = date.getDay()
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
         const isToday = date.toDateString() === today.toDateString()
-        
+
         // Données exemple - à remplacer par vraies données utilisateur
-        const value = Math.random() > 0.7 ? Math.random() * 1 : 0
-        
+        // Données exemple - à remplacer par vraies données utilisateur
+        const value = (day + item.id.length) % 7 === 0 ? 1 : 0
+
         days.push({
           day,
           value: parseFloat(value.toFixed(2)),
@@ -65,7 +66,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
           isToday
         })
       }
-      
+
       return {
         id: item.id,
         name: item.activite,
@@ -75,7 +76,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
         days
       }
     })
-    
+
     return {
       year,
       month,
@@ -84,21 +85,21 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
       firstDayOfWeek,
       themes: themeRows
     }
-  }, [currentDate, workStructure])
+  }, [currentDate])
 
   // Calcul des statistiques mensuelles
   const monthlyProgress: MonthlyProgress = useMemo(() => {
     const totalHours = monthData.themes.reduce((sum, theme) => {
       return sum + theme.days.reduce((daySum, day) => daySum + day.value * 7, 0)
     }, 0)
-    
+
     const totalDays = monthData.daysInMonth
-    const completedDays = monthData.themes[0].days.filter(day => 
-      monthData.themes.some(theme => 
+    const completedDays = monthData.themes[0].days.filter(day =>
+      monthData.themes.some(theme =>
         theme.days[day.day - 1]?.value > 0
       )
     ).length
-    
+
     return {
       totalHours,
       totalDays,
@@ -147,7 +148,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                 </CardDescription>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Button variant="outline" onClick={() => navigateMonth('prev')}>
                 <ChevronLeft className="h-4 w-4" />
@@ -173,7 +174,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-0 shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
@@ -185,7 +186,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-0 shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
@@ -197,7 +198,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-0 shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
@@ -233,14 +234,13 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                       const date = new Date(monthData.year, monthData.month, day)
                       const isWeekend = date.getDay() === 0 || date.getDay() === 6
                       const isToday = date.toDateString() === new Date().toDateString()
-                      
+
                       return (
-                        <th 
-                          key={day} 
-                          className={`px-1 py-2 text-center text-xs font-medium w-[45px] ${
-                            isWeekend ? 'text-gray-400 bg-gray-100' : 
+                        <th
+                          key={day}
+                          className={`px-1 py-2 text-center text-xs font-medium w-[45px] ${isWeekend ? 'text-gray-400 bg-gray-100' :
                             isToday ? 'text-primary bg-accent' : 'text-gray-700'
-                          }`}
+                            }`}
                         >
                           {day}
                         </th>
@@ -286,10 +286,10 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                             `}
                             disabled={dayEntry.isWeekend}
                             style={{
-                              backgroundColor: dayEntry.value > 0 ? 
-                                `rgba(34, 197, 94, ${dayEntry.value * 0.8 + 0.2})` : 
-                                dayEntry.isWeekend ? '#f3f4f6' : 
-                                dayEntry.isToday ? '#fefce8' : '#f9fafb'
+                              backgroundColor: dayEntry.value > 0 ?
+                                `rgba(34, 197, 94, ${dayEntry.value * 0.8 + 0.2})` :
+                                dayEntry.isWeekend ? '#f3f4f6' :
+                                  dayEntry.isToday ? '#fefce8' : '#f9fafb'
                             }}
                           />
                         </td>

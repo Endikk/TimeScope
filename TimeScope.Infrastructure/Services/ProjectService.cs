@@ -14,7 +14,7 @@ public class ProjectService : IProjectService
 
     public async Task<Project> CreateProjectAsync(CreateProjectCommand command)
     {
-        // Règles métier : validation
+        // Validation des règles métier
         if (string.IsNullOrWhiteSpace(command.Name))
         {
             throw new ArgumentException("Project name is required");
@@ -35,7 +35,7 @@ public class ProjectService : IProjectService
 
     public async Task<Group> CreateGroupAsync(CreateGroupCommand command)
     {
-        // Règles métier : validation
+        // Validation des règles métier
         if (string.IsNullOrWhiteSpace(command.Name))
         {
             throw new ArgumentException("Group name is required");
@@ -55,7 +55,7 @@ public class ProjectService : IProjectService
 
     public async Task<Theme> CreateThemeAsync(CreateThemeCommand command)
     {
-        // Règles métier : validation
+        // Validation des règles métier
         if (string.IsNullOrWhiteSpace(command.Name))
         {
             throw new ArgumentException("Theme name is required");
@@ -66,7 +66,7 @@ public class ProjectService : IProjectService
             throw new ArgumentException("Theme color is required");
         }
 
-        // Validation du format de couleur hexadécimale
+        // Vérification du format hexadécimal de la couleur
         if (!IsValidHexColor(command.Color))
         {
             throw new ArgumentException("Color must be in valid hex format (e.g., #RRGGBB)");

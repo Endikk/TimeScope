@@ -6,23 +6,14 @@ namespace TimeScope.Infrastructure.Services;
 
 public class AdministrationService : IAdministrationService
 {
-    private readonly AdminDbContext _adminContext;
-    private readonly ProjectsDbContext _projectsContext;
-    private readonly TimeDbContext _timeContext;
-    private readonly ReportsDbContext _reportsContext;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<AdministrationService> _logger;
 
     public AdministrationService(
-        AdminDbContext adminContext,
-        ProjectsDbContext projectsContext,
-        TimeDbContext timeContext,
-        ReportsDbContext reportsContext,
+        ApplicationDbContext context,
         ILogger<AdministrationService> logger)
     {
-        _adminContext = adminContext;
-        _projectsContext = projectsContext;
-        _timeContext = timeContext;
-        _reportsContext = reportsContext;
+        _context = context;
         _logger = logger;
     }
 
@@ -34,46 +25,46 @@ public class AdministrationService : IAdministrationService
             {
                 Name = "Admin",
                 TablesCount = 2,
-                TotalRecords = await _adminContext.Users.CountAsync() + await _adminContext.AppSettings.CountAsync(),
+                TotalRecords = await _context.Users.CountAsync() + await _context.AppSettings.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "Users", await _adminContext.Users.CountAsync() },
-                    { "AppSettings", await _adminContext.AppSettings.CountAsync() }
+                    { "Users", await _context.Users.CountAsync() },
+                    { "AppSettings", await _context.AppSettings.CountAsync() }
                 }
             },
             ProjectsDatabase = new DatabaseSummary
             {
                 Name = "Projects",
                 TablesCount = 3,
-                TotalRecords = await _projectsContext.Projects.CountAsync() +
-                              await _projectsContext.Groups.CountAsync() +
-                              await _projectsContext.Themes.CountAsync(),
+                TotalRecords = await _context.Projects.CountAsync() +
+                              await _context.Groups.CountAsync() +
+                              await _context.Themes.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "Projects", await _projectsContext.Projects.CountAsync() },
-                    { "Groups", await _projectsContext.Groups.CountAsync() },
-                    { "Themes", await _projectsContext.Themes.CountAsync() }
+                    { "Projects", await _context.Projects.CountAsync() },
+                    { "Groups", await _context.Groups.CountAsync() },
+                    { "Themes", await _context.Themes.CountAsync() }
                 }
             },
             TimeDatabase = new DatabaseSummary
             {
                 Name = "Time",
                 TablesCount = 2,
-                TotalRecords = await _timeContext.Tasks.CountAsync() + await _timeContext.TimeEntries.CountAsync(),
+                TotalRecords = await _context.Tasks.CountAsync() + await _context.TimeEntries.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "Tasks", await _timeContext.Tasks.CountAsync() },
-                    { "TimeEntries", await _timeContext.TimeEntries.CountAsync() }
+                    { "Tasks", await _context.Tasks.CountAsync() },
+                    { "TimeEntries", await _context.TimeEntries.CountAsync() }
                 }
             },
             ReportsDatabase = new DatabaseSummary
             {
                 Name = "Reports",
                 TablesCount = 1,
-                TotalRecords = await _reportsContext.AuditLogs.CountAsync(),
+                TotalRecords = await _context.AuditLogs.CountAsync(),
                 Collections = new Dictionary<string, int>
                 {
-                    { "AuditLogs", await _reportsContext.AuditLogs.CountAsync() }
+                    { "AuditLogs", await _context.AuditLogs.CountAsync() }
                 }
             }
         };
@@ -88,17 +79,8 @@ public class AdministrationService : IAdministrationService
             Tests = new List<ConnectionTest>()
         };
 
-        // Test Admin DB
-        result.Tests.Add(await TestConnectionAsync("Admin", _adminContext));
-
-        // Test Projects DB
-        result.Tests.Add(await TestConnectionAsync("Projects", _projectsContext));
-
-        // Test Time DB
-        result.Tests.Add(await TestConnectionAsync("Time", _timeContext));
-
-        // Test Reports DB
-        result.Tests.Add(await TestConnectionAsync("Reports", _reportsContext));
+        // Test de la base de données unifiée
+        result.Tests.Add(await TestConnectionAsync("Unified DB", _context));
 
         result.AllSuccessful = result.Tests.All(t => t.Success);
         result.Timestamp = DateTime.UtcNow;
@@ -113,9 +95,9 @@ public class AdministrationService : IAdministrationService
             DatabaseResults = new List<DatabaseCleanupResult>()
         };
 
-        // Admin DB
-        var deletedUsers = await _adminContext.Users.Where(u => u.IsDeleted).CountAsync();
-        var deletedSettings = await _adminContext.AppSettings.Where(s => s.IsDeleted).CountAsync();
+        // Base Admin
+        var deletedUsers = await _context.Users.Where(u => u.IsDeleted).CountAsync();
+        var deletedSettings = await _context.AppSettings.Where(s => s.IsDeleted).CountAsync();
         result.DatabaseResults.Add(new DatabaseCleanupResult
         {
             DatabaseName = "Admin",
@@ -123,10 +105,10 @@ public class AdministrationService : IAdministrationService
             Details = $"{deletedUsers} users, {deletedSettings} settings"
         });
 
-        // Projects DB
-        var deletedProjects = await _projectsContext.Projects.Where(p => p.IsDeleted).CountAsync();
-        var deletedGroups = await _projectsContext.Groups.Where(g => g.IsDeleted).CountAsync();
-        var deletedThemes = await _projectsContext.Themes.Where(t => t.IsDeleted).CountAsync();
+        // Base Projets
+        var deletedProjects = await _context.Projects.Where(p => p.IsDeleted).CountAsync();
+        var deletedGroups = await _context.Groups.Where(g => g.IsDeleted).CountAsync();
+        var deletedThemes = await _context.Themes.Where(t => t.IsDeleted).CountAsync();
         result.DatabaseResults.Add(new DatabaseCleanupResult
         {
             DatabaseName = "Projects",
@@ -134,9 +116,9 @@ public class AdministrationService : IAdministrationService
             Details = $"{deletedProjects} projects, {deletedGroups} groups, {deletedThemes} themes"
         });
 
-        // Time DB
-        var deletedTasks = await _timeContext.Tasks.Where(t => t.IsDeleted).CountAsync();
-        var deletedEntries = await _timeContext.TimeEntries.Where(te => te.IsDeleted).CountAsync();
+        // Base Temps
+        var deletedTasks = await _context.Tasks.Where(t => t.IsDeleted).CountAsync();
+        var deletedEntries = await _context.TimeEntries.Where(te => te.IsDeleted).CountAsync();
         result.DatabaseResults.Add(new DatabaseCleanupResult
         {
             DatabaseName = "Time",
@@ -159,12 +141,12 @@ public class AdministrationService : IAdministrationService
 
         var stats = new UsageStatistics
         {
-            TotalUsers = await _adminContext.Users.CountAsync(),
-            ActiveUsers = await _adminContext.Users.CountAsync(u => u.IsActive),
-            TotalProjects = await _projectsContext.Projects.CountAsync(p => !p.IsDeleted),
-            TotalTasks = await _timeContext.Tasks.CountAsync(t => !t.IsDeleted),
-            TotalTimeEntries = await _timeContext.TimeEntries.CountAsync(te => !te.IsDeleted),
-            RecentAuditLogs = await _reportsContext.AuditLogs.CountAsync(log => log.Timestamp >= thirtyDaysAgo),
+            TotalUsers = await _context.Users.CountAsync(),
+            ActiveUsers = await _context.Users.CountAsync(u => u.IsActive),
+            TotalProjects = await _context.Projects.CountAsync(p => !p.IsDeleted),
+            TotalTasks = await _context.Tasks.CountAsync(t => !t.IsDeleted),
+            TotalTimeEntries = await _context.TimeEntries.CountAsync(te => !te.IsDeleted),
+            RecentAuditLogs = await _context.AuditLogs.CountAsync(log => log.Timestamp >= thirtyDaysAgo),
             Period = "Last 30 days",
             Timestamp = now
         };
@@ -177,9 +159,9 @@ public class AdministrationService : IAdministrationService
         var exportData = new
         {
             ExportDate = DateTime.UtcNow,
-            UsersCount = await _adminContext.Users.CountAsync(),
-            ProjectsCount = await _projectsContext.Projects.CountAsync(),
-            TasksCount = await _timeContext.Tasks.CountAsync(),
+            UsersCount = await _context.Users.CountAsync(),
+            ProjectsCount = await _context.Projects.CountAsync(),
+            TasksCount = await _context.Tasks.CountAsync(),
             Message = "Export data summary generated successfully"
         };
 

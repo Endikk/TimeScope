@@ -36,7 +36,7 @@ public class RequestService : IRequestService
         if (string.IsNullOrWhiteSpace(command.Priority))
             throw new ArgumentException("Priority is required");
 
-        // Validation du format email
+        // Validation du format de l'email
         if (!IsValidEmail(command.Email))
             throw new ArgumentException("Invalid email format");
 
@@ -101,7 +101,7 @@ public class RequestService : IRequestService
         if (request == null)
             throw new KeyNotFoundException($"Request with ID {id} not found");
 
-        // Validation du statut
+        // Validation du nouveau statut
         var validStatuses = new[] { "pending", "approved", "rejected", "completed" };
         if (!validStatuses.Contains(command.Status.ToLower()))
             throw new ArgumentException($"Invalid status. Must be one of: {string.Join(", ", validStatuses)}");

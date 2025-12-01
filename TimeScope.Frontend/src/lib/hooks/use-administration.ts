@@ -21,8 +21,9 @@ export function useDatabasesSummary() {
     try {
       const data = await administrationService.getDatabasesSummary();
       setSummary(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch databases summary');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch databases summary';
+      setError(errorMessage);
       console.error('Error fetching databases summary:', err);
     } finally {
       setLoading(false);
@@ -50,8 +51,9 @@ export function useDatabaseConnections() {
     try {
       const data = await administrationService.testDatabaseConnections();
       setConnections(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to test database connections');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to test database connections';
+      setError(errorMessage);
       console.error('Error testing database connections:', err);
     } finally {
       setLoading(false);
@@ -76,8 +78,9 @@ export function useCleanup() {
     try {
       const data = await administrationService.cleanupSoftDeleted();
       setResult(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to cleanup deleted data');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to cleanup deleted data';
+      setError(errorMessage);
       console.error('Error cleaning up deleted data:', err);
     } finally {
       setLoading(false);
@@ -101,8 +104,9 @@ export function useUsageStatistics() {
     try {
       const data = await administrationService.getUsageStatistics();
       setStatistics(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch usage statistics');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch usage statistics';
+      setError(errorMessage);
       console.error('Error fetching usage statistics:', err);
     } finally {
       setLoading(false);
@@ -131,8 +135,9 @@ export function useExport() {
     try {
       const data = await administrationService.exportSystemData();
       setResult(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to export system data');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to export system data';
+      setError(errorMessage);
       console.error('Error exporting system data:', err);
     } finally {
       setLoading(false);

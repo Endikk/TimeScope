@@ -1,43 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/layout/PageHeader';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Clock,
-  Download,
-  Trash2,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  FileSpreadsheet,
-  Filter,
-  Search,
-  Calendar as CalendarIcon,
-  ArrowUpDown
-} from 'lucide-react';
+import { Download, Trash2, Loader2, FileSpreadsheet } from 'lucide-react';
 import { useTimeEntries, useTimeEntryMutations } from '@/lib/hooks/use-timeentries';
 import { useGroups, useProjects } from '@/lib/hooks/use-projects';
 import { useTasks } from '@/lib/hooks/use-tasks';
 import { useUsers } from '@/lib/hooks/use-users';
+import { StatsCards, TimesheetFilters, TimesheetTable } from './components';
 
 interface TimeEntryRow {
   id: string;
@@ -52,8 +21,13 @@ interface TimeEntryRow {
   selected: boolean;
 }
 
+// Helper function
+const convertDurationToHours = (duration: string): number => {
+  const [hours, minutes] = duration.split(':').map(Number);
+  return hours + (minutes / 60);
+};
+
 export default function TimesheetPage() {
-  const [timeEntryRows, setTimeEntryRows] = useState<TimeEntryRow[]>([]);
   const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
   const [filterUser, setFilterUser] = useState<string>('all');
   const [filterGroup, setFilterGroup] = useState<string>('all');
@@ -71,16 +45,10 @@ export default function TimesheetPage() {
   const { users, loading: usersLoading } = useUsers();
   const { deleteTimeEntry } = useTimeEntryMutations();
 
-  // Helper function
-  const convertDurationToHours = (duration: string): number => {
-    const [hours, minutes] = duration.split(':').map(Number);
-    return hours + (minutes / 60);
-  };
-
   // Transform API data
-  useEffect(() => {
+  const timeEntryRows = useMemo(() => {
     if (timeEntries && groups && projects && tasks && users) {
-      const transformed = timeEntries.map(entry => {
+      return timeEntries.map(entry => {
         const task = tasks.find(t => t.id === entry.taskId);
         const project = projects.find(p => p.id === task?.projectId);
         const group = groups.find(g => g.id === project?.groupId);
@@ -99,8 +67,8 @@ export default function TimesheetPage() {
           selected: false
         };
       });
-      setTimeEntryRows(transformed);
     }
+    return [];
   }, [timeEntries, groups, projects, tasks, users]);
 
   // Filter and sort entries
@@ -110,11 +78,11 @@ export default function TimesheetPage() {
       const matchesGroup = filterGroup === 'all' || entry.group === filterGroup;
       const matchesDateFrom = !filterDateFrom || entry.date >= filterDateFrom;
       const matchesDateTo = !filterDateTo || entry.date <= filterDateTo;
-      const matchesSearch = !searchQuery || 
+      const matchesSearch = !searchQuery ||
         entry.task.toLowerCase().includes(searchQuery.toLowerCase()) ||
         entry.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
         entry.project.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       return matchesUser && matchesGroup && matchesDateFrom && matchesDateTo && matchesSearch;
     })
     .sort((a, b) => {
@@ -153,7 +121,7 @@ export default function TimesheetPage() {
     if (selectedEntries.length === 0) {
       return;
     }
-{
+    {
       for (const id of selectedEntries) {
         await deleteTimeEntry(id);
       }
@@ -196,6 +164,14 @@ export default function TimesheetPage() {
     }
   };
 
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setFilterUser('all');
+    setFilterGroup('all');
+    setFilterDateFrom('');
+    setFilterDateTo('');
+  };
+
   const uniqueUsers = Array.from(new Set(timeEntryRows.map(e => e.user)));
   const uniqueGroups = Array.from(new Set(timeEntryRows.map(e => e.group)));
 
@@ -217,11 +193,10 @@ export default function TimesheetPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-4 p-2 md:p-4 pt-0">
       <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
-        <div className="max-w-7xl mx-auto space-y-6 p-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6 p-3 md:p-6">
 
-          {/* Header */}
           <PageHeader
             icon={FileSpreadsheet}
             title="Feuilles de Temps"
@@ -229,232 +204,53 @@ export default function TimesheetPage() {
             gradient="from-blue-50 to-cyan-50"
             actions={
               <>
-                <Button variant="outline" onClick={handleExportCSV}>
+                <Button variant="outline" onClick={handleExportCSV} className="w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
-                  Exporter CSV
+                  <span className="hidden sm:inline">Exporter CSV</span>
+                  <span className="sm:hidden">CSV</span>
                 </Button>
                 {selectedEntries.length > 0 && (
-                  <Button className="bg-focustime-alert hover:opacity-90" onClick={handleBulkDelete}>
+                  <Button className="bg-focustime-alert hover:opacity-90 w-full sm:w-auto" onClick={handleBulkDelete}>
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Supprimer ({selectedEntries.length})
+                    <span className="hidden sm:inline">Supprimer ({selectedEntries.length})</span>
+                    <span className="sm:hidden">({selectedEntries.length})</span>
                   </Button>
                 )}
               </>
             }
           />
 
-          {/* Statistics */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Entrées</CardTitle>
-                <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalEntries}</div>
-                <p className="text-xs text-muted-foreground">Entrées affichées</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Heures Totales</CardTitle>
-                <Clock className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{stats.totalHours.toFixed(1)}h</div>
-                <p className="text-xs text-muted-foreground">Temps enregistré</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Sélectionnées</CardTitle>
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{stats.selectedCount}</div>
-                <p className="text-xs text-muted-foreground">Entrées sélectionnées</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Heures Sélect.</CardTitle>
-                <Clock className="h-4 w-4 text-orange-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{stats.selectedHours.toFixed(1)}h</div>
-                <p className="text-xs text-muted-foreground">Temps sélectionné</p>
-              </CardContent>
-            </Card>
-          </div>
+          <StatsCards
+            totalEntries={stats.totalEntries}
+            totalHours={stats.totalHours}
+            selectedCount={stats.selectedCount}
+            selectedHours={stats.selectedHours}
+          />
 
-          {/* Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Filtres Avancés
-              </CardTitle>
-              <CardDescription>Filtrez vos entrées de temps par critères multiples</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div>
-                  <Label>Recherche</Label>
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Tâche, notes..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label>Utilisateur</Label>
-                  <Select value={filterUser} onValueChange={setFilterUser}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les utilisateurs</SelectItem>
-                      {uniqueUsers.map(user => (
-                        <SelectItem key={user} value={user}>{user}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Groupe</Label>
-                  <Select value={filterGroup} onValueChange={setFilterGroup}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les groupes</SelectItem>
-                      {uniqueGroups.map(group => (
-                        <SelectItem key={group} value={group}>{group}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Date début</Label>
-                  <Input
-                    type="date"
-                    value={filterDateFrom}
-                    onChange={(e) => setFilterDateFrom(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>Date fin</Label>
-                  <Input
-                    type="date"
-                    value={filterDateTo}
-                    onChange={(e) => setFilterDateTo(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setFilterUser('all');
-                    setFilterGroup('all');
-                    setFilterDateFrom('');
-                    setFilterDateTo('');
-                  }}
-                >
-                  Réinitialiser les filtres
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <TimesheetFilters
+            searchQuery={searchQuery}
+            filterUser={filterUser}
+            filterGroup={filterGroup}
+            filterDateFrom={filterDateFrom}
+            filterDateTo={filterDateTo}
+            uniqueUsers={uniqueUsers}
+            uniqueGroups={uniqueGroups}
+            onSearchChange={setSearchQuery}
+            onUserChange={setFilterUser}
+            onGroupChange={setFilterGroup}
+            onDateFromChange={setFilterDateFrom}
+            onDateToChange={setFilterDateTo}
+            onReset={handleResetFilters}
+          />
 
-          {/* Timesheet Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Entrées de Temps</CardTitle>
-              <CardDescription>
-                {filteredAndSortedEntries.length} entrée{filteredAndSortedEntries.length > 1 ? 's' : ''} • 
-                {stats.totalHours.toFixed(1)}h au total
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {filteredAndSortedEntries.length === 0 ? (
-                <div className="text-center py-12">
-                  <AlertCircle className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500">Aucune entrée trouvée</p>
-                  <p className="text-sm text-muted-foreground">Ajustez vos filtres ou ajoutez de nouvelles entrées</p>
-                </div>
-              ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">
-                          <Checkbox
-                            checked={selectedEntries.length === filteredAndSortedEntries.length}
-                            onCheckedChange={toggleAllSelection}
-                          />
-                        </TableHead>
-                        <TableHead>
-                          <Button variant="ghost" size="sm" onClick={() => handleSort('date')}>
-                            Date <ArrowUpDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </TableHead>
-                        <TableHead>Utilisateur</TableHead>
-                        <TableHead>Groupe</TableHead>
-                        <TableHead>Projet</TableHead>
-                        <TableHead>Tâche</TableHead>
-                        <TableHead>
-                          <Button variant="ghost" size="sm" onClick={() => handleSort('hours')}>
-                            Heures <ArrowUpDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </TableHead>
-                        <TableHead>Notes</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredAndSortedEntries.map((entry) => (
-                        <TableRow key={entry.id} className={selectedEntries.includes(entry.id) ? 'bg-muted/50' : ''}>
-                          <TableCell>
-                            <Checkbox
-                              checked={selectedEntries.includes(entry.id)}
-                              onCheckedChange={() => toggleEntrySelection(entry.id)}
-                            />
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                              {new Date(entry.date).toLocaleDateString('fr-FR')}
-                            </div>
-                          </TableCell>
-                          <TableCell>{entry.user}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{entry.group}</Badge>
-                          </TableCell>
-                          <TableCell>{entry.project}</TableCell>
-                          <TableCell className="font-medium">{entry.task}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4 text-primary" />
-                              <span className="font-semibold">{entry.hours.toFixed(1)}h</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
-                            {entry.notes || '-'}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <TimesheetTable
+            entries={filteredAndSortedEntries}
+            selectedEntries={selectedEntries}
+            totalHours={stats.totalHours}
+            onToggleEntry={toggleEntrySelection}
+            onToggleAll={toggleAllSelection}
+            onSort={handleSort}
+          />
 
         </div>
       </div>

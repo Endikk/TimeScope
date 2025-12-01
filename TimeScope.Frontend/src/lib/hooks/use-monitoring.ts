@@ -1,11 +1,108 @@
 import { useState, useEffect, useCallback } from 'react';
+import { env } from '@/lib/config/env';
+import { STORAGE_KEYS } from '@/lib/constants';
 import monitoringService, {
   SystemMetrics,
   SystemInfo,
   HealthStatus,
   LogsResponse,
-  GarbageCollectionResult
+  GarbageCollectionResult,
+  DockerMetrics,
+  StreamData
 } from '@/lib/api/services/monitoring.service';
+
+/**
+ * Hook pour gérer le streaming des métriques via SSE
+ */
+export function useMonitoringStream(enabled: boolean = true) {
+  const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
+  const [dockerMetrics, setDockerMetrics] = useState<DockerMetrics | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const abortController = new AbortController();
+    let retryTimeout: NodeJS.Timeout;
+
+    const connect = async () => {
+      if (abortController.signal.aborted) return;
+
+      try {
+        const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+        const response = await fetch(`${env.VITE_API_URL}/monitoring/stream`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'text/event-stream'
+          },
+          signal: abortController.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) throw new Error('No reader available');
+
+        setIsConnected(true);
+        setError(null);
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const jsonStr = line.substring(6);
+                const data: StreamData = JSON.parse(jsonStr);
+                setSystemMetrics(data.system);
+                setDockerMetrics(data.docker);
+              } catch (e) {
+                console.error('Error parsing SSE data:', e);
+              }
+            }
+          }
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        console.error('SSE Error:', err);
+        setError(err instanceof Error ? err.message : 'Connection failed');
+        setIsConnected(false);
+
+        // Retry connection after 5s
+        if (!abortController.signal.aborted) {
+          retryTimeout = setTimeout(() => {
+            connect();
+          }, 5000);
+        }
+      }
+    };
+
+    // Debounce connection to avoid double requests in Strict Mode
+    const connectionTimeout = setTimeout(() => {
+      connect();
+    }, 100);
+
+    return () => {
+      clearTimeout(connectionTimeout);
+      clearTimeout(retryTimeout);
+      abortController.abort();
+      setIsConnected(false);
+    };
+  }, [enabled]);
+
+  return { systemMetrics, dockerMetrics, isConnected, error };
+}
 
 /**
  * Hook pour gérer les métriques système
@@ -21,8 +118,9 @@ export function useSystemMetrics(autoRefresh: boolean = false, interval: number 
     try {
       const data = await monitoringService.getSystemMetrics();
       setMetrics(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch system metrics');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch system metrics';
+      setError(errorMessage);
       console.error('Error fetching system metrics:', err);
     } finally {
       setLoading(false);
@@ -57,8 +155,9 @@ export function useSystemInfo() {
     try {
       const data = await monitoringService.getSystemInfo();
       setInfo(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch system info');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch system info';
+      setError(errorMessage);
       console.error('Error fetching system info:', err);
     } finally {
       setLoading(false);
@@ -86,8 +185,9 @@ export function useHealthStatus(autoRefresh: boolean = false, interval: number =
     try {
       const data = await monitoringService.getHealthStatus();
       setHealth(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch health status');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch health status';
+      setError(errorMessage);
       console.error('Error fetching health status:', err);
     } finally {
       setLoading(false);
@@ -122,8 +222,9 @@ export function useLogs(limit: number = 100) {
     try {
       const data = await monitoringService.getLogs(limit);
       setLogs(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch logs');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch logs';
+      setError(errorMessage);
       console.error('Error fetching logs:', err);
     } finally {
       setLoading(false);
@@ -152,8 +253,9 @@ export function useGarbageCollection() {
     try {
       const data = await monitoringService.forceGarbageCollection();
       setResult(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to force garbage collection');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to force garbage collection';
+      setError(errorMessage);
       console.error('Error forcing garbage collection:', err);
     } finally {
       setLoading(false);
@@ -166,26 +268,41 @@ export function useGarbageCollection() {
 /**
  * Hook combiné pour le monitoring complet
  */
-export function useMonitoring(autoRefresh: boolean = true) {
-  const metrics = useSystemMetrics(autoRefresh, 5000);
+export function useMonitoring(autoRefresh: boolean = true, useStream: boolean = true) {
+  // Use stream for real-time metrics if enabled
+  const stream = useMonitoringStream(useStream);
+
+  // Use polling for static info and less frequent updates
   const info = useSystemInfo();
-  const health = useHealthStatus(autoRefresh, 10000);
+  const health = useHealthStatus(autoRefresh && !useStream, 10000); // Disable polling if streaming (or keep it for health checks?)
   const logs = useLogs(100);
   const gc = useGarbageCollection();
 
+  // Fallback to polling for metrics if stream is disabled
+  const polledMetrics = useSystemMetrics(autoRefresh && !useStream, 5000);
+
+  const metrics = useStream ? {
+    metrics: stream.systemMetrics,
+    loading: !stream.isConnected && !stream.error && !stream.systemMetrics,
+    error: stream.error,
+    refetch: () => { } // Stream handles updates
+  } : polledMetrics;
+
   const refetchAll = useCallback(() => {
-    metrics.refetch();
+    if (!useStream) polledMetrics.refetch();
     info.refetch();
     health.refetch();
     logs.refetch();
-  }, [metrics, info, health, logs]);
+  }, [useStream, polledMetrics, info, health, logs]);
 
   return {
     metrics,
+    docker: stream.dockerMetrics,
     info,
     health,
     logs,
     gc,
-    refetchAll
+    refetchAll,
+    isStreaming: stream.isConnected
   };
 }

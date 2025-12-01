@@ -5,8 +5,19 @@ namespace TimeScope.Core.Interfaces;
 
 public interface IAuthService
 {
+    /// <summary>
+    /// Authentifie un utilisateur et retourne un token
+    /// </summary>
     Task<LoginResponseDto?> LoginAsync(LoginDto loginDto);
+
+    /// <summary>
+    /// Renouvelle le token d'accès
+    /// </summary>
     Task<LoginResponseDto?> RefreshTokenAsync(string refreshToken);
+
+    /// <summary>
+    /// Génère un token JWT pour un utilisateur donné
+    /// </summary>
     string GenerateJwtToken(User user);
 }
 
@@ -36,6 +47,10 @@ public class UserDto
     public string? Avatar { get; set; }
     public string Role { get; set; } = string.Empty;
     public bool IsActive { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? JobTitle { get; set; }
+    public string? Department { get; set; }
+    public DateTime? HireDate { get; set; }
 }
 
 public class RefreshTokenDto

@@ -6,14 +6,14 @@ using TimeScope.Infrastructure.Data;
 namespace TimeScope.Infrastructure.Repositories;
 
 /// <summary>
-/// Unit of Work pour la base Admin
+/// Unit of Work pour la base Admin (via ApplicationDbContext)
 /// </summary>
 public class AdminUnitOfWork : IAdminUnitOfWork
 {
-    private readonly AdminDbContext _context;
+    private readonly ApplicationDbContext _context;
     private IDbContextTransaction? _transaction;
 
-    public AdminUnitOfWork(AdminDbContext context)
+    public AdminUnitOfWork(ApplicationDbContext context)
     {
         _context = context;
         Users = new Repository<User>(context);
@@ -75,19 +75,19 @@ public class AdminUnitOfWork : IAdminUnitOfWork
     public void Dispose()
     {
         _transaction?.Dispose();
-        _context.Dispose();
+        // Do not dispose injected context
     }
 }
 
 /// <summary>
-/// Unit of Work pour la base Projects
+/// Unit of Work pour la base Projects (via ApplicationDbContext)
 /// </summary>
 public class ProjectsUnitOfWork : IProjectsUnitOfWork
 {
-    private readonly ProjectsDbContext _context;
+    private readonly ApplicationDbContext _context;
     private IDbContextTransaction? _transaction;
 
-    public ProjectsUnitOfWork(ProjectsDbContext context)
+    public ProjectsUnitOfWork(ApplicationDbContext context)
     {
         _context = context;
         Projects = new Repository<Project>(context);
@@ -147,19 +147,19 @@ public class ProjectsUnitOfWork : IProjectsUnitOfWork
     public void Dispose()
     {
         _transaction?.Dispose();
-        _context.Dispose();
+        // Do not dispose injected context
     }
 }
 
 /// <summary>
-/// Unit of Work pour la base Time
+/// Unit of Work pour la base Time (via ApplicationDbContext)
 /// </summary>
 public class TimeUnitOfWork : ITimeUnitOfWork
 {
-    private readonly TimeDbContext _context;
+    private readonly ApplicationDbContext _context;
     private IDbContextTransaction? _transaction;
 
-    public TimeUnitOfWork(TimeDbContext context)
+    public TimeUnitOfWork(ApplicationDbContext context)
     {
         _context = context;
         Tasks = new Repository<WorkTask>(context);
@@ -217,19 +217,19 @@ public class TimeUnitOfWork : ITimeUnitOfWork
     public void Dispose()
     {
         _transaction?.Dispose();
-        _context.Dispose();
+        // Do not dispose injected context
     }
 }
 
 /// <summary>
-/// Unit of Work pour la base Reports
+/// Unit of Work pour la base Reports (via ApplicationDbContext)
 /// </summary>
 public class ReportsUnitOfWork : IReportsUnitOfWork
 {
-    private readonly ReportsDbContext _context;
+    private readonly ApplicationDbContext _context;
     private IDbContextTransaction? _transaction;
 
-    public ReportsUnitOfWork(ReportsDbContext context)
+    public ReportsUnitOfWork(ApplicationDbContext context)
     {
         _context = context;
         AuditLogs = new Repository<AuditLog>(context);
@@ -285,6 +285,6 @@ public class ReportsUnitOfWork : IReportsUnitOfWork
     public void Dispose()
     {
         _transaction?.Dispose();
-        _context.Dispose();
+        // Do not dispose injected context
     }
 }

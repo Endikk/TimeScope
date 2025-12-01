@@ -8,6 +8,45 @@ public interface IMonitoringService
     UptimeInfo GetUptime();
     EnvironmentInfo GetEnvironmentInfo();
     DiagnosticsInfo GetDiagnostics();
+    Task<DockerMetrics> GetDockerMetricsAsync();
+    LogsResponse GetLogs(int limit);
+}
+
+public class LogsResponse
+{
+    public List<LogEntry> Logs { get; set; } = new();
+    public int Total { get; set; }
+}
+
+public class LogEntry
+{
+    public DateTime Timestamp { get; set; }
+    public string Level { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string Source { get; set; } = string.Empty;
+}
+
+public class DockerMetrics
+{
+    public int TotalContainers { get; set; }
+    public int RunningContainers { get; set; }
+    public int StoppedContainers { get; set; }
+    public int PausedContainers { get; set; }
+    public List<ContainerMetrics> Containers { get; set; } = new();
+    public DateTime Timestamp { get; set; }
+}
+
+public class ContainerMetrics
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Image { get; set; } = string.Empty;
+    public string State { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public double CpuUsage { get; set; }
+    public long MemoryUsage { get; set; }
+    public long MemoryLimit { get; set; }
+    public double MemoryUsagePercent { get; set; }
 }
 
 public class SystemMetrics

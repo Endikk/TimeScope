@@ -13,10 +13,12 @@ export { administrationService } from './administration.service';
 // Export des types
 export type { User as AuthUser, LoginCredentials, LoginResponse } from './auth.service';
 export type { CreateTaskDto, UpdateTaskDto } from './tasks.service';
-export type { User, CreateUserDto, UpdateUserDto } from './users.service';
-export type { TimeEntry, CreateTimeEntryDto, UpdateTimeEntryDto } from './timeentries.service';
+export type { User } from '@/types/user';
+export type { CreateUserDto, UpdateUserDto } from './users.service';
+export type { TimeEntry } from '@/types/time-entry';
+export type { CreateTimeEntryDto, UpdateTimeEntryDto } from './timeentries.service';
+export type { Project, Group, Theme } from '@/types/project';
 export type {
-  Project, Group, Theme,
   CreateProjectDto, UpdateProjectDto,
   CreateGroupDto, UpdateGroupDto,
   CreateThemeDto, UpdateThemeDto

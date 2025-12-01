@@ -54,7 +54,7 @@ export interface UsageStatistics {
 export interface ExportResult {
   success: boolean;
   message: string;
-  dataSummary?: any;
+  dataSummary?: unknown;
   timestamp: string;
 }
 

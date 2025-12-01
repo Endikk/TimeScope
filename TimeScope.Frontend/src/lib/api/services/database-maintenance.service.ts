@@ -2,16 +2,14 @@ import apiClient from '../client';
 
 // Interfaces
 export interface DatabaseInfo {
-  name: string;
-  totalRecords: number;
-  usersCount?: number;
-  activeUsersCount?: number;
   projectsCount?: number;
   groupsCount?: number;
-  themesCount?: number;
   tasksCount?: number;
   timeEntriesCount?: number;
-  lastUpdated: string;
+  usersCount?: number;
+  activeUsersCount?: number;
+  totalRecords?: number;
+  lastUpdated?: string;
 }
 
 export interface DatabaseStats {

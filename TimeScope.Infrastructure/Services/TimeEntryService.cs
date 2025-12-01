@@ -16,24 +16,24 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<TimeEntry> CreateTimeEntryAsync(CreateTimeEntryCommand command)
     {
-        // Sécurité: Utiliser l'utilisateur authentifié au lieu de celui fourni dans la requête
+        // Sécurité : Utilisation de l'utilisateur authentifié
         if (!_currentUserService.UserId.HasValue)
         {
             throw new UnauthorizedAccessException("User must be authenticated");
         }
 
-        // Parsing et validation
+        // Parsing et validation des données
         var taskId = ParseGuid(command.TaskId, "TaskId");
         var duration = ParseTimeSpan(command.Duration, "Duration");
         var date = ParseDateTime(command.Date);
 
-        // Règles métier : validation
+        // Validation métier (durée positive)
         if (duration <= TimeSpan.Zero)
         {
             throw new ArgumentException("Duration must be greater than zero");
         }
 
-        // Normalisation de la date en UTC
+        // Conversion de la date en UTC
         date = NormalizeToUtc(date);
 
         var timeEntry = new TimeEntry
@@ -56,7 +56,7 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<TimeEntry> UpdateTimeEntryAsync(Guid id, UpdateTimeEntryCommand command)
     {
-        // Sécurité: Vérifier l'authentification
+        // Sécurité : Vérification de l'authentification
         if (!_currentUserService.UserId.HasValue)
         {
             throw new UnauthorizedAccessException("User must be authenticated");
@@ -69,13 +69,13 @@ public class TimeEntryService : ITimeEntryService
             throw new KeyNotFoundException($"Time entry with ID {id} not found");
         }
 
-        // Sécurité: Vérifier que l'utilisateur est propriétaire (sauf Admin)
+        // Sécurité : Seul le propriétaire ou un admin peut modifier
         if (timeEntry.UserId != _currentUserService.UserId.Value && !_currentUserService.IsAdmin)
         {
             throw new UnauthorizedAccessException("You can only update your own time entries");
         }
 
-        // Mise à jour conditionnelle
+        // Mise à jour conditionnelle des champs
         if (!string.IsNullOrWhiteSpace(command.Duration))
         {
             var duration = ParseTimeSpan(command.Duration, "Duration");
@@ -107,7 +107,7 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<bool> DeleteTimeEntryAsync(Guid id)
     {
-        // Sécurité: Vérifier l'authentification
+        // Sécurité : Vérification de l'authentification
         if (!_currentUserService.UserId.HasValue)
         {
             throw new UnauthorizedAccessException("User must be authenticated");
@@ -120,7 +120,7 @@ public class TimeEntryService : ITimeEntryService
             return false;
         }
 
-        // Sécurité: Vérifier que l'utilisateur est propriétaire (sauf Admin)
+        // Sécurité : Seul le propriétaire ou un admin peut supprimer
         if (timeEntry.UserId != _currentUserService.UserId.Value && !_currentUserService.IsAdmin)
         {
             throw new UnauthorizedAccessException("You can only delete your own time entries");
@@ -138,7 +138,7 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<TimeEntry?> GetTimeEntryByIdAsync(Guid id)
     {
-        // Sécurité: Vérifier l'authentification
+        // Sécurité : Vérification de l'authentification
         if (!_currentUserService.UserId.HasValue)
         {
             throw new UnauthorizedAccessException("User must be authenticated");
@@ -151,7 +151,7 @@ public class TimeEntryService : ITimeEntryService
             return null;
         }
 
-        // Sécurité: Vérifier que l'utilisateur est propriétaire (sauf Admin)
+        // Sécurité : Seul le propriétaire ou un admin peut consulter
         if (timeEntry != null && timeEntry.UserId != _currentUserService.UserId.Value && !_currentUserService.IsAdmin)
         {
             throw new UnauthorizedAccessException("You can only view your own time entries");
@@ -162,25 +162,25 @@ public class TimeEntryService : ITimeEntryService
 
     public async Task<IEnumerable<TimeEntry>> GetTimeEntriesAsync(TimeEntryFilter filter)
     {
-        // Sécurité: Vérifier l'authentification
+        // Sécurité : Vérification de l'authentification
         if (!_currentUserService.UserId.HasValue)
         {
             throw new UnauthorizedAccessException("User must be authenticated");
         }
 
-        // Logique métier : filtrage
+        // Récupération et filtrage des entrées
         var allEntries = await _timeUow.TimeEntries.GetAllAsync();
 
         var query = allEntries.Where(te => !te.IsDeleted);
 
-        // Sécurité: FORCER le filtrage par utilisateur courant (sauf Admin qui peut tout voir)
+        // Sécurité : Filtrage forcé par utilisateur courant (sauf Admin)
         if (!_currentUserService.IsAdmin)
         {
             query = query.Where(te => te.UserId == _currentUserService.UserId.Value);
         }
         else if (filter.UserId.HasValue)
         {
-            // Admin peut filtrer par utilisateur spécifique
+            // L'admin peut filtrer sur un utilisateur spécifique
             query = query.Where(te => te.UserId == filter.UserId.Value);
         }
 

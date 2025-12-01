@@ -1,23 +1,9 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Database,
-  RefreshCw,
-  CheckCircle2,
-  AlertTriangle,
-  Activity,
-  XCircle
-} from 'lucide-react';
+import { RefreshCw, AlertTriangle, Database } from 'lucide-react';
 import { useDatabaseStats, useDatabaseHealth } from '@/lib/hooks/use-database-maintenance';
+import { DatabaseMaintenanceHeader } from './components/DatabaseMaintenanceHeader';
+import { HealthStatusCard } from './components/HealthStatusCard';
+import { DatabaseStatsCard } from './components/DatabaseStatsCard';
 
 export default function DatabaseMaintenancePageAPI() {
   const { stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useDatabaseStats();
@@ -25,31 +11,6 @@ export default function DatabaseMaintenancePageAPI() {
 
   const handleRefresh = async () => {
     await Promise.all([refetchStats(), refetchHealth()]);
-  };
-
-  const getHealthIcon = (isHealthy: boolean) => {
-    return isHealthy ? (
-      <CheckCircle2 className="h-5 w-5 text-green-500" />
-    ) : (
-      <XCircle className="h-5 w-5 text-red-500" />
-    );
-  };
-
-  const getHealthBadge = (overallStatus: string) => {
-    if (overallStatus === 'Healthy') {
-      return (
-        <Badge className="bg-green-100 text-green-800">
-          <CheckCircle2 className="h-3 w-3 mr-1" />
-          Excellent
-        </Badge>
-      );
-    }
-    return (
-      <Badge className="bg-red-100 text-red-800">
-        <AlertTriangle className="h-3 w-3 mr-1" />
-        Problème détecté
-      </Badge>
-    );
   };
 
   if (statsLoading || healthLoading) {
@@ -77,205 +38,60 @@ export default function DatabaseMaintenancePageAPI() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Maintenance des Bases de Données</h1>
-          <p className="text-muted-foreground">
-            Surveillance et optimisation des 4 bases de données PostgreSQL
-          </p>
-        </div>
-        <Button onClick={handleRefresh} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Actualiser
-        </Button>
-      </div>
+    <div className="container mx-auto px-3 md:px-4 py-4 md:py-8">
+      <DatabaseMaintenanceHeader onRefresh={handleRefresh} />
 
-      {/* Health Status */}
-      {health && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              État de Santé Global
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4 mb-4">
-              <span className="text-sm font-medium">Statut:</span>
-              {getHealthBadge(health.overallStatus)}
-              <span className="text-xs text-muted-foreground ml-auto">
-                Vérifié le {new Date(health.adminDatabase.checkedAt).toLocaleString('fr-FR')}
-              </span>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Admin</span>
-                    {getHealthIcon(health.adminDatabase.isHealthy)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{health.adminDatabase.message}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Projects</span>
-                    {getHealthIcon(health.projectsDatabase.isHealthy)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{health.projectsDatabase.message}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Time</span>
-                    {getHealthIcon(health.timeDatabase.isHealthy)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{health.timeDatabase.message}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Reports</span>
-                    {getHealthIcon(health.reportsDatabase.isHealthy)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{health.reportsDatabase.message}</p>
-                </CardContent>
-              </Card>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {health && <HealthStatusCard health={health} />}
 
-      {/* Database Statistics */}
       {stats && (
-        <div className="grid gap-6 md:grid-cols-2 mb-6">
-          {/* Admin Database */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-blue-500" />
-                Base Admin
-              </CardTitle>
-              <CardDescription>Utilisateurs et authentification</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Total utilisateurs</TableCell>
-                    <TableCell className="text-right">{stats.adminDatabase.usersCount}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Utilisateurs actifs</TableCell>
-                    <TableCell className="text-right">{stats.adminDatabase.activeUsersCount}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Total enregistrements</TableCell>
-                    <TableCell className="text-right">{stats.adminDatabase.totalRecords}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Dernière mise à jour</TableCell>
-                    <TableCell className="text-right text-xs">
-                      {new Date(stats.adminDatabase.lastUpdated).toLocaleString('fr-FR')}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 mb-4 md:mb-6">
+          <DatabaseStatsCard
+            title="Base Admin"
+            description="Utilisateurs et authentification"
+            icon={Database}
+            iconColor="text-blue-500"
+            rows={[
+              { label: 'Total utilisateurs', value: stats.adminDatabase.usersCount ?? 0 },
+              { label: 'Utilisateurs actifs', value: stats.adminDatabase.activeUsersCount ?? 0 },
+              { label: 'Total enregistrements', value: stats.adminDatabase.totalRecords ?? 0 },
+              { label: 'Dernière mise à jour', value: stats.adminDatabase.lastUpdated ?? '', isDate: true },
+            ]}
+          />
 
-          {/* Projects Database */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-purple-500" />
-                Base Projects
-              </CardTitle>
-              <CardDescription>Projets, groupes et thèmes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Projets</TableCell>
-                    <TableCell className="text-right">{stats.projectsDatabase.projectsCount}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Groupes</TableCell>
-                    <TableCell className="text-right">{stats.projectsDatabase.groupsCount}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Thèmes</TableCell>
-                    <TableCell className="text-right">{stats.projectsDatabase.themesCount}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Total enregistrements</TableCell>
-                    <TableCell className="text-right">{stats.projectsDatabase.totalRecords}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <DatabaseStatsCard
+            title="Base Projects"
+            description="Projets, groupes et tâches"
+            icon={Database}
+            iconColor="text-purple-500"
+            rows={[
+              { label: 'Projets', value: stats.projectsDatabase.projectsCount ?? 0 },
+              { label: 'Groupes', value: stats.projectsDatabase.groupsCount ?? 0 },
+              { label: 'Tâches', value: stats.projectsDatabase.tasksCount ?? 0 },
+              { label: 'Total enregistrements', value: stats.projectsDatabase.totalRecords ?? 0 },
+            ]}
+          />
 
-          {/* Time Database */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-green-500" />
-                Base Time
-              </CardTitle>
-              <CardDescription>Tâches et entrées de temps</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Tâches</TableCell>
-                    <TableCell className="text-right">{stats.timeDatabase.tasksCount}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Entrées de temps</TableCell>
-                    <TableCell className="text-right">{stats.timeDatabase.timeEntriesCount}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Total enregistrements</TableCell>
-                    <TableCell className="text-right">{stats.timeDatabase.totalRecords}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <DatabaseStatsCard
+            title="Base Time"
+            description="Entrées de temps"
+            icon={Database}
+            iconColor="text-green-500"
+            rows={[
+              { label: 'Entrées de temps', value: stats.timeDatabase.timeEntriesCount ?? 0 },
+              { label: 'Total enregistrements', value: stats.timeDatabase.totalRecords ?? 0 },
+            ]}
+          />
 
-          {/* Reports Database */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-orange-500" />
-                Base Reports
-              </CardTitle>
-              <CardDescription>Analytics et rapports</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Total enregistrements</TableCell>
-                    <TableCell className="text-right">{stats.reportsDatabase.totalRecords}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium" colSpan={2}>
-                      <span className="text-xs text-muted-foreground">En cours de développement</span>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <DatabaseStatsCard
+            title="Base Reports"
+            description="Analytics et rapports"
+            icon={Database}
+            iconColor="text-orange-500"
+            rows={[
+              { label: 'Total enregistrements', value: stats.reportsDatabase.totalRecords ?? 0 },
+              { label: '', value: 'En cours de développement' },
+            ]}
+          />
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   timeEntriesService,
   TimeEntry,
@@ -17,9 +17,10 @@ export function useTimeEntries() {
       setError(null);
       const data = await timeEntriesService.getAllTimeEntries();
       setTimeEntries(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch time entries');
-      console.error('Error fetching time entries:', err);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors du chargement des entrées de temps';
+      setError(errorMessage);
+      console.error('Erreur lors du chargement des entrées de temps :', err);
     } finally {
       setLoading(false);
     }
@@ -42,25 +43,26 @@ export function useTimeEntry(id: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTimeEntry = async () => {
+  const fetchTimeEntry = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await timeEntriesService.getTimeEntryById(id);
       setTimeEntry(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch time entry');
-      console.error('Error fetching time entry:', err);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors du chargement de l\'entrée de temps';
+      setError(errorMessage);
+      console.error('Erreur lors du chargement de l\'entrée de temps :', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (id) {
       fetchTimeEntry();
     }
-  }, [id]);
+  }, [id, fetchTimeEntry]);
 
   return {
     timeEntry,
@@ -80,10 +82,10 @@ export function useTimeEntryMutations() {
       setError(null);
       const newEntry = await timeEntriesService.createTimeEntry(entryData);
       return newEntry;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to create time entry';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la création de l\'entrée de temps';
       setError(errorMessage);
-      console.error('Error creating time entry:', err);
+      console.error('Erreur lors de la création de l\'entrée de temps :', err);
       return null;
     } finally {
       setLoading(false);
@@ -96,10 +98,10 @@ export function useTimeEntryMutations() {
       setError(null);
       await timeEntriesService.updateTimeEntry(id, entryData);
       return true;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to update time entry';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la mise à jour de l\'entrée de temps';
       setError(errorMessage);
-      console.error('Error updating time entry:', err);
+      console.error('Erreur lors de la mise à jour de l\'entrée de temps :', err);
       return false;
     } finally {
       setLoading(false);
@@ -112,10 +114,10 @@ export function useTimeEntryMutations() {
       setError(null);
       await timeEntriesService.deleteTimeEntry(id);
       return true;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to delete time entry';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la suppression de l\'entrée de temps';
       setError(errorMessage);
-      console.error('Error deleting time entry:', err);
+      console.error('Erreur lors de la suppression de l\'entrée de temps :', err);
       return false;
     } finally {
       setLoading(false);

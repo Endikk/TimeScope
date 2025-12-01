@@ -18,7 +18,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Connexion utilisateur
+    /// Connecte un utilisateur et retourne un token JWT
     /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Rafraîchir le token JWT
+    /// Renouvelle le token d'accès via le refresh token
     /// </summary>
     [HttpPost("refresh")]
     [AllowAnonymous]
@@ -68,7 +68,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Déconnexion utilisateur
+    /// Déconnecte l'utilisateur
     /// </summary>
     [HttpPost("logout")]
     [Authorize]
@@ -80,7 +80,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Obtenir l'utilisateur actuellement connecté
+    /// Récupère les infos de l'utilisateur connecté
     /// </summary>
     [HttpGet("me")]
     [Authorize]

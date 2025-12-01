@@ -20,8 +20,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère tous les utilisateurs depuis la base Admin
-    /// Accessible par Admin et Manager
+    /// Liste tous les utilisateurs (Admin/Manager uniquement)
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,Manager")]
@@ -40,8 +39,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Récupère un utilisateur par son ID depuis la base Admin
-    /// Accessible par tous les utilisateurs authentifiés
+    /// Récupère un utilisateur spécifique
     /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<User>> GetUser(Guid id)
@@ -65,8 +63,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Crée un nouvel utilisateur dans la base Admin
-    /// Accessible uniquement par Admin
+    /// Crée un nouvel utilisateur (Admin uniquement)
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -80,7 +77,11 @@ public class UsersController : ControllerBase
                 LastName = dto.LastName,
                 Email = dto.Email,
                 Password = dto.Password,
-                Role = dto.Role.ToString()
+                Role = dto.Role,
+                PhoneNumber = dto.PhoneNumber,
+                JobTitle = dto.JobTitle,
+                Department = dto.Department,
+                HireDate = dto.HireDate
             };
 
             var user = await _userService.CreateUserAsync(command);
@@ -94,16 +95,20 @@ public class UsersController : ControllerBase
             _logger.LogWarning(ex, "Validation error while creating user");
             return BadRequest(new { message = ex.Message });
         }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("IX_Users_Email") == true)
+        {
+            _logger.LogWarning(ex, "Email already exists in database");
+            return Conflict(new { message = "Un utilisateur avec cet email existe déjà" });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating user in Admin database");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { message = "Internal server error", details = ex.Message, innerException = ex.InnerException?.Message });
         }
     }
 
     /// <summary>
-    /// Met à jour un utilisateur existant dans la base Admin
-    /// Accessible par Admin et Manager
+    /// Met à jour un utilisateur (Admin/Manager uniquement)
     /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Manager")]
@@ -111,12 +116,25 @@ public class UsersController : ControllerBase
     {
         try
         {
+            DateTime? hireDate = null;
+            if (!string.IsNullOrEmpty(dto.HireDate))
+            {
+                if (DateTime.TryParse(dto.HireDate, out var parsedDate))
+                {
+                    hireDate = parsedDate;
+                }
+            }
+
             var command = new UpdateUserCommand
             {
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                IsActive = dto.IsActive
+                IsActive = dto.IsActive,
+                PhoneNumber = dto.PhoneNumber,
+                JobTitle = dto.JobTitle,
+                Department = dto.Department,
+                HireDate = hireDate
             };
 
             await _userService.UpdateUserAsync(id, command);
@@ -143,8 +161,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Supprime (soft delete) un utilisateur de la base Admin
-    /// Accessible uniquement par Admin
+    /// Supprime un utilisateur (Admin uniquement)
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
@@ -169,6 +186,260 @@ public class UsersController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    /// <summary>
+    /// Change le mot de passe de l'utilisateur
+    /// </summary>
+    [HttpPost("{id}/change-password")]
+    public async Task<ActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto dto)
+    {
+        // Vérification de sécurité : on ne peut changer que son propre mot de passe
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            var command = new ChangePasswordCommand
+            {
+                UserId = id,
+                CurrentPassword = dto.CurrentPassword,
+                NewPassword = dto.NewPassword
+            };
+
+            await _userService.ChangePasswordAsync(command);
+
+            _logger.LogInformation("Password changed successfully for user {UserId}", id);
+
+            return Ok(new { message = "Password changed successfully" });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized password change attempt for user {UserId}", id);
+            return Unauthorized(new { message = "Current password is incorrect" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while changing password for user {UserId}", id);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing password for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Statistiques d'activité de l'utilisateur
+    /// </summary>
+    [HttpGet("{id}/stats")]
+    public async Task<ActionResult<UserStatsDto>> GetUserStats(Guid id)
+    {
+        try
+        {
+            var stats = await _userService.GetUserStatsAsync(id);
+
+            if (stats == null)
+            {
+                return NotFound($"User with ID {id} not found");
+            }
+
+            return Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving stats for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Met à jour l'avatar
+    /// </summary>
+    [HttpPost("{id}/avatar")]
+    public async Task<ActionResult<User>> UploadAvatar(Guid id, IFormFile avatar)
+    {
+        // Vérification : modification de son propre profil uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            if (avatar == null || avatar.Length == 0)
+            {
+                return BadRequest(new { message = "No file uploaded" });
+            }
+
+            // Validate file type
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+            if (!allowedTypes.Contains(avatar.ContentType.ToLower()))
+            {
+                return BadRequest(new { message = "Invalid file type. Allowed: JPEG, PNG, GIF, WebP" });
+            }
+
+            // Validate file size (max 5MB)
+            if (avatar.Length > 5 * 1024 * 1024)
+            {
+                return BadRequest(new { message = "File size exceeds 5MB limit" });
+            }
+
+            // Convert to base64
+            using var memoryStream = new MemoryStream();
+            await avatar.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var base64String = $"data:{avatar.ContentType};base64,{Convert.ToBase64String(bytes)}";
+
+            var user = await _userService.UpdateAvatarAsync(id, base64String);
+
+            _logger.LogInformation("Avatar updated successfully for user {UserId}", id);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading avatar for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Met à jour la bannière
+    /// </summary>
+    [HttpPost("{id}/banner")]
+    public async Task<ActionResult<User>> UploadBanner(Guid id, IFormFile banner)
+    {
+        // Vérification : modification de son propre profil uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            if (banner == null || banner.Length == 0)
+            {
+                return BadRequest(new { message = "No file uploaded" });
+            }
+
+            // Validate file type
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+            if (!allowedTypes.Contains(banner.ContentType.ToLower()))
+            {
+                return BadRequest(new { message = "Invalid file type. Allowed: JPEG, PNG, GIF, WebP" });
+            }
+
+            // Validate file size (max 10MB for banners)
+            if (banner.Length > 10 * 1024 * 1024)
+            {
+                return BadRequest(new { message = "File size exceeds 10MB limit" });
+            }
+
+            // Convert to base64
+            using var memoryStream = new MemoryStream();
+            await banner.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var base64String = $"data:{banner.ContentType};base64,{Convert.ToBase64String(bytes)}";
+
+            var user = await _userService.UpdateBannerAsync(id, base64String);
+
+            _logger.LogInformation("Banner updated successfully for user {UserId}", id);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading banner for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Supprime l'avatar
+    /// </summary>
+    [HttpDelete("{id}/avatar")]
+    public async Task<ActionResult<User>> DeleteAvatar(Guid id)
+    {
+        // Vérification : modification de son propre profil uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            var user = await _userService.DeleteAvatarAsync(id);
+
+            _logger.LogInformation("Avatar deleted successfully for user {UserId}", id);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting avatar for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Supprime la bannière
+    /// </summary>
+    [HttpDelete("{id}/banner")]
+    public async Task<ActionResult<User>> DeleteBanner(Guid id)
+    {
+        // Vérification : modification de son propre profil uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            var user = await _userService.DeleteBannerAsync(id);
+
+            _logger.LogInformation("Banner deleted successfully for user {UserId}", id);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {UserId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting banner for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
 }
 
 // DTOs
@@ -177,12 +448,32 @@ public record CreateUserDto(
     string LastName,
     string Email,
     string Password,
-    UserRole Role
+    string Role,
+    string? PhoneNumber = null,
+    string? JobTitle = null,
+    string? Department = null,
+    string? HireDate = null
 );
 
 public record UpdateUserDto(
     string? FirstName,
     string? LastName,
     string? Email,
-    bool? IsActive
+    bool? IsActive,
+    string? PhoneNumber,
+    string? JobTitle,
+    string? Department,
+    string? HireDate
+);
+
+public record ChangePasswordDto(
+    string CurrentPassword,
+    string NewPassword
+);
+
+public record UserStatsDto(
+    int TasksCompleted,
+    int TasksInProgress,
+    double TotalHours,
+    int ProjectsCount
 );

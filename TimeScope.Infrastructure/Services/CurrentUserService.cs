@@ -6,7 +6,7 @@ using TimeScope.Core.Interfaces;
 namespace TimeScope.Infrastructure.Services;
 
 /// <summary>
-/// Service to retrieve information about the currently authenticated user from HTTP context.
+/// Service permettant de récupérer les informations de l'utilisateur authentifié depuis le contexte HTTP.
 /// </summary>
 public class CurrentUserService : ICurrentUserService
 {

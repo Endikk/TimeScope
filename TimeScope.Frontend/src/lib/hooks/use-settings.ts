@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   settingsService,
   AppSetting,
@@ -14,23 +14,24 @@ export function useSettings(params?: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await settingsService.getAllSettings(params);
       setSettings(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch settings');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch settings';
+      setError(errorMessage);
       console.error('Error fetching settings:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [params]);
 
   useEffect(() => {
     fetchSettings();
-  }, [params?.category, params?.isPublic]);
+  }, [fetchSettings]);
 
   return {
     settings,
@@ -45,25 +46,26 @@ export function useSetting(key: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSetting = async () => {
+  const fetchSetting = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await settingsService.getSettingByKey(key);
       setSetting(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch setting');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch setting';
+      setError(errorMessage);
       console.error('Error fetching setting:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [key]);
 
   useEffect(() => {
     if (key) {
       fetchSetting();
     }
-  }, [key]);
+  }, [key, fetchSetting]);
 
   return {
     setting,
@@ -84,8 +86,9 @@ export function useCategories() {
       setError(null);
       const data = await settingsService.getCategories();
       setCategories(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch categories');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch categories';
+      setError(errorMessage);
       console.error('Error fetching categories:', err);
     } finally {
       setLoading(false);
@@ -114,8 +117,8 @@ export function useSettingMutations() {
       setError(null);
       const newSetting = await settingsService.createSetting(settingData);
       return newSetting;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to create setting';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to create setting';
       setError(errorMessage);
       console.error('Error creating setting:', err);
       throw new Error(errorMessage);
@@ -129,8 +132,8 @@ export function useSettingMutations() {
       setLoading(true);
       setError(null);
       await settingsService.updateSetting(key, settingData);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to update setting';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to update setting';
       setError(errorMessage);
       console.error('Error updating setting:', err);
       throw new Error(errorMessage);
@@ -144,8 +147,8 @@ export function useSettingMutations() {
       setLoading(true);
       setError(null);
       await settingsService.deleteSetting(key);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to delete setting';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to delete setting';
       setError(errorMessage);
       console.error('Error deleting setting:', err);
       throw new Error(errorMessage);
@@ -160,8 +163,8 @@ export function useSettingMutations() {
       setError(null);
       const result = await settingsService.resetToDefaults();
       return result;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to reset settings';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to reset settings';
       setError(errorMessage);
       console.error('Error resetting settings:', err);
       throw new Error(errorMessage);

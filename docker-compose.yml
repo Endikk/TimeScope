@@ -1,77 +1,23 @@
 services:
-  # Base de données Admin - Gestion des utilisateurs, rôles, paramètres
-  postgres-admin:
+  # Base de données unifiée
+  postgres:
     image: postgres:16-alpine
-    container_name: timescope-postgres-admin
+    container_name: timescope-postgres
     environment:
-      POSTGRES_DB: timescope_admin
-      POSTGRES_USER: svc_timescope_admin
-      POSTGRES_PASSWORD: Admin8s60N5h7
+      POSTGRES_DB: timescope_db
+      POSTGRES_USER: svc_timescope
+      POSTGRES_PASSWORD: TimeScopeSecurePassword123!
     ports:
-      - "5443:5432"
+      - "5432:5432"
     volumes:
-      - postgres_admin_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_timescope_admin"]
+      test: [ "CMD-SHELL", "pg_isready -U svc_timescope -d timescope_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Base de données Projects - Gestion des projets et groupes
-  postgres-projects:
-    image: postgres:16-alpine
-    container_name: timescope-postgres-projects
-    environment:
-      POSTGRES_DB: timescope_projects
-      POSTGRES_USER: svc_timescope_projects
-      POSTGRES_PASSWORD: Projects8s60N5
-    ports:
-      - "5444:5432"
-    volumes:
-      - postgres_projects_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_timescope_projects"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Base de données Time - Gestion des tâches et entrées de temps
-  postgres-time:
-    image: postgres:16-alpine
-    container_name: timescope-postgres-time
-    environment:
-      POSTGRES_DB: timescope_time
-      POSTGRES_USER: svc_timescope_time
-      POSTGRES_PASSWORD: Time8s60N5h7dd
-    ports:
-      - "5445:5432"
-    volumes:
-      - postgres_time_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_timescope_time"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Base de données Reports - Gestion des rapports et analytics
-  postgres-reports:
-    image: postgres:16-alpine
-    container_name: timescope-postgres-reports
-    environment:
-      POSTGRES_DB: timescope_reports
-      POSTGRES_USER: svc_timescope_reports
-      POSTGRES_PASSWORD: Reports8s60N5
-    ports:
-      - "5446:5432"
-    volumes:
-      - postgres_reports_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_timescope_reports"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # pgAdmin pour la gestion de toutes les bases de données
+  # pgAdmin pour la gestion de la base de données
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: timescope-pgadmin
@@ -82,16 +28,36 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - postgres-admin
-      - postgres-projects
-      - postgres-time
-      - postgres-reports
+      - postgres
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 
+  # Backend API
+  timescope-api:
+    build:
+      context: .
+      dockerfile: TimeScope.API/Dockerfile
+    container_name: timescope-api
+    ports:
+      - "8080:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=timescope_db;Username=svc_timescope;Password=TimeScopeSecurePassword123!;
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Frontend React App
+  timescope-frontend:
+    build:
+      context: TimeScope.Frontend
+      dockerfile: Dockerfile
+    container_name: timescope-frontend
+
+    depends_on:
+      - timescope-api
 volumes:
-  postgres_admin_data:
-  postgres_projects_data:
-  postgres_time_data:
-  postgres_reports_data:
+  postgres_data:
   pgadmin_data:

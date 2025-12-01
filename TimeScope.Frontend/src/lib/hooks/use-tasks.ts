@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { tasksService, CreateTaskDto, UpdateTaskDto } from '@/lib/api/services';
 import { Task } from '@/lib/types';
 
@@ -38,7 +38,7 @@ export function useTask(id: string | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTask = async () => {
+  const fetchTask = useCallback(async () => {
     if (!id) {
       setLoading(false);
       return;
@@ -54,11 +54,11 @@ export function useTask(id: string | null) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchTask();
-  }, [id]);
+  }, [fetchTask]);
 
   return { task, loading, error, refetch: fetchTask };
 }
@@ -130,7 +130,7 @@ export function useTasksByUser(userId: string | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (!userId) {
       setLoading(false);
       return;
@@ -146,11 +146,11 @@ export function useTasksByUser(userId: string | null) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchTasks();
-  }, [userId]);
+  }, [fetchTasks]);
 
   return { tasks, loading, error, refetch: fetchTasks };
 }

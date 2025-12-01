@@ -1,36 +1,5 @@
 import apiClient from '../client';
-
-// Interfaces
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  groupId?: string;
-  createdAt: string;
-  updatedAt?: string;
-  isDeleted: boolean;
-}
-
-export interface Group {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt: string;
-  updatedAt?: string;
-  isDeleted: boolean;
-}
-
-export interface Theme {
-  id: string;
-  name: string;
-  color: string;
-  description?: string;
-  groupId?: string;
-  projectId?: string;
-  createdAt: string;
-  updatedAt?: string;
-  isDeleted: boolean;
-}
+import { Project, Group, Theme } from '@/types/project';
 
 // DTOs
 export interface CreateProjectDto {
@@ -75,7 +44,7 @@ export interface UpdateThemeDto {
 class ProjectsService {
   private readonly endpoint = '/projects';
 
-  // Projects
+  // Projets
   async getAllProjects(): Promise<Project[]> {
     const response = await apiClient.get<Project[]>(this.endpoint);
     return response.data;
@@ -94,7 +63,7 @@ class ProjectsService {
     await apiClient.delete(`${this.endpoint}/${id}`);
   }
 
-  // Groups
+  // Groupes
   async getAllGroups(): Promise<Group[]> {
     const response = await apiClient.get<Group[]>(`${this.endpoint}/groups`);
     return response.data;
@@ -113,7 +82,7 @@ class ProjectsService {
     await apiClient.delete(`${this.endpoint}/groups/${id}`);
   }
 
-  // Themes
+  // Thèmes
   async getAllThemes(): Promise<Theme[]> {
     const response = await apiClient.get<Theme[]>(`${this.endpoint}/themes`);
     return response.data;

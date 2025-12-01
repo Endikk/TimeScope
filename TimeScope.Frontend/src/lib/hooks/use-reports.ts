@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   reportsService,
   AuditLog,
@@ -17,23 +17,24 @@ export function useAuditLogs(params?: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await reportsService.getAuditLogs(params);
       setLogs(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch audit logs');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch audit logs';
+      setError(errorMessage);
       console.error('Error fetching audit logs:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [params]);
 
   useEffect(() => {
     fetchLogs();
-  }, [params?.limit, params?.entityType, params?.userId]);
+  }, [fetchLogs]);
 
   return {
     logs,
@@ -51,23 +52,24 @@ export function useReportStatistics(params?: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStatistics = async () => {
+  const fetchStatistics = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await reportsService.getStatistics(params);
       setStatistics(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch statistics');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch statistics';
+      setError(errorMessage);
       console.error('Error fetching statistics:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [params]);
 
   useEffect(() => {
     fetchStatistics();
-  }, [params?.startDate, params?.endDate]);
+  }, [fetchStatistics]);
 
   return {
     statistics,
@@ -82,23 +84,24 @@ export function useActivitySummary(days: number = 7) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await reportsService.getActivitySummary(days);
       setActivities(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch activity summary');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch activity summary';
+      setError(errorMessage);
       console.error('Error fetching activity summary:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [days]);
 
   useEffect(() => {
     fetchActivities();
-  }, [days]);
+  }, [fetchActivities]);
 
   return {
     activities,
@@ -116,23 +119,24 @@ export function useTopUsers(params?: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTopUsers = async () => {
+  const fetchTopUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await reportsService.getTopUsers(params);
       setTopUsers(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch top users');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to fetch top users';
+      setError(errorMessage);
       console.error('Error fetching top users:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [params]);
 
   useEffect(() => {
     fetchTopUsers();
-  }, [params?.limit, params?.days]);
+  }, [fetchTopUsers]);
 
   return {
     topUsers,
@@ -152,8 +156,8 @@ export function useAuditLogMutations() {
       setError(null);
       const newLog = await reportsService.createAuditLog(logData);
       return newLog;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to create audit log';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to create audit log';
       setError(errorMessage);
       console.error('Error creating audit log:', err);
       throw new Error(errorMessage);

@@ -1,6 +1,6 @@
 /**
- * Authentication Service
- * Handles user authentication, token management, and session operations
+ * Service d'authentification
+ * Gère l'authentification des utilisateurs, la gestion des tokens et les sessions
  *
  * @module services/auth
  */
@@ -8,84 +8,71 @@
 import apiClient from '../client';
 
 /**
- * User entity representing an authenticated user
+ * Entité utilisateur représentant un utilisateur authentifié
  */
-/**
- * User entity - Matches backend UserDto
- * Note: This should match TimeScope.Core.Interfaces.IAuthService.UserDto
- */
-export interface User {
-  /** Unique user identifier (Guid from backend, serialized as string) */
-  id: string;
-  /** User's first name */
-  firstName: string;
-  /** User's last name */
-  lastName: string;
-  /** User's email address */
-  email: string;
-  /** Optional avatar URL */
-  avatar?: string;
-  /** User's role in the system - matches backend UserRole enum */
-  role: 'Admin' | 'Manager' | 'Employee';
-  /** Whether the user account is active */
-  isActive: boolean;
-}
+import { User } from '@/types/user';
 
 /**
- * Login credentials required for authentication
+ * Entité utilisateur représentant un utilisateur authentifié
+ */
+// Re-export User for backward compatibility if needed, or just use the imported one
+export type { User };
+
+/**
+ * Identifiants requis pour l'authentification
  */
 export interface LoginCredentials {
-  /** User's email address */
+  /** Adresse email de l'utilisateur */
   email: string;
-  /** User's password */
+  /** Mot de passe de l'utilisateur */
   password: string;
 }
 
 /**
- * Response returned after successful login
+ * Réponse retournée après une connexion réussie
  */
 export interface LoginResponse {
-  /** JWT access token for API authentication */
+  /** Token d'accès JWT pour l'authentification API */
   token: string;
-  /** Refresh token for obtaining new access tokens */
+  /** Token de rafraîchissement pour obtenir de nouveaux tokens d'accès */
   refreshToken: string;
-  /** Authenticated user information */
+  /** Informations de l'utilisateur authentifié */
   user: User;
 }
 
 /**
- * Request payload for token refresh
+ * Requête pour le rafraîchissement du token
  */
 export interface RefreshTokenRequest {
-  /** Current refresh token */
+  /** Token de rafraîchissement actuel */
   refreshToken: string;
 }
 
 /**
- * Current user information response
+ * Informations de l'utilisateur courant
  */
 export interface CurrentUserResponse {
-  /** User ID */
+  /** ID de l'utilisateur */
   id: string;
-  /** User email */
+  /** Email de l'utilisateur */
   email: string;
-  /** User full name */
+  /** Nom complet de l'utilisateur */
   name: string;
-  /** User role */
+  /** Rôle de l'utilisateur */
   role: string;
 }
 
 /**
- * Authentication API Service
- * Provides methods for user authentication and session management
+ * Service API d'authentification
+ * Fournit des méthodes pour l'authentification et la gestion de session
  */
 export const authApiService = {
   /**
-   * Authenticates a user with email and password
+   * Authentifie un utilisateur avec email et mot de passe
    *
-   * @param credentials - User login credentials (email and password)
-   * @returns Promise resolving to login response with tokens and user info
-   * @throws {ApiError} When authentication fails or credentials are invalid
+   * @param credentials - Identifiants de connexion (email et mot de passe)
+   * @returns Promesse résolue avec la réponse de connexion (tokens et infos utilisateur)
+   * @throws {ApiError} En cas d'échec d'authentification ou d'identifiants invalides
    *
    * @example
    * ```typescript
@@ -102,11 +89,11 @@ export const authApiService = {
   },
 
   /**
-   * Refreshes an expired JWT access token using a refresh token
+   * Rafraîchit un token d'accès JWT expiré via un token de rafraîchissement
    *
-   * @param refreshToken - Current valid refresh token
-   * @returns Promise resolving to new tokens and user info
-   * @throws {ApiError} When refresh token is invalid or expired
+   * @param refreshToken - Token de rafraîchissement valide
+   * @returns Promesse résolue avec les nouveaux tokens et infos utilisateur
+   * @throws {ApiError} Si le token de rafraîchissement est invalide ou expiré
    *
    * @example
    * ```typescript
@@ -122,10 +109,10 @@ export const authApiService = {
   },
 
   /**
-   * Logs out the current user and invalidates the session
-   * Continues client-side logout even if API call fails
+   * Déconnecte l'utilisateur courant et invalide la session
+   * Poursuit la déconnexion côté client même si l'appel API échoue
    *
-   * @returns Promise that resolves when logout is complete
+   * @returns Promesse résolue une fois la déconnexion terminée
    *
    * @example
    * ```typescript
@@ -138,16 +125,16 @@ export const authApiService = {
     try {
       await apiClient.post('/auth/logout');
     } catch (error) {
-      // Log error but continue with client-side logout
-      console.error('Logout API error:', error);
+      // Log de l'erreur mais poursuite de la déconnexion côté client
+      console.error('Erreur API lors de la déconnexion :', error);
     }
   },
 
   /**
-   * Retrieves the currently authenticated user's information
+   * Récupère les informations de l'utilisateur actuellement authentifié
    *
-   * @returns Promise resolving to current user details
-   * @throws {ApiError} When user is not authenticated or token is invalid
+   * @returns Promesse résolue avec les détails de l'utilisateur
+   * @throws {ApiError} Si l'utilisateur n'est pas authentifié ou le token invalide
    *
    * @example
    * ```typescript
@@ -174,7 +161,7 @@ export const authApiService = {
   },
 };
 
-// Helper functions pour le localStorage
+// Fonctions utilitaires pour le localStorage
 export const tokenStorage = {
   /**
    * Sauvegarder les tokens et l'utilisateur

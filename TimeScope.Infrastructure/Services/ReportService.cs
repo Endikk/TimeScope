@@ -24,7 +24,7 @@ public class ReportService : IReportService
 
     public async Task<AuditLog> CreateAuditLogAsync(CreateAuditLogCommand command)
     {
-        // Règles métier : validation
+        // Validation des règles métier
         if (string.IsNullOrWhiteSpace(command.Action))
         {
             throw new ArgumentException("Action is required");
@@ -79,7 +79,7 @@ public class ReportService : IReportService
         var start = startDate ?? DateTime.UtcNow.AddDays(-30);
         var end = endDate ?? DateTime.UtcNow;
 
-        // Récupération des données depuis toutes les bases
+        // Récupération des données depuis tous les contextes
         var users = await _adminUow.Users.GetAllAsync();
         var projects = await _projectsUow.Projects.GetAllAsync();
         var groups = await _projectsUow.Groups.GetAllAsync();
@@ -88,7 +88,7 @@ public class ReportService : IReportService
         var timeEntries = await _timeUow.TimeEntries.GetAllAsync();
         var auditLogs = await _reportsUow.AuditLogs.GetAllAsync();
 
-        // Logique métier : calculs de statistiques
+        // Calcul des statistiques métier
         var stats = new ReportStatistics
         {
             TotalUsers = users.Count(u => u.IsActive),
@@ -110,7 +110,7 @@ public class ReportService : IReportService
         var since = DateTime.UtcNow.AddDays(-days);
         var allLogs = await _reportsUow.AuditLogs.GetAllAsync();
 
-        // Logique métier : agrégation des activités
+        // Agrégation des activités par type et action
         var activities = allLogs
             .Where(log => log.Timestamp >= since)
             .GroupBy(log => new { log.EntityType, log.Action })
@@ -132,7 +132,7 @@ public class ReportService : IReportService
         var since = DateTime.UtcNow.AddDays(-days);
         var allLogs = await _reportsUow.AuditLogs.GetAllAsync();
 
-        // Logique métier : calcul des utilisateurs les plus actifs
+        // Identification des utilisateurs les plus actifs
         var topUsers = allLogs
             .Where(log => log.Timestamp >= since)
             .GroupBy(log => new { log.UserId, log.UserName })

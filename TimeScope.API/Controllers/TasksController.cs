@@ -32,6 +32,9 @@ public class TasksController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Liste toutes les tâches
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<WorkTask>>> GetTasks()
     {
@@ -47,6 +50,9 @@ public class TasksController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère les détails d'une tâche
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<WorkTask>> GetTask(Guid id)
     {
@@ -68,6 +74,9 @@ public class TasksController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Crée une nouvelle tâche
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<WorkTask>> CreateTask([FromBody] CreateTaskDto dto)
     {
@@ -108,6 +117,9 @@ public class TasksController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Met à jour une tâche existante
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTask(Guid id, [FromBody] CreateTaskDto dto)
     {
@@ -148,6 +160,9 @@ public class TasksController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Supprime une tâche
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(Guid id)
     {
@@ -169,6 +184,9 @@ public class TasksController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère les tâches d'un projet
+    /// </summary>
     [HttpGet("project/{projectId}")]
     public async Task<ActionResult<IEnumerable<WorkTask>>> GetTasksByProject(Guid projectId)
     {
@@ -185,6 +203,9 @@ public class TasksController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Récupère les tâches assignées à un utilisateur
+    /// </summary>
     [HttpGet("user/{userId}")]
     public async Task<ActionResult<IEnumerable<WorkTask>>> GetTasksByUser(Guid userId)
     {
@@ -201,6 +222,9 @@ public class TasksController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Filtre les tâches par statut
+    /// </summary>
     [HttpGet("status/{status}")]
     public async Task<ActionResult<IEnumerable<WorkTask>>> GetTasksByStatus(string status)
     {

@@ -1,37 +1,5 @@
 // Task Status - Aligned with backend enums
-export type TaskStatus = "EnAttente" | "EnCours" | "Termine"
-export type TaskPrecision = "Low" | "Medium" | "High"
-export type TaskPriority = "Low" | "Medium" | "High"
-
-export interface Task {
-  id: string
-  name: string
-  projectId: string
-  precision: TaskPrecision
-  status: TaskStatus
-  timeSpent: string
-  assigneeId?: string // Changed from 'assignee: string' to match backend
-  assignee?: string // Display name for UI (populated from backend)
-  priority?: TaskPriority
-  dueDate?: string
-  description?: string
-  estimatedTime?: string
-  actualTime?: string
-}
-
-export interface TaskFilters {
-  projectId: string
-  precision: string
-  search: string
-}
-
-export interface TaskStats {
-  totalTasks: number
-  totalTime: string
-  activeTeams: number
-  completedTasks: number
-  collaborators: number
-}
+export type { TaskStatus, TaskPrecision, TaskPriority, Task, TaskFilters, TaskStats } from '@/types/task';
 
 // Nouveaux types pour le système de suivi mensuel
 export interface DayEntry {

@@ -15,7 +15,7 @@ public class TaskService : ITaskService
 
     public async Task<WorkTask> CreateTaskAsync(CreateTaskCommand command)
     {
-        // Validation et parsing - Logique métier
+        // Validation et parsing des données entrantes
         var projectId = ParseGuid(command.ProjectId, "ProjectId");
         var assigneeId = ParseNullableGuid(command.AssigneeId);
         var status = ParseEnum<TaskStatus>(command.Status, "Status");
@@ -24,13 +24,13 @@ public class TaskService : ITaskService
         var dueDate = ParseNullableDateTime(command.DueDate);
         var estimatedTime = ParseTimeSpan(command.EstimatedTime);
 
-        // Règles métier : validation du nom
+        // Validation des règles métier (nom obligatoire)
         if (string.IsNullOrWhiteSpace(command.Name))
         {
             throw new ArgumentException("Task name is required");
         }
 
-        // Création de l'entité
+        // Création de la nouvelle tâche
         var task = new WorkTask
         {
             Id = Guid.NewGuid(),
@@ -61,7 +61,7 @@ public class TaskService : ITaskService
             throw new KeyNotFoundException($"Task with ID {id} not found");
         }
 
-        // Validation et parsing
+        // Parsing des nouvelles valeurs
         var projectId = ParseGuid(command.ProjectId, "ProjectId");
         var assigneeId = ParseNullableGuid(command.AssigneeId);
         var status = ParseEnum<TaskStatus>(command.Status, "Status");
@@ -70,13 +70,13 @@ public class TaskService : ITaskService
         var dueDate = ParseNullableDateTime(command.DueDate);
         var estimatedTime = ParseTimeSpan(command.EstimatedTime);
 
-        // Règles métier
+        // Validation métier
         if (string.IsNullOrWhiteSpace(command.Name))
         {
             throw new ArgumentException("Task name is required");
         }
 
-        // Mise à jour
+        // Mise à jour des propriétés
         existingTask.Name = command.Name.Trim();
         existingTask.Description = command.Description?.Trim();
         existingTask.ProjectId = projectId;
@@ -118,7 +118,7 @@ public class TaskService : ITaskService
         return await _timeUow.Tasks.GetAllAsync();
     }
 
-    #region Helper Methods - Logique de parsing réutilisable
+    #region Méthodes utilitaires de parsing
 
     private static Guid ParseGuid(string value, string fieldName)
     {

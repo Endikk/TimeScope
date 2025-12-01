@@ -1,7 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Clock, TrendingUp, Users, FolderKanban, Calendar, Activity, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useTimeEntries, useTimeEntryStats } from '@/lib/hooks/use-timeentries';
 import { useProjects } from '@/lib/hooks/use-projects';
 import { useTasks } from '@/lib/hooks/use-tasks';
@@ -9,6 +6,15 @@ import { useUsers } from '@/lib/hooks/use-users';
 import { useHolidays, getEventsForDate } from '@/lib/hooks/use-holidays';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, subDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import {
+  StatCard,
+  WeeklyHoursChart,
+  MonthlyTrendChart,
+  ProjectDistributionChart,
+  TaskCompletionChart,
+  RecentActivity,
+  DashboardHeader
+} from './components';
 
 interface WeeklyData {
   day: string;
@@ -184,92 +190,12 @@ export default function DashboardPageAPI() {
     );
   }
 
-  const StatCard = ({ title, value, icon: Icon, description, trend, color = "blue" }: {
-    title: string;
-    value: string | number;
-    icon: any;
-    description: string;
-    trend?: string;
-    color?: "blue" | "green" | "purple" | "orange" | "pink" | "cyan";
-  }) => {
-    const colorClasses = {
-      blue: {
-        bg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200",
-        icon: "text-blue-600",
-        text: "text-blue-900",
-        trend: "text-blue-600"
-      },
-      green: {
-        bg: "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200",
-        icon: "text-green-600",
-        text: "text-green-900",
-        trend: "text-green-600"
-      },
-      purple: {
-        bg: "bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200",
-        icon: "text-purple-600",
-        text: "text-purple-900",
-        trend: "text-purple-600"
-      },
-      orange: {
-        bg: "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200",
-        icon: "text-orange-600",
-        text: "text-orange-900",
-        trend: "text-orange-600"
-      },
-      pink: {
-        bg: "bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200",
-        icon: "text-pink-600",
-        text: "text-pink-900",
-        trend: "text-pink-600"
-      },
-      cyan: {
-        bg: "bg-gradient-to-br from-cyan-50 to-sky-50 border-cyan-200",
-        icon: "text-cyan-600",
-        text: "text-cyan-900",
-        trend: "text-cyan-600"
-      }
-    };
-
-    const colors = colorClasses[color];
-
-    return (
-      <Card className={`${colors.bg} border shadow-sm hover:shadow-md transition-shadow`}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium font-body text-gray-700">{title}</CardTitle>
-          <Icon className={`h-5 w-5 ${colors.icon}`} />
-        </CardHeader>
-        <CardContent>
-          <div className={`text-2xl font-bold font-heading ${colors.text}`}>{value}</div>
-          <p className="text-xs text-gray-600 font-body">{description}</p>
-          {trend && (
-            <p className={`text-xs ${colors.trend} mt-1 font-body font-medium`}>
-              <TrendingUp className="inline h-3 w-3 mr-1" />
-              {trend}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    );
-  };
-
   return (
-    <div className="p-6 space-y-6 bg-fp-bg min-h-screen">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-heading font-bold tracking-tight text-fp-text">Dashboard</h1>
-          <p className="text-fp-text/70 font-body">
-            Vue d'ensemble de votre activité et de vos performances
-          </p>
-        </div>
-        <Button onClick={handleRefreshAll} variant="outline" size="sm">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Actualiser
-        </Button>
-      </div>
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6 bg-fp-bg min-h-screen">
+      <DashboardHeader onRefresh={handleRefreshAll} />
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="Heures aujourd'hui"
           value={isHoliday ? "Férié !" : isWeekend ? "C'est le week-end !" : todayHours.toFixed(1) + 'h'}
@@ -319,156 +245,18 @@ export default function DashboardPageAPI() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Weekly Hours Chart */}
-        <Card className="bg-white border-fp-text/10">
-          <CardHeader>
-            <CardTitle className="font-heading text-fp-text">Heures par jour - Cette semaine</CardTitle>
-            <CardDescription className="font-body text-fp-text/70">Répartition de votre temps hebdomadaire</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="hours" fill="#3B82F6" name="Heures" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Monthly Trend Chart */}
-        <Card className="bg-white border-fp-text/10">
-          <CardHeader>
-            <CardTitle className="font-heading text-fp-text">Tendance mensuelle</CardTitle>
-            <CardDescription className="font-body text-fp-text/70">Évolution du temps de travail par semaine</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="hours"
-                  stroke="#3B82F6"
-                  strokeWidth={3}
-                  name="Heures"
-                  dot={{ fill: '#3B82F6', r: 5 }}
-                  activeDot={{ r: 7 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      <div className="grid gap-3 md:gap-4 grid-cols-1 lg:grid-cols-2">
+        <WeeklyHoursChart data={weeklyData} />
+        <MonthlyTrendChart data={monthlyData} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Project Distribution */}
-        <Card className="bg-white border-fp-text/10">
-          <CardHeader>
-            <CardTitle className="font-heading text-fp-text">Répartition par projet</CardTitle>
-            <CardDescription className="font-body text-fp-text/70">Distribution des heures ce mois-ci</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {projectData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={projectData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="hours"
-                  >
-                    {projectData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                Aucune donnée disponible
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Task Completion Status */}
-        <Card className="bg-white border-fp-text/10">
-          <CardHeader>
-            <CardTitle className="font-heading text-fp-text">Statut des tâches</CardTitle>
-            <CardDescription className="font-body text-fp-text/70">Répartition de vos tâches par statut</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {taskCompletionData.some(d => d.value > 0) ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={taskCompletionData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ status, value }) => `${status}: ${value}`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {taskCompletionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                Aucune tâche disponible
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid gap-3 md:gap-4 grid-cols-1 lg:grid-cols-2">
+        <ProjectDistributionChart data={projectData} />
+        <TaskCompletionChart data={taskCompletionData} />
       </div>
 
       {/* Recent Activity */}
-      <Card className="bg-white border-fp-text/10">
-        <CardHeader>
-          <CardTitle className="font-heading text-fp-text">Activité récente</CardTitle>
-          <CardDescription className="font-body text-fp-text/70">Vos dernières actions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {recentActivities.length > 0 ? (
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-4 pb-4 border-b border-fp-text/10 last:border-0">
-                  <div className="bg-fp-accent/10 p-2 rounded-full">
-                    <Activity className="h-4 w-4 text-fp-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium font-body text-fp-text">{activity.action}</p>
-                    <p className="text-xs text-fp-text/60 font-body">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              Aucune activité récente
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <RecentActivity activities={recentActivities} />
     </div>
   );
 }

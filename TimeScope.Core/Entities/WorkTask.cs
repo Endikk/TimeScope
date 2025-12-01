@@ -1,5 +1,8 @@
 namespace TimeScope.Core.Entities;
 
+/// <summary>
+/// Tâche de travail assignée à un utilisateur
+/// </summary>
 public class WorkTask : BaseEntity
 {
     public string Name { get; set; } = string.Empty;

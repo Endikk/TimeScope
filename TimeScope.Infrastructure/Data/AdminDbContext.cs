@@ -34,8 +34,15 @@ public class AdminDbContext : DbContext
             entity.Property(e => e.PasswordHash).IsRequired();
             entity.Property(e => e.Role).IsRequired();
             entity.Property(e => e.IsActive).IsRequired();
+
+            // Professional Information
+            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+            entity.Property(e => e.JobTitle).HasMaxLength(100);
+            entity.Property(e => e.Department).HasMaxLength(100);
+            entity.Property(e => e.HireDate);
+
             entity.HasQueryFilter(e => !e.IsDeleted);
-            
+
             // Ignore navigation properties (managed in other contexts)
             entity.Ignore(e => e.AssignedTasks);
             entity.Ignore(e => e.TimeEntries);

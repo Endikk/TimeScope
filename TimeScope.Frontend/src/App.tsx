@@ -4,6 +4,7 @@ import ContactPage from "@/pages/contact"
 import RequestPage from "@/pages/request"
 import DashboardPage from "@/pages/dashboard"
 import TimesheetPage from "@/pages/timesheet"
+import ProfilePage from "@/pages/profile"
 import LoginPage from "@/pages/login"
 import AdminPage from "@/pages/admin"
 import UserManagementPage from "@/pages/admin/user-management"
@@ -43,6 +44,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/timesheet" element={<TimesheetPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
       {/* Routes Admin - Réservées aux Admin et Manager */}
