@@ -41,27 +41,11 @@ const DEFAULT_ADMIN_SETTINGS = {
 const DEFAULT_USER_SETTINGS = {
   profile: {
     allowProfilePicture: true,
-    allowShowEmail: true,
-    allowShowPhone: true,
-  },
-  notifications: {
-    allowEmailOnTaskAssign: true,
-    allowEmailOnTaskUpdate: true,
-    allowEmailOnMention: true,
-    allowDesktopNotifications: true,
-    allowSummaryFrequency: true,
+    allowBanner: true,
   },
   appearance: {
     allowTheme: true,
-    allowColorScheme: true,
     allowCompactView: true,
-    allowShowAvatars: true,
-  },
-  regional: {
-    allowLanguage: true,
-    allowTimezone: true,
-    allowDateFormat: true,
-    allowTimeFormat: true,
   },
 };
 
