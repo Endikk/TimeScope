@@ -26,7 +26,6 @@ export function TaskCompletionChart({ data }: TaskCompletionChartProps) {
                 data={data}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
                 label={({ status, value }) => `${status}: ${value}`}
                 labelLine={{ stroke: 'hsl(var(--muted-foreground))' }}
                 outerRadius={80}
