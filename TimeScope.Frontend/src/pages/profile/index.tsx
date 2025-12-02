@@ -4,8 +4,6 @@ import { ProfileHeader } from './components/ProfileHeader';
 import { PersonalInfoCard, PersonalInfoData } from './components/PersonalInfoCard';
 import { ProfessionalInfoCard } from './components/ProfessionalInfoCard';
 import { ActivityStatsCard } from './components/ActivityStatsCard';
-import { SecurityCard } from './components/SecurityCard';
-import { UserPreferencesCard } from './components/UserPreferencesCard';
 import { profileApiService, UserStatsResponse } from '@/lib/api/services/profile.service';
 import { tokenStorage, User } from '@/lib/api/services/auth.service';
 
@@ -206,27 +204,6 @@ export default function ProfilePage() {
     setIsEditingPersonalInfo(!isEditingPersonalInfo);
   };
 
-  const handlePasswordChange = async (currentPassword: string, newPassword: string) => {
-    if (!user?.id) {
-      throw new Error('User not found');
-    }
-
-    try {
-      await profileApiService.changePassword(user.id, {
-        currentPassword,
-        newPassword,
-      });
-
-      alert('Mot de passe changé avec succès');
-    } catch (error: unknown) {
-      const err = error as { response?: { status?: number; data?: { message?: string } } };
-      if (err?.response?.status === 401) {
-        throw new Error('Mot de passe actuel incorrect');
-      }
-      throw new Error(err?.response?.data?.message || 'Erreur lors du changement de mot de passe');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto">
@@ -254,10 +231,6 @@ export default function ProfilePage() {
               onEdit={handleEditPersonalInfo}
             />
             <ProfessionalInfoCard user={user} />
-            <SecurityCard
-              onPasswordChange={handlePasswordChange}
-            />
-            <UserPreferencesCard />
           </div>
 
           {/* Colonne droite - S'étend sur 1 colonne sur les grands écrans */}

@@ -8,7 +8,6 @@ import {
   Bell,
   LogOut,
   Shield,
-  LayoutGrid,
 } from "lucide-react"
 
 import { useAuth } from "@/contexts/AuthContext"
