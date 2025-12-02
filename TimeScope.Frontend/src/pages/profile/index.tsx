@@ -6,6 +6,7 @@ import { ProfessionalInfoCard } from './components/ProfessionalInfoCard';
 import { ActivityStatsCard } from './components/ActivityStatsCard';
 import { profileApiService, UserStatsResponse } from '@/lib/api/services/profile.service';
 import { tokenStorage, User } from '@/lib/api/services/auth.service';
+import { motion } from 'framer-motion';
 
 export default function ProfilePage() {
   const { user: authUser } = useAuth();
@@ -204,12 +205,39 @@ export default function ProfilePage() {
     setIsEditingPersonalInfo(!isEditingPersonalInfo);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto">
+      <motion.div
+        className="max-w-7xl mx-auto"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
         {/* En-tête de profil */}
         {user && (
-          <div className="bg-card rounded-lg shadow-sm mb-8">
+          <motion.div variants={itemVariants} className="mb-8">
             <ProfileHeader
               user={user}
               onUploadPhoto={handleUploadPhoto}
@@ -217,28 +245,34 @@ export default function ProfilePage() {
               onDeletePhoto={handleDeletePhoto}
               onDeleteBanner={handleDeleteBanner}
             />
-          </div>
+          </motion.div>
         )}
 
         {/* Grille de contenu principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 pb-8">
           {/* Colonne gauche - S'étend sur 2 colonnes sur les grands écrans */}
           <div className="lg:col-span-2 space-y-6">
-            <PersonalInfoCard
-              user={user}
-              isEditing={isEditingPersonalInfo}
-              onSave={handleSavePersonalInfo}
-              onEdit={handleEditPersonalInfo}
-            />
-            <ProfessionalInfoCard user={user} />
+            <motion.div variants={itemVariants}>
+              <PersonalInfoCard
+                user={user}
+                isEditing={isEditingPersonalInfo}
+                onSave={handleSavePersonalInfo}
+                onEdit={handleEditPersonalInfo}
+              />
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <ProfessionalInfoCard user={user} />
+            </motion.div>
           </div>
 
           {/* Colonne droite - S'étend sur 1 colonne sur les grands écrans */}
           <div className="lg:col-span-1 space-y-6">
-            <ActivityStatsCard stats={activityStats} />
+            <motion.div variants={itemVariants}>
+              <ActivityStatsCard stats={activityStats} />
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
