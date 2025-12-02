@@ -44,7 +44,7 @@ const DEFAULT_USER_SETTINGS = {
     allowBanner: true,
   },
   appearance: {
-    allowTheme: true,
+
     allowCompactView: true,
   },
 };

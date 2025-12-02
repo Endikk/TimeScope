@@ -10,7 +10,7 @@ interface UserSettings {
     allowBanner?: boolean;
   };
   appearance?: {
-    allowTheme?: boolean;
+
     allowCompactView?: boolean;
   };
 }
@@ -79,19 +79,7 @@ export function UserSettingsCard({ settings, onUpdate, onSave, saving }: UserSet
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="allow-theme">Thème</Label>
-              <p className="text-sm text-muted-foreground">
-                Permettre aux employés de changer le thème (clair/sombre)
-              </p>
-            </div>
-            <Switch
-              id="allow-theme"
-              checked={settings?.appearance?.allowTheme ?? true}
-              onCheckedChange={(checked) => onUpdate('appearance.allowTheme', checked)}
-            />
-          </div>
+
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

@@ -2,42 +2,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Shield, Lock, Key, Smartphone } from 'lucide-react';
+import { Shield, Lock, Key, Mail } from 'lucide-react';
 import { useState } from 'react';
 
 interface SecurityCardProps {
   onPasswordChange: (currentPassword: string, newPassword: string) => Promise<void>;
+  onEmailChange: (newEmail: string) => Promise<void>;
+  currentEmail?: string;
 }
 
-export function SecurityCard({ onPasswordChange }: SecurityCardProps) {
+export function SecurityCard({ onPasswordChange, onEmailChange, currentEmail }: SecurityCardProps) {
+  // Password state
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+
+  // Email state
+  const [showEmailFields, setShowEmailFields] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
 
   const handlePasswordChange = async () => {
-    setError('');
+    setPasswordError('');
 
     // Validation
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setError('Tous les champs sont requis');
+      setPasswordError('Tous les champs sont requis');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
+      setPasswordError('Les mots de passe ne correspondent pas');
       return;
     }
 
     if (newPassword.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
+      setPasswordError('Le mot de passe doit contenir au moins 6 caractères');
       return;
     }
 
-    setIsLoading(true);
+    setIsPasswordLoading(true);
     try {
       await onPasswordChange(currentPassword, newPassword);
 
@@ -47,9 +56,45 @@ export function SecurityCard({ onPasswordChange }: SecurityCardProps) {
       setConfirmPassword('');
       setShowPasswordFields(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du changement de mot de passe');
+      setPasswordError(err instanceof Error ? err.message : 'Erreur lors du changement de mot de passe');
     } finally {
-      setIsLoading(false);
+      setIsPasswordLoading(false);
+    }
+  };
+
+  const handleEmailChange = async () => {
+    setEmailError('');
+
+    // Validation
+    if (!newEmail || !confirmEmail) {
+      setEmailError('Tous les champs sont requis');
+      return;
+    }
+
+    if (newEmail !== confirmEmail) {
+      setEmailError('Les adresses email ne correspondent pas');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      setEmailError('Adresse email invalide');
+      return;
+    }
+
+    setIsEmailLoading(true);
+    try {
+      await onEmailChange(newEmail);
+
+      // Reset form
+      setNewEmail('');
+      setConfirmEmail('');
+      setShowEmailFields(false);
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : "Erreur lors du changement d'email");
+    } finally {
+      setIsEmailLoading(false);
     }
   };
 
@@ -65,92 +110,147 @@ export function SecurityCard({ onPasswordChange }: SecurityCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Changement de mot de passe */}
+        {/* Changement d'email */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-base flex items-center gap-2">
-                <Lock className="h-4 w-4 text-muted-foreground" />
-                Mot de passe
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                Adresse Email
               </Label>
               <p className="text-sm text-muted-foreground">
-                Modifiez votre mot de passe
+                {currentEmail ? `Actuellement : ${currentEmail}` : 'Modifiez votre adresse email'}
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
-                setShowPasswordFields(!showPasswordFields);
-                setError('');
+                setShowEmailFields(!showEmailFields);
+                setEmailError('');
+                setNewEmail('');
+                setConfirmEmail('');
               }}
             >
-              {showPasswordFields ? 'Annuler' : 'Modifier'}
+              {showEmailFields ? 'Annuler' : 'Modifier'}
             </Button>
           </div>
 
-          {showPasswordFields && (
+          {showEmailFields && (
             <div className="space-y-4 pl-6 border-l-2 border-indigo-200">
-              {error && (
+              {emailError && (
                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                  {error}
+                  {emailError}
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="current-password">Mot de passe actuel</Label>
+                <Label htmlFor="new-email">Nouvel email</Label>
                 <Input
-                  id="current-password"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  disabled={isLoading}
+                  id="new-email"
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  disabled={isEmailLoading}
+                  placeholder="exemple@domaine.com"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                <Label htmlFor="confirm-email">Confirmer l'email</Label>
                 <Input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={isLoading}
+                  id="confirm-email"
+                  type="email"
+                  value={confirmEmail}
+                  onChange={(e) => setConfirmEmail(e.target.value)}
+                  disabled={isEmailLoading}
+                  placeholder="exemple@domaine.com"
                 />
               </div>
               <Button
                 size="sm"
                 className="w-full"
-                onClick={handlePasswordChange}
-                disabled={isLoading}
+                onClick={handleEmailChange}
+                disabled={isEmailLoading}
               >
-                <Key className="h-4 w-4 mr-2" />
-                {isLoading ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
+                <Mail className="h-4 w-4 mr-2" />
+                {isEmailLoading ? 'Mise à jour...' : "Mettre à jour l'email"}
               </Button>
             </div>
           )}
         </div>
 
         <div className="border-t pt-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="two-factor" className="text-base flex items-center gap-2">
-                <Smartphone className="h-4 w-4 text-muted-foreground" />
-                Authentification à deux facteurs
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Ajoutez une couche de sécurité supplémentaire à votre compte
-              </p>
+          {/* Changement de mot de passe */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-base flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  Mot de passe
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Modifiez votre mot de passe
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowPasswordFields(!showPasswordFields);
+                  setPasswordError('');
+                }}
+              >
+                {showPasswordFields ? 'Annuler' : 'Modifier'}
+              </Button>
             </div>
-            <Switch id="two-factor" disabled />
+
+            {showPasswordFields && (
+              <div className="space-y-4 pl-6 border-l-2 border-indigo-200">
+                {passwordError && (
+                  <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                    {passwordError}
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="current-password">Mot de passe actuel</Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    disabled={isPasswordLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    disabled={isPasswordLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={isPasswordLoading}
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={handlePasswordChange}
+                  disabled={isPasswordLoading}
+                >
+                  <Key className="h-4 w-4 mr-2" />
+                  {isPasswordLoading ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Settings, Bell, Palette, Globe, Loader2, AlertCircle } from 'lucide-react';
+import { Settings, Palette, Globe, Loader2, AlertCircle } from 'lucide-react';
 import { settingsService, AppSetting } from '@/lib/api/services/settings.service';
 import { toast } from 'sonner';
 
@@ -22,7 +22,7 @@ interface AllowedSettings {
     allowSummaryFrequency: boolean;
   };
   appearance: {
-    allowTheme: boolean;
+
     allowColorScheme: boolean;
     allowCompactView: boolean;
     allowShowAvatars: boolean;
@@ -49,7 +49,7 @@ interface UserPreferences {
     summaryFrequency: string;
   };
   appearance: {
-    theme: string;
+
     colorScheme: string;
     compactView: boolean;
     showAvatars: boolean;
@@ -76,7 +76,7 @@ const DEFAULT_ALLOWED_SETTINGS: AllowedSettings = {
     allowSummaryFrequency: true,
   },
   appearance: {
-    allowTheme: true,
+
     allowColorScheme: true,
     allowCompactView: true,
     allowShowAvatars: true,
@@ -103,7 +103,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
     summaryFrequency: 'daily',
   },
   appearance: {
-    theme: 'light',
+
     colorScheme: 'blue',
     compactView: false,
     showAvatars: true,
@@ -317,9 +317,7 @@ export function UserPreferencesCard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="show-email">Afficher mon email</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Afficher votre email dans le profil public
-                  </p>
+
                 </div>
                 <Switch
                   id="show-email"
@@ -333,9 +331,7 @@ export function UserPreferencesCard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="show-phone">Afficher mon téléphone</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Afficher votre numéro dans le profil
-                  </p>
+
                 </div>
                 <Switch
                   id="show-phone"
@@ -348,105 +344,7 @@ export function UserPreferencesCard() {
         </Card>
       )}
 
-      {/* Notifications */}
-      {hasAnyAllowed('notifications') && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-indigo-600" />
-              Notifications
-            </CardTitle>
-            <CardDescription>
-              Gérez vos préférences de notifications
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {allowedSettings.notifications.allowEmailOnTaskAssign && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="email-on-task-assign">Email à l'assignation</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Recevoir un email quand une tâche vous est assignée
-                  </p>
-                </div>
-                <Switch
-                  id="email-on-task-assign"
-                  checked={preferences.notifications.emailOnTaskAssign}
-                  onCheckedChange={(checked) => handlePreferenceUpdate('notifications.emailOnTaskAssign', checked)}
-                />
-              </div>
-            )}
 
-            {allowedSettings.notifications.allowEmailOnTaskUpdate && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="email-on-task-update">Email à la mise à jour</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Recevoir un email quand une tâche est modifiée
-                  </p>
-                </div>
-                <Switch
-                  id="email-on-task-update"
-                  checked={preferences.notifications.emailOnTaskUpdate}
-                  onCheckedChange={(checked) => handlePreferenceUpdate('notifications.emailOnTaskUpdate', checked)}
-                />
-              </div>
-            )}
-
-            {allowedSettings.notifications.allowEmailOnMention && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="email-on-mention">Email lors d'une mention</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Recevoir un email quand vous êtes mentionné
-                  </p>
-                </div>
-                <Switch
-                  id="email-on-mention"
-                  checked={preferences.notifications.emailOnMention}
-                  onCheckedChange={(checked) => handlePreferenceUpdate('notifications.emailOnMention', checked)}
-                />
-              </div>
-            )}
-
-            {allowedSettings.notifications.allowDesktopNotifications && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="desktop-notifications">Notifications bureau</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Afficher des notifications de bureau
-                  </p>
-                </div>
-                <Switch
-                  id="desktop-notifications"
-                  checked={preferences.notifications.desktopNotifications}
-                  onCheckedChange={(checked) => handlePreferenceUpdate('notifications.desktopNotifications', checked)}
-                />
-              </div>
-            )}
-
-            {allowedSettings.notifications.allowSummaryFrequency && (
-              <div className="space-y-2">
-                <Label htmlFor="summary-frequency">Fréquence des résumés</Label>
-                <Select
-                  value={preferences.notifications.summaryFrequency}
-                  onValueChange={(value) => handlePreferenceUpdate('notifications.summaryFrequency', value)}
-                >
-                  <SelectTrigger className="max-w-xs">
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Aucun</SelectItem>
-                    <SelectItem value="daily">Quotidien</SelectItem>
-                    <SelectItem value="weekly">Hebdomadaire</SelectItem>
-                    <SelectItem value="monthly">Mensuel</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Apparence */}
       {hasAnyAllowed('appearance') && (
@@ -461,24 +359,7 @@ export function UserPreferencesCard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {allowedSettings.appearance.allowTheme && (
-              <div className="space-y-2">
-                <Label htmlFor="theme">Thème</Label>
-                <Select
-                  value={preferences.appearance.theme}
-                  onValueChange={(value) => handlePreferenceUpdate('appearance.theme', value)}
-                >
-                  <SelectTrigger className="max-w-xs">
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Clair</SelectItem>
-                    <SelectItem value="dark">Sombre</SelectItem>
-                    <SelectItem value="auto">Automatique</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+
 
             {allowedSettings.appearance.allowColorScheme && (
               <div className="space-y-2">
@@ -517,21 +398,7 @@ export function UserPreferencesCard() {
               </div>
             )}
 
-            {allowedSettings.appearance.allowShowAvatars && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="show-avatars">Afficher les avatars</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Afficher les photos de profil dans les listes
-                  </p>
-                </div>
-                <Switch
-                  id="show-avatars"
-                  checked={preferences.appearance.showAvatars}
-                  onCheckedChange={(checked) => handlePreferenceUpdate('appearance.showAvatars', checked)}
-                />
-              </div>
-            )}
+
           </CardContent>
         </Card>
       )}
@@ -569,26 +436,7 @@ export function UserPreferencesCard() {
               </div>
             )}
 
-            {allowedSettings.regional.allowTimezone && (
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Fuseau horaire</Label>
-                <Select
-                  value={preferences.regional.timezone}
-                  onValueChange={(value) => handlePreferenceUpdate('regional.timezone', value)}
-                >
-                  <SelectTrigger className="max-w-xs">
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Europe/Paris">Paris (UTC+1)</SelectItem>
-                    <SelectItem value="Europe/London">Londres (UTC+0)</SelectItem>
-                    <SelectItem value="America/New_York">New York (UTC-5)</SelectItem>
-                    <SelectItem value="America/Los_Angeles">Los Angeles (UTC-8)</SelectItem>
-                    <SelectItem value="Asia/Tokyo">Tokyo (UTC+9)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+
 
             {allowedSettings.regional.allowDateFormat && (
               <div className="space-y-2">
@@ -609,23 +457,7 @@ export function UserPreferencesCard() {
               </div>
             )}
 
-            {allowedSettings.regional.allowTimeFormat && (
-              <div className="space-y-2">
-                <Label htmlFor="time-format">Format d'heure</Label>
-                <Select
-                  value={preferences.regional.timeFormat}
-                  onValueChange={(value) => handlePreferenceUpdate('regional.timeFormat', value)}
-                >
-                  <SelectTrigger className="max-w-xs">
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="24h">24 heures</SelectItem>
-                    <SelectItem value="12h">12 heures (AM/PM)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+
           </CardContent>
         </Card>
       )}

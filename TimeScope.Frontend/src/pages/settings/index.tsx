@@ -27,6 +27,23 @@ export default function SettingsPage() {
         }
     };
 
+    const handleEmailChange = async (newEmail: string) => {
+        if (!user?.id) {
+            throw new Error('User not found');
+        }
+
+        try {
+            await profileApiService.updateProfile(user.id, {
+                email: newEmail,
+            });
+
+            alert('Email mis à jour avec succès');
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            throw new Error(err?.response?.data?.message || "Erreur lors de la mise à jour de l'email");
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background">
             <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
@@ -35,6 +52,8 @@ export default function SettingsPage() {
                 <div className="space-y-6">
                     <SecurityCard
                         onPasswordChange={handlePasswordChange}
+                        onEmailChange={handleEmailChange}
+                        currentEmail={user?.email}
                     />
                     <UserPreferencesCard />
                 </div>
