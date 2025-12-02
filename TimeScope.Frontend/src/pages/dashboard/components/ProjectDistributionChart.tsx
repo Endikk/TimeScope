@@ -13,10 +13,10 @@ interface ProjectDistributionChartProps {
 
 export function ProjectDistributionChart({ data }: ProjectDistributionChartProps) {
   return (
-    <Card className="bg-white border-fp-text/10">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="font-heading text-fp-text">Répartition par projet</CardTitle>
-        <CardDescription className="font-body text-fp-text/70">Distribution des heures ce mois-ci</CardDescription>
+        <CardTitle className="font-heading text-foreground">Répartition par projet</CardTitle>
+        <CardDescription className="font-body text-muted-foreground">Distribution des heures ce mois-ci</CardDescription>
       </CardHeader>
       <CardContent className="h-[300px]">
         {data.length > 0 ? (
@@ -28,15 +28,24 @@ export function ProjectDistributionChart({ data }: ProjectDistributionChartProps
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                labelLine={{ stroke: 'hsl(var(--muted-foreground))' }}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="hours"
+                style={{ fill: 'hsl(var(--foreground))' }}
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  borderColor: 'hsl(var(--border))',
+                  color: 'hsl(var(--foreground))'
+                }}
+                itemStyle={{ color: 'hsl(var(--foreground))' }}
+              />
             </PieChart>
           </ResponsiveContainer>
         ) : (

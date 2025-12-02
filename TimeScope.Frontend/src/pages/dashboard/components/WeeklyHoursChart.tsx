@@ -12,18 +12,35 @@ interface WeeklyHoursChartProps {
 
 export function WeeklyHoursChart({ data }: WeeklyHoursChartProps) {
   return (
-    <Card className="bg-white border-fp-text/10">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="font-heading text-fp-text">Heures par jour - Cette semaine</CardTitle>
-        <CardDescription className="font-body text-fp-text/70">Répartition de votre temps hebdomadaire</CardDescription>
+        <CardTitle className="font-heading text-foreground">Heures par jour - Cette semaine</CardTitle>
+        <CardDescription className="font-body text-muted-foreground">Répartition de votre temps hebdomadaire</CardDescription>
       </CardHeader>
       <CardContent className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="day" />
-            <YAxis />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis
+              dataKey="day"
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              tickLine={{ stroke: 'hsl(var(--muted-foreground))' }}
+            />
+            <YAxis
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              tickLine={{ stroke: 'hsl(var(--muted-foreground))' }}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                borderColor: 'hsl(var(--border))',
+                color: 'hsl(var(--foreground))'
+              }}
+              itemStyle={{ color: 'hsl(var(--foreground))' }}
+              cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
+            />
             <Legend />
             <Bar dataKey="hours" fill="#3B82F6" name="Heures" />
           </BarChart>

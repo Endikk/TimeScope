@@ -27,7 +27,7 @@ export default function AdminPageAPI() {
       total: statistics.statistics?.totalUsers.toString() || "0",
       icon: Users,
       iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
-      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800"
     },
     {
       title: "Projets en cours",
@@ -35,7 +35,7 @@ export default function AdminPageAPI() {
       total: null,
       icon: FolderOpen,
       iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
-      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800"
     },
     {
       title: "Entrées de temps",
@@ -43,7 +43,7 @@ export default function AdminPageAPI() {
       total: null,
       icon: Clock,
       iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
-      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800"
     },
     {
       title: "Tâches totales",
@@ -51,7 +51,7 @@ export default function AdminPageAPI() {
       total: null,
       icon: BarChart3,
       iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
-      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+      cardBg: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800"
     }
   ]
 
@@ -133,7 +133,7 @@ export default function AdminPageAPI() {
             return (
               <Card key={index} className={`${stat.cardBg} border shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105`}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 md:px-6">
-                  <CardTitle className="text-xs md:text-sm font-medium text-gray-700 truncate pr-2">
+                  <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground truncate pr-2">
                     {stat.title}
                   </CardTitle>
                   <div className={`${stat.iconBg} p-2 md:p-2.5 rounded-lg shadow-lg shrink-0`}>
@@ -141,9 +141,9 @@ export default function AdminPageAPI() {
                   </div>
                 </CardHeader>
                 <CardContent className="px-3 md:px-6">
-                  <div className="text-xl md:text-2xl font-bold text-gray-900">{stat.value}</div>
+                  <div className="text-xl md:text-2xl font-bold text-foreground">{stat.value}</div>
                   {stat.total && (
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       sur {stat.total} total
                     </p>
                   )}
@@ -162,7 +162,7 @@ export default function AdminPageAPI() {
               return (
                 <Card
                   key={index}
-                  className="hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 border-2"
+                  className="hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 border-2 bg-card"
                   onClick={() => navigate(link.path)}
                 >
                   <CardHeader className="px-3 md:px-6 py-3 md:py-6">

@@ -152,7 +152,7 @@ export default function RequestsPage() {
   if (loading && requests.length === 0) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
+        <div className="min-h-[100vh] flex-1 rounded-xl bg-card md:min-h-min">
           <div className="max-w-7xl mx-auto space-y-6 p-6">
             <PageHeader
               icon={Inbox}
@@ -170,7 +170,7 @@ export default function RequestsPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-2 md:p-4 pt-0">
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
+      <div className="min-h-[100vh] flex-1 rounded-xl bg-card md:min-h-min">
         <div className="max-w-7xl mx-auto space-y-4 md:space-y-6 p-3 md:p-6">
 
           <PageHeader

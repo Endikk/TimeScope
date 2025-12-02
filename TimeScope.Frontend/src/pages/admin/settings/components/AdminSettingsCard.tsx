@@ -3,8 +3,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, Clock, Users, Database, Mail, Loader2 } from 'lucide-react';
+
+import { Shield, Clock, Database, Mail, Loader2 } from 'lucide-react';
 
 interface Settings {
   security?: {
@@ -73,19 +73,7 @@ export function AdminSettingsCard({ settings, onUpdate, onSave, saving }: AdminS
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="two-factor-auth">Authentification à deux facteurs</Label>
-              <p className="text-sm text-muted-foreground">
-                Activer l'authentification à deux facteurs pour tous les comptes
-              </p>
-            </div>
-            <Switch
-              id="two-factor-auth"
-              checked={settings?.security?.twoFactorAuth ?? false}
-              onCheckedChange={(checked) => onUpdate('security.twoFactorAuth', checked)}
-            />
-          </div>
+
 
           <div className="space-y-2">
             <Label htmlFor="session-timeout">Durée de session (minutes)</Label>
@@ -167,19 +155,7 @@ export function AdminSettingsCard({ settings, onUpdate, onSave, saving }: AdminS
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="require-time-entry">Saisie du temps obligatoire</Label>
-              <p className="text-sm text-muted-foreground">
-                Exiger que tous les employés enregistrent leur temps de travail
-              </p>
-            </div>
-            <Switch
-              id="require-time-entry"
-              checked={settings?.timeTracking?.requireTimeEntry ?? true}
-              onCheckedChange={(checked) => onUpdate('timeTracking.requireTimeEntry', checked)}
-            />
-          </div>
+
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
@@ -197,67 +173,7 @@ export function AdminSettingsCard({ settings, onUpdate, onSave, saving }: AdminS
         </CardContent>
       </Card>
 
-      {/* Gestion des utilisateurs */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            Gestion des Utilisateurs
-          </CardTitle>
-          <CardDescription>
-            Paramètres de création et gestion des comptes utilisateurs
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="allow-self-registration">Inscription libre</Label>
-              <p className="text-sm text-muted-foreground">
-                Permettre aux utilisateurs de créer leur propre compte
-              </p>
-            </div>
-            <Switch
-              id="allow-self-registration"
-              checked={settings?.users?.allowSelfRegistration ?? false}
-              onCheckedChange={(checked) => onUpdate('users.allowSelfRegistration', checked)}
-            />
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="email-verification">Vérification email obligatoire</Label>
-              <p className="text-sm text-muted-foreground">
-                Exiger la vérification de l'email lors de l'inscription
-              </p>
-            </div>
-            <Switch
-              id="email-verification"
-              checked={settings?.users?.emailVerification ?? true}
-              onCheckedChange={(checked) => onUpdate('users.emailVerification', checked)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="default-role">Rôle par défaut</Label>
-            <Select
-              value={settings?.users?.defaultRole ?? 'Employee'}
-              onValueChange={(value) => onUpdate('users.defaultRole', value)}
-            >
-              <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionner un rôle" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Employee">Employé</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
-                <SelectItem value="Admin">Administrateur</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-muted-foreground">
-              Rôle attribué automatiquement aux nouveaux utilisateurs
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Notifications */}
       <Card>

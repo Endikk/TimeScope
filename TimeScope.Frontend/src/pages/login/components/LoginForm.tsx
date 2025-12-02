@@ -76,10 +76,10 @@ export default function LoginForm() {
   };
 
   return (
-    <Card className="border-0 shadow-xl bg-white">
+    <Card className="border-0 shadow-xl bg-card">
       <CardHeader className="pb-3 pt-4">
-        <CardTitle className="font-heading text-gray-900 text-lg">Connexion</CardTitle>
-        <CardDescription className="font-body text-gray-600 text-xs">
+        <CardTitle className="font-heading text-foreground text-lg">Connexion</CardTitle>
+        <CardDescription className="font-body text-muted-foreground text-xs">
           Saisissez vos identifiants pour accéder à votre espace
         </CardDescription>
       </CardHeader>
@@ -93,7 +93,7 @@ export default function LoginForm() {
           )}
 
           <div className="space-y-1">
-            <Label htmlFor="email" className="font-body font-semibold text-gray-800 text-xs">
+            <Label htmlFor="email" className="font-body font-semibold text-foreground text-xs">
               Email
             </Label>
             <Input
@@ -103,14 +103,14 @@ export default function LoginForm() {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               disabled={isLoading}
-              className="h-9 text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+              className="h-9 text-sm border-input focus:border-indigo-500 focus:ring-indigo-500 bg-background"
               autoComplete="email"
               required
             />
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="password" className="font-body font-semibold text-gray-800 text-xs">
+            <Label htmlFor="password" className="font-body font-semibold text-foreground text-xs">
               Mot de passe
             </Label>
             <div className="relative">
@@ -121,14 +121,14 @@ export default function LoginForm() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 disabled={isLoading}
-                className="h-9 pr-10 text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                className="h-9 pr-10 text-sm border-input focus:border-indigo-500 focus:ring-indigo-500 bg-background"
                 autoComplete="current-password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 disabled={isLoading}
                 aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
               >
@@ -141,9 +141,9 @@ export default function LoginForm() {
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
                 type="checkbox"
-                className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="w-3.5 h-3.5 rounded border-input text-indigo-600 focus:ring-indigo-500 bg-background"
               />
-              <span className="text-xs text-gray-700 font-body">Se souvenir de moi</span>
+              <span className="text-xs text-muted-foreground font-body">Se souvenir de moi</span>
             </label>
 
             <button
@@ -175,17 +175,17 @@ export default function LoginForm() {
 
           <div className="relative my-3">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-[10px]">
-              <span className="px-2 bg-white text-fp-text/50 font-body">Ou</span>
+              <span className="px-2 bg-card text-muted-foreground font-body">Ou</span>
             </div>
           </div>
 
           <Button
             type="button"
             variant="outline"
-            className="w-full h-9 border-gray-300 text-gray-700 hover:bg-gray-50 font-body font-medium text-sm"
+            className="w-full h-9 border-input text-foreground hover:bg-muted font-body font-medium text-sm"
             disabled={isLoading}
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { useLocation } from "react-router"
 import { ProfileDropdown } from "@/components/ui/profile-dropdown"
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 
 export function MainLayout() {
   const location = useLocation()
@@ -67,6 +68,7 @@ export function MainLayout() {
             </Breadcrumb>
           </div>
           <div className="flex items-center gap-3 px-4 animate-in fade-in slide-in-from-right-2 duration-500">
+            <AnimatedThemeToggler />
             <ProfileDropdown variant="header" align="end" />
           </div>
         </header>

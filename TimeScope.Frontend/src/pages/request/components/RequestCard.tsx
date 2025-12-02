@@ -154,7 +154,7 @@ export function RequestCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs md:text-sm w-full sm:w-auto"
+                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs md:text-sm w-full sm:w-auto"
                 onClick={() => onDelete(request.id)}
               >
                 Supprimer

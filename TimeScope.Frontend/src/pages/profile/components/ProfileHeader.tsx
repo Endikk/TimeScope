@@ -66,7 +66,7 @@ export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePho
       <div className="absolute top-32 left-8">
         <div className="relative group">
           {/* Fond blanc derrière la photo */}
-          <div className="absolute -inset-2 bg-white rounded-full" />
+          <div className="absolute -inset-2 bg-background rounded-full" />
           <Avatar className="relative h-36 w-36 border-4 border-background shadow-xl">
             <AvatarImage src={user?.avatar} alt={`${user?.firstName} ${user?.lastName}`} />
             <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-indigo-500 to-indigo-700 text-white">

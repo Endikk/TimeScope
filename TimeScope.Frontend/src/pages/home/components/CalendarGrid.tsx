@@ -82,16 +82,16 @@ export function CalendarGrid({
 
   return (
     <div className="mt-4">
-      <div className={`grid ${viewMode === 'week' ? 'grid-cols-7' : 'grid-cols-7'} gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden`}>
+      <div className={`grid ${viewMode === 'week' ? 'grid-cols-7' : 'grid-cols-7'} gap-px bg-border border border-border rounded-lg overflow-hidden`}>
         {weekDays.map((day) => (
-          <div key={day} className="bg-gray-50 text-center text-xs font-medium text-gray-700 py-3">
+          <div key={day} className="bg-muted/50 text-center text-xs font-medium text-muted-foreground py-3">
             {day}
           </div>
         ))}
 
         {daysToDisplay.map((day, index) => {
           if (!day) {
-            return <div key={index} className="bg-white min-h-[100px]"></div>
+            return <div key={index} className="bg-card min-h-[100px]"></div>
           }
 
           const dateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
@@ -110,12 +110,12 @@ export function CalendarGrid({
               <PopoverAnchor asChild>
                 <div
                   className={`
-                    bg-white min-h-[100px] p-2 transition-all cursor-pointer relative
-                    ${isMultiSelected ? 'ring-2 ring-green-500 ring-inset bg-green-50' : ''}
-                    ${isSelected && !isMultiSelected ? 'ring-2 ring-blue-500 ring-inset' : ''}
-                    ${isToday && !isSelected && !isMultiSelected ? 'ring-1 ring-blue-300 ring-inset' : ''}
-                    ${isDisabled ? 'bg-gray-50 opacity-50' : 'hover:bg-gray-50'}
-                    ${isMultiSelectMode ? 'hover:ring-2 hover:ring-green-300' : ''}
+                    bg-card min-h-[100px] p-2 transition-all cursor-pointer relative
+                    ${isMultiSelected ? 'ring-2 ring-green-500 ring-inset bg-green-50 dark:bg-green-900/20' : ''}
+                    ${isSelected && !isMultiSelected ? 'ring-2 ring-blue-500 ring-inset bg-blue-50 dark:bg-blue-900/20' : ''}
+                    ${isToday && !isSelected && !isMultiSelected ? 'ring-1 ring-blue-300 dark:ring-blue-700 ring-inset' : ''}
+                    ${isDisabled ? 'bg-muted/50 opacity-50' : 'hover:bg-muted/30 dark:hover:bg-muted/20'}
+                    ${isMultiSelectMode ? 'hover:ring-2 hover:ring-green-300 dark:hover:ring-green-700' : ''}
                   `}
                   onClick={(e) => {
                     if (!isDisabled) {
@@ -134,7 +134,7 @@ export function CalendarGrid({
                   }}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <span className={`text-sm font-medium ${isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-gray-700'}`}>
+                    <span className={`text-sm font-medium ${isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-foreground'}`}>
                       {day}
                     </span>
                     {isMultiSelected && (
@@ -148,7 +148,7 @@ export function CalendarGrid({
 
                   <div className="space-y-1">
                     {events.map((event, idx) => (
-                      <div key={idx} className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded flex items-center gap-1">
+                      <div key={idx} className="text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 px-2 py-1 rounded flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
@@ -157,7 +157,7 @@ export function CalendarGrid({
                     ))}
 
                     {timeEntries.slice(0, 3).map((entry, idx) => (
-                      <div key={`entry-${idx}`} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
+                      <div key={`entry-${idx}`} className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -166,7 +166,7 @@ export function CalendarGrid({
                     ))}
 
                     {timeEntries.length > 3 && (
-                      <div className="text-xs text-gray-500 px-2 py-1">
+                      <div className="text-xs text-muted-foreground px-2 py-1">
                         +{timeEntries.length - 3} autre{timeEntries.length - 3 > 1 ? 's' : ''}
                       </div>
                     )}

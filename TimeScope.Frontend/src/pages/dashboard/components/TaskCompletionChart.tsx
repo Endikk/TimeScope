@@ -13,10 +13,10 @@ interface TaskCompletionChartProps {
 
 export function TaskCompletionChart({ data }: TaskCompletionChartProps) {
   return (
-    <Card className="bg-white border-fp-text/10">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="font-heading text-fp-text">Statut des tâches</CardTitle>
-        <CardDescription className="font-body text-fp-text/70">Répartition de vos tâches par statut</CardDescription>
+        <CardTitle className="font-heading text-foreground">Statut des tâches</CardTitle>
+        <CardDescription className="font-body text-muted-foreground">Répartition de vos tâches par statut</CardDescription>
       </CardHeader>
       <CardContent className="h-[300px]">
         {data.some(d => d.value > 0) ? (
@@ -28,15 +28,24 @@ export function TaskCompletionChart({ data }: TaskCompletionChartProps) {
                 cy="50%"
                 labelLine={false}
                 label={({ status, value }) => `${status}: ${value}`}
+                labelLine={{ stroke: 'hsl(var(--muted-foreground))' }}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
+                style={{ fill: 'hsl(var(--foreground))' }}
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  borderColor: 'hsl(var(--border))',
+                  color: 'hsl(var(--foreground))'
+                }}
+                itemStyle={{ color: 'hsl(var(--foreground))' }}
+              />
             </PieChart>
           </ResponsiveContainer>
         ) : (

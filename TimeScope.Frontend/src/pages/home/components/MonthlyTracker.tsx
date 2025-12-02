@@ -124,9 +124,9 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
   }
 
   const getCellBackground = (value: number, isWeekend: boolean, isToday: boolean) => {
-    if (isWeekend) return 'bg-gray-100'
-    if (isToday) return 'bg-yellow-50 border-yellow-300'
-    return value > 0 ? `bg-green-500` : 'bg-gray-50'
+    if (isWeekend) return 'bg-muted'
+    if (isToday) return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700'
+    return value > 0 ? `bg-green-500` : 'bg-muted/30'
   }
 
   return (
@@ -168,7 +168,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
             <div className="flex items-center space-x-3">
               <Clock className="h-8 w-8 text-primary" />
               <div>
-                <p className="text-sm text-gray-600">Total heures</p>
+                <p className="text-sm text-muted-foreground">Total heures</p>
                 <p className="text-2xl font-bold">{monthlyProgress.totalHours.toFixed(1)}h</p>
               </div>
             </div>
@@ -180,7 +180,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
             <div className="flex items-center space-x-3">
               <Target className="h-8 w-8 text-green-600" />
               <div>
-                <p className="text-sm text-gray-600">Jours complétés</p>
+                <p className="text-sm text-muted-foreground">Jours complétés</p>
                 <p className="text-2xl font-bold">{monthlyProgress.completedDays}</p>
               </div>
             </div>
@@ -192,7 +192,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
             <div className="flex items-center space-x-3">
               <TrendingUp className="h-8 w-8 text-purple-600" />
               <div>
-                <p className="text-sm text-gray-600">Progression</p>
+                <p className="text-sm text-muted-foreground">Progression</p>
                 <p className="text-2xl font-bold">{monthlyProgress.progressPercentage.toFixed(1)}%</p>
               </div>
             </div>
@@ -204,7 +204,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
             <div className="flex items-center space-x-3">
               <Calendar className="h-8 w-8 text-orange-600" />
               <div>
-                <p className="text-sm text-gray-600">Moyenne/jour</p>
+                <p className="text-sm text-muted-foreground">Moyenne/jour</p>
                 <p className="text-2xl font-bold">{monthlyProgress.averageHoursPerDay.toFixed(1)}h</p>
               </div>
             </div>
@@ -219,14 +219,14 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
             <div className="overflow-x-auto">
               <table className="w-full table-fixed" style={{ minWidth: 'calc(300px + 31 * 45px)' }}>
                 <thead>
-                  <tr className="bg-gray-50">
-                    <th className="sticky left-0 bg-gray-50 px-2 py-2 text-left font-semibold text-gray-900 border-r w-[100px]">
+                  <tr className="bg-muted/50">
+                    <th className="sticky left-0 bg-muted/50 px-2 py-2 text-left font-semibold text-foreground border-r w-[100px]">
                       Groupe
                     </th>
-                    <th className="sticky bg-gray-50 px-2 py-2 text-left font-semibold text-gray-900 border-r w-[100px]" style={{ left: '100px' }}>
+                    <th className="sticky bg-muted/50 px-2 py-2 text-left font-semibold text-foreground border-r w-[100px]" style={{ left: '100px' }}>
                       Projet
                     </th>
-                    <th className="sticky bg-gray-50 px-2 py-2 text-left font-semibold text-gray-900 border-r w-[100px]" style={{ left: '200px' }}>
+                    <th className="sticky bg-muted/50 px-2 py-2 text-left font-semibold text-foreground border-r w-[100px]" style={{ left: '200px' }}>
                       Activité
                     </th>
                     {Array.from({ length: monthData.daysInMonth }, (_, i) => {
@@ -238,8 +238,8 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                       return (
                         <th
                           key={day}
-                          className={`px-1 py-2 text-center text-xs font-medium w-[45px] ${isWeekend ? 'text-gray-400 bg-gray-100' :
-                            isToday ? 'text-primary bg-accent' : 'text-gray-700'
+                          className={`px-1 py-2 text-center text-xs font-medium w-[45px] ${isWeekend ? 'text-muted-foreground bg-muted' :
+                            isToday ? 'text-primary bg-accent' : 'text-foreground'
                             }`}
                         >
                           {day}
@@ -250,7 +250,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                 </thead>
                 <tbody>
                   {monthData.themes.map((theme, themeIndex) => (
-                    <tr key={theme.id} className={themeIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                    <tr key={theme.id} className={themeIndex % 2 === 0 ? 'bg-card' : 'bg-muted/30'}>
                       <td className="sticky left-0 bg-inherit px-2 py-2 border-r w-[100px]">
                         <div className="flex items-center space-x-1">
                           <div className={`w-2 h-2 rounded-full ${theme.color} flex-shrink-0`}></div>
@@ -265,7 +265,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                         </span>
                       </td>
                       <td className="sticky bg-inherit px-2 py-2 border-r w-[100px]" style={{ left: '200px' }}>
-                        <span className="font-medium text-gray-900 text-xs truncate" title={theme.name}>
+                        <span className="font-medium text-foreground text-xs truncate" title={theme.name}>
                           {theme.name}
                         </span>
                       </td>
@@ -282,14 +282,14 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                               w-full h-8 text-center text-xs border-0 
                               ${getCellBackground(dayEntry.value, dayEntry.isWeekend, dayEntry.isToday)}
                               ${dayEntry.isWeekend ? 'cursor-not-allowed' : 'hover:bg-accent'}
-                              ${dayEntry.value > 0 ? 'text-white font-bold' : 'text-gray-700'}
+                              ${dayEntry.value > 0 ? 'text-white font-bold' : 'text-foreground'}
                             `}
                             disabled={dayEntry.isWeekend}
                             style={{
                               backgroundColor: dayEntry.value > 0 ?
                                 `rgba(34, 197, 94, ${dayEntry.value * 0.8 + 0.2})` :
-                                dayEntry.isWeekend ? '#f3f4f6' :
-                                  dayEntry.isToday ? '#fefce8' : '#f9fafb'
+                                dayEntry.isWeekend ? 'var(--color-structure)' :
+                                  dayEntry.isToday ? 'var(--color-warning)' : 'transparent'
                             }}
                           />
                         </td>
@@ -305,7 +305,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
 
       {/* Boutons d'actions */}
       <div className="flex justify-between items-center">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           💡 Saisissez une valeur entre 0 et 1 (1 = 7h de travail)
         </div>
         <Button className="bg-green-600 hover:bg-green-700">

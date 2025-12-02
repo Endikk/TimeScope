@@ -12,18 +12,34 @@ interface MonthlyTrendChartProps {
 
 export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
   return (
-    <Card className="bg-white border-fp-text/10">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="font-heading text-fp-text">Tendance mensuelle</CardTitle>
-        <CardDescription className="font-body text-fp-text/70">Évolution du temps de travail par semaine</CardDescription>
+        <CardTitle className="font-heading text-foreground">Tendance mensuelle</CardTitle>
+        <CardDescription className="font-body text-muted-foreground">Évolution du temps de travail par semaine</CardDescription>
       </CardHeader>
       <CardContent className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="week" />
-            <YAxis />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis
+              dataKey="week"
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              tickLine={{ stroke: 'hsl(var(--muted-foreground))' }}
+            />
+            <YAxis
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              tickLine={{ stroke: 'hsl(var(--muted-foreground))' }}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                borderColor: 'hsl(var(--border))',
+                color: 'hsl(var(--foreground))'
+              }}
+              itemStyle={{ color: 'hsl(var(--foreground))' }}
+            />
             <Legend />
             <Line
               type="monotone"

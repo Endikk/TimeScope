@@ -440,7 +440,7 @@ export default function Home() {
 
           <HomeHeader />
 
-          <div className="bg-white rounded-xl border shadow-sm">
+          <div className="bg-card rounded-xl border shadow-sm">
             <div className="p-3 md:p-6">
               <MonthlyStats
                 selectedMonth={selectedMonth}
@@ -520,7 +520,7 @@ export default function Home() {
                       onClick={handleToggleMultiSelectMode}
                       className={cn(
                         "transition-all duration-200",
-                        isMultiSelectMode ? "bg-indigo-600 hover:bg-indigo-700 text-white border-transparent shadow-sm" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                        isMultiSelectMode ? "bg-indigo-600 hover:bg-indigo-700 text-white border-transparent shadow-sm" : "border-border text-muted-foreground hover:bg-muted/50"
                       )}
                     >
                       {isMultiSelectMode ? (
@@ -538,14 +538,14 @@ export default function Home() {
 
                     {selectedDates.size > 0 && (
                       <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
-                        <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-indigo-100 px-2.5 py-1">
+                        <Badge variant="secondary" className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-800 px-2.5 py-1">
                           {selectedDates.size} sélectionnée{selectedDates.size > 1 ? 's' : ''}
                         </Badge>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={handleClearSelection}
-                          className="text-gray-500 hover:text-gray-900 h-8 px-2"
+                          className="text-muted-foreground hover:text-foreground h-8 px-2"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -567,33 +567,33 @@ export default function Home() {
                       </Button>
                     )}
 
-                    <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200">
+                    <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleCopySelectedEntries}
                         disabled={selectedDates.size === 0}
-                        className="text-gray-700 hover:text-blue-700 hover:bg-blue-50 h-8"
+                        className="text-muted-foreground hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8"
                         title="Copier les entrées sélectionnées"
                       >
                         <Copy className="h-4 w-4 mr-2" />
                         Copier
                       </Button>
 
-                      <div className="w-px h-4 bg-gray-300 mx-1"></div>
+                      <div className="w-px h-4 bg-border mx-1"></div>
 
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={pasteEntries}
                         disabled={copiedEntries.length === 0 || selectedDates.size === 0}
-                        className="text-gray-700 hover:text-green-700 hover:bg-green-50 h-8"
+                        className="text-muted-foreground hover:text-green-700 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 h-8"
                         title="Coller les entrées copiées"
                       >
                         <Clipboard className="h-4 w-4 mr-2" />
                         Coller
                         {copiedEntries.length > 0 && (
-                          <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-700 text-[10px] h-5 px-1.5">
+                          <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground text-[10px] h-5 px-1.5">
                             {copiedEntries.length}
                           </Badge>
                         )}
@@ -605,7 +605,7 @@ export default function Home() {
                         variant="destructive"
                         size="sm"
                         onClick={handleDeleteAllEntries}
-                        className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300 shadow-none"
+                        className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-700 dark:hover:text-red-300 hover:border-red-300 dark:hover:border-red-700 shadow-none"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Tout supprimer
@@ -716,7 +716,7 @@ export default function Home() {
                     </SelectTrigger>
                     <SelectContent>
                       {getAvailableTasks(editFormData.projetId).length === 0 ? (
-                        <div className="p-2 text-sm text-gray-500">Aucune tâche pour ce projet</div>
+                        <div className="p-2 text-sm text-muted-foreground">Aucune tâche pour ce projet</div>
                       ) : (
                         getAvailableTasks(editFormData.projetId).map(task => (
                           <SelectItem key={task.id} value={task.id}>

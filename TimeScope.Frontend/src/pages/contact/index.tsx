@@ -79,22 +79,22 @@ export default function Contact() {
   if (isSubmitted) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
+        <div className="min-h-[100vh] flex-1 rounded-xl bg-card md:min-h-min">
           <div className="max-w-4xl mx-auto space-y-6 p-6">
-            <Card className="border-green-200 bg-green-50">
+            <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="rounded-full bg-green-500 p-3">
                     <CheckCircle2 className="h-6 w-6 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-green-900">
+                  <h3 className="text-xl font-semibold text-green-900 dark:text-green-100">
                     Demande envoyée avec succès !
                   </h3>
-                  <p className="text-green-700 max-w-md">
+                  <p className="text-green-700 dark:text-green-300 max-w-md">
                     Votre demande a été transmise à l&apos;équipe d&apos;administration.
                     Vous recevrez une réponse sous 24-48h par email.
                   </p>
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200">
                     Ticket #{ticketId || "PENDING"}
                   </Badge>
                 </div>
@@ -108,7 +108,7 @@ export default function Contact() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-2 md:p-4 pt-0">
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
+      <div className="min-h-[100vh] flex-1 rounded-xl bg-card md:min-h-min">
         <div className="max-w-4xl mx-auto space-y-4 md:space-y-6 p-3 md:p-6">
 
           {/* Header */}
