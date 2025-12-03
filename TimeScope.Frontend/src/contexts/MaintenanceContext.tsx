@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { settingsService } from '@/lib/api/services/settings.service';
+import { systemService } from '@/lib/api/services/system.service';
 
 interface MaintenanceContextType {
     isMaintenanceMode: boolean;
@@ -15,15 +15,8 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     const checkMaintenanceStatus = async () => {
         try {
-            // On récupère le paramètre public de maintenance
-            // Note: Le backend doit exposer ce paramètre publiquement ou via un endpoint spécifique sans auth
-            // Pour l'instant on suppose qu'on peut le récupérer via les settings publics
-            const settings = await settingsService.getAllSettings({ isPublic: true });
-            const maintenanceSetting = settings.find(s => s.key === 'admin.system.maintenanceMode');
-
-            if (maintenanceSetting) {
-                setIsMaintenanceMode(maintenanceSetting.value === 'true');
-            }
+            const status = await systemService.getSystemStatus();
+            setIsMaintenanceMode(status.maintenanceMode);
         } catch (error) {
             console.error('Erreur lors de la vérification du mode maintenance:', error);
             // En cas d'erreur, on assume que le site n'est pas en maintenance pour ne pas bloquer
@@ -36,8 +29,8 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
     useEffect(() => {
         checkMaintenanceStatus();
 
-        // Polling toutes les minutes pour vérifier si le mode maintenance a changé
-        const interval = setInterval(checkMaintenanceStatus, 60000);
+        // Polling toutes les 15 secondes pour vérifier si le mode maintenance a changé
+        const interval = setInterval(checkMaintenanceStatus, 15000);
 
         return () => clearInterval(interval);
     }, []);

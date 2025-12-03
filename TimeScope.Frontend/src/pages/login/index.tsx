@@ -1,8 +1,14 @@
 import { useEffect } from 'react';
 import { LoginVideoSection, LoginFormSection } from './components';
+import { useMaintenance } from '@/contexts/MaintenanceContext';
 
 export default function LoginPage() {
+  const { checkMaintenanceStatus } = useMaintenance();
+
   useEffect(() => {
+    // Vérifier le statut de maintenance dès l'arrivée sur la page
+    checkMaintenanceStatus();
+
     // Bloquer le scroll sur la page de login
     document.body.style.overflow = 'hidden';
 
@@ -10,7 +16,7 @@ export default function LoginPage() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, []);
+  }, [checkMaintenanceStatus]);
 
   return (
     <div className="h-screen w-screen flex flex-col lg:flex-row overflow-hidden fixed inset-0">

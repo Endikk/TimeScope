@@ -120,7 +120,8 @@ export default function SettingsPageAPI() {
           const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
 
           // Le mode maintenance doit être public pour que tout le monde puisse le voir
-          const isPublic = key === 'admin.system.maintenanceMode';
+          // UPDATE: Avec le nouveau SystemController, on n'a plus besoin d'exposer ce setting publiquement via l'API settings
+          const isPublic = false;
 
           settingsToSave.push({
             key,
