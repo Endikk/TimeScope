@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from "@/components/ui/sonner"
 import HomePage from "@/pages/home"
 import ContactPage from "@/pages/contact"
 import RequestPage from "@/pages/request"
@@ -26,6 +27,7 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <Toaster />
       <Routes>
         {/* Route publique */}
         <Route

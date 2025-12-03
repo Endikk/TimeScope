@@ -12,15 +12,18 @@ public class ProjectsController : ControllerBase
 {
     private readonly IProjectService _projectService;
     private readonly IProjectsUnitOfWork _projectsUow;
+    private readonly ISettingsService _settingsService;
     private readonly ILogger<ProjectsController> _logger;
 
     public ProjectsController(
         IProjectService projectService,
         IProjectsUnitOfWork projectsUow,
+        ISettingsService settingsService,
         ILogger<ProjectsController> logger)
     {
         _projectService = projectService;
         _projectsUow = projectsUow;
+        _settingsService = settingsService;
         _logger = logger;
     }
 
@@ -79,14 +82,23 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Crée un nouveau projet (Admin/Manager uniquement)
+    /// Crée un nouveau projet
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpPost]
     public async Task<ActionResult<Project>> CreateProject([FromBody] CreateProjectDto dto)
     {
         try
         {
+            // Vérification des permissions
+            if (!User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            {
+                var allowCreate = await _settingsService.GetSettingByKeyAsync("projects.allowEmployeeCreate");
+                if (allowCreate == null || allowCreate.Value != "true")
+                {
+                    return Forbid();
+                }
+            }
+
             var command = new CreateProjectCommand
             {
                 Name = dto.Name,
@@ -113,14 +125,23 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Crée un nouveau groupe (Admin/Manager uniquement)
+    /// Crée un nouveau groupe
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpPost("groups")]
     public async Task<ActionResult<Group>> CreateGroup([FromBody] CreateGroupDto dto)
     {
         try
         {
+            // Vérification des permissions (Groupes = Structurel, souvent réservé Admin/Manager, mais on peut lier au setting projet)
+            if (!User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            {
+                var allowCreate = await _settingsService.GetSettingByKeyAsync("projects.allowEmployeeCreate");
+                if (allowCreate == null || allowCreate.Value != "true")
+                {
+                    return Forbid();
+                }
+            }
+
             var command = new CreateGroupCommand
             {
                 Name = dto.Name,
@@ -146,14 +167,23 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Crée un nouveau thème (Admin/Manager uniquement)
+    /// Crée un nouveau thème
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpPost("themes")]
     public async Task<ActionResult<Theme>> CreateTheme([FromBody] CreateThemeDto dto)
     {
         try
         {
+            // Vérification des permissions
+            if (!User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            {
+                var allowCreate = await _settingsService.GetSettingByKeyAsync("projects.allowEmployeeCreate");
+                if (allowCreate == null || allowCreate.Value != "true")
+                {
+                    return Forbid();
+                }
+            }
+
             var command = new CreateThemeCommand
             {
                 Name = dto.Name,
@@ -184,10 +214,15 @@ public class ProjectsController : ControllerBase
     /// <summary>
     /// Met à jour un projet (Admin/Manager uniquement)
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateProject(Guid id, [FromBody] UpdateProjectDto dto)
     {
+        // Restriction stricte pour la modification structurelle
+        if (!User.IsInRole("Admin") && !User.IsInRole("Manager"))
+        {
+            return Forbid();
+        }
+
         try
         {
             var project = await _projectsUow.Projects.GetByIdAsync(id);
@@ -214,10 +249,15 @@ public class ProjectsController : ControllerBase
     /// <summary>
     /// Supprime un projet (Admin/Manager uniquement)
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProject(Guid id)
     {
+        // Restriction stricte pour la suppression
+        if (!User.IsInRole("Admin") && !User.IsInRole("Manager"))
+        {
+            return Forbid();
+        }
+
         try
         {
             await _projectsUow.Projects.DeleteAsync(id);
@@ -236,10 +276,11 @@ public class ProjectsController : ControllerBase
     /// <summary>
     /// Met à jour un groupe (Admin/Manager uniquement)
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpPut("groups/{id}")]
     public async Task<ActionResult> UpdateGroup(Guid id, [FromBody] UpdateGroupDto dto)
     {
+        if (!User.IsInRole("Admin") && !User.IsInRole("Manager")) return Forbid();
+
         try
         {
             var group = await _projectsUow.Groups.GetByIdAsync(id);
@@ -265,10 +306,11 @@ public class ProjectsController : ControllerBase
     /// <summary>
     /// Supprime un groupe (Admin/Manager uniquement)
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpDelete("groups/{id}")]
     public async Task<ActionResult> DeleteGroup(Guid id)
     {
+        if (!User.IsInRole("Admin") && !User.IsInRole("Manager")) return Forbid();
+
         try
         {
             await _projectsUow.Groups.DeleteAsync(id);
@@ -287,10 +329,11 @@ public class ProjectsController : ControllerBase
     /// <summary>
     /// Met à jour un thème (Admin/Manager uniquement)
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpPut("themes/{id}")]
     public async Task<ActionResult> UpdateTheme(Guid id, [FromBody] UpdateThemeDto dto)
     {
+        if (!User.IsInRole("Admin") && !User.IsInRole("Manager")) return Forbid();
+
         try
         {
             var theme = await _projectsUow.Themes.GetByIdAsync(id);
@@ -319,10 +362,11 @@ public class ProjectsController : ControllerBase
     /// <summary>
     /// Supprime un thème (Admin/Manager uniquement)
     /// </summary>
-    [Authorize(Roles = "Admin,Manager")]
     [HttpDelete("themes/{id}")]
     public async Task<ActionResult> DeleteTheme(Guid id)
     {
+        if (!User.IsInRole("Admin") && !User.IsInRole("Manager")) return Forbid();
+
         try
         {
             await _projectsUow.Themes.DeleteAsync(id);

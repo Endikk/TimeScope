@@ -16,26 +16,26 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePhoto, onDeleteBanner }: ProfileHeaderProps) {
-  const [allowProfilePicture, setAllowProfilePicture] = useState(true);
-  const [allowBanner, setAllowBanner] = useState(true);
+  const [canEditProfilePicture, setCanEditProfilePicture] = useState(true);
+  const [canEditBanner, setCanEditBanner] = useState(true);
 
   useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const allSettings = await settingsService.getAllSettings();
+
+        const allowProfilePicture = allSettings.find(s => s.key === 'profile.allowProfilePicture');
+        if (allowProfilePicture) setCanEditProfilePicture(allowProfilePicture.value === 'true');
+
+        const allowBanner = allSettings.find(s => s.key === 'profile.allowBanner');
+        if (allowBanner) setCanEditBanner(allowBanner.value === 'true');
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
+
     loadSettings();
   }, []);
-
-  const loadSettings = async () => {
-    try {
-      const allSettings = await settingsService.getAllSettings();
-
-      const profilePictureSetting = allSettings.find(s => s.key === 'profile.allowProfilePicture');
-      if (profilePictureSetting) setAllowProfilePicture(profilePictureSetting.value === 'true');
-
-      const bannerSetting = allSettings.find(s => s.key === 'profile.allowBanner');
-      if (bannerSetting) setAllowBanner(bannerSetting.value === 'true');
-    } catch (error) {
-      console.error('Failed to load settings:', error);
-    }
-  };
 
   const getInitials = () => {
     if (!user) return 'TS';
@@ -54,8 +54,7 @@ export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePho
     }
   };
 
-  const canEditProfilePicture = allowProfilePicture;
-  const canEditBanner = allowBanner;
+
 
   return (
     <div className="relative bg-card rounded-xl overflow-hidden shadow-sm border border-border/50">

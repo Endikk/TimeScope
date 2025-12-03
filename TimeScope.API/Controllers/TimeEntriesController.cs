@@ -11,11 +11,16 @@ namespace TimeScope.API.Controllers;
 public class TimeEntriesController : ControllerBase
 {
     private readonly ITimeEntryService _timeEntryService;
+    private readonly ISettingsService _settingsService;
     private readonly ILogger<TimeEntriesController> _logger;
 
-    public TimeEntriesController(ITimeEntryService timeEntryService, ILogger<TimeEntriesController> logger)
+    public TimeEntriesController(
+        ITimeEntryService timeEntryService,
+        ISettingsService settingsService,
+        ILogger<TimeEntriesController> logger)
     {
         _timeEntryService = timeEntryService;
+        _settingsService = settingsService;
         _logger = logger;
     }
 
@@ -121,6 +126,20 @@ public class TimeEntriesController : ControllerBase
     {
         try
         {
+            // Vérification des paramètres globaux (sauf pour Admin)
+            if (!User.IsInRole("Admin"))
+            {
+                // 1. Vérifier si la saisie dans le futur est autorisée
+                if (DateTime.TryParse(dto.Date, out DateTime entryDate) && entryDate.Date > DateTime.Today)
+                {
+                    var allowFuture = await _settingsService.GetSettingByKeyAsync("time.allowFutureEntries");
+                    if (allowFuture != null && allowFuture.Value == "false")
+                    {
+                        return Forbid();
+                    }
+                }
+            }
+
             var command = new CreateTimeEntryCommand
             {
                 TaskId = dto.TaskId,
@@ -169,6 +188,35 @@ public class TimeEntriesController : ControllerBase
     {
         try
         {
+            // Vérification des paramètres globaux (sauf pour Admin)
+            if (!User.IsInRole("Admin"))
+            {
+                // 1. Vérifier si la saisie dans le futur est autorisée (si la date est modifiée)
+                if (dto.Date != null && DateTime.TryParse(dto.Date, out DateTime newDate) && newDate.Date > DateTime.Today)
+                {
+                    var allowFuture = await _settingsService.GetSettingByKeyAsync("time.allowFutureEntries");
+                    if (allowFuture != null && allowFuture.Value == "false")
+                    {
+                        return Forbid();
+                    }
+                }
+
+                // Récupérer l'entrée existante pour vérifier sa date
+                var existingEntry = await _timeEntryService.GetTimeEntryByIdAsync(id);
+                if (existingEntry != null)
+                {
+                    // 2. Vérifier si la modification des entrées passées est autorisée
+                    if (existingEntry.Date.Date < DateTime.Today)
+                    {
+                        var allowPast = await _settingsService.GetSettingByKeyAsync("time.allowModifyingPastEntries");
+                        if (allowPast != null && allowPast.Value == "false")
+                        {
+                            return Forbid();
+                        }
+                    }
+                }
+            }
+
             var command = new UpdateTimeEntryCommand
             {
                 Duration = dto.Duration,
@@ -210,6 +258,17 @@ public class TimeEntriesController : ControllerBase
     {
         try
         {
+            // Vérification des paramètres globaux (sauf pour Admin)
+            if (!User.IsInRole("Admin"))
+            {
+                // 1. Vérifier si la suppression est autorisée
+                var allowDelete = await _settingsService.GetSettingByKeyAsync("time.allowDeleteTimeEntries");
+                if (allowDelete != null && allowDelete.Value == "false")
+                {
+                    return Forbid();
+                }
+            }
+
             var deleted = await _timeEntryService.DeleteTimeEntryAsync(id);
 
             if (!deleted)

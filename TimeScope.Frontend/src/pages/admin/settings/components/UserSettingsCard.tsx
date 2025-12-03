@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { User, Palette, Loader2 } from 'lucide-react';
+import { User, Palette, Loader2, Clock, Briefcase } from 'lucide-react';
 import { settingsService } from '@/lib/api/services/settings.service';
 import { toast } from 'sonner';
 
@@ -15,6 +15,14 @@ interface UserSettings {
   appearance: {
     allowCompactView: boolean;
   };
+  time: {
+    allowFutureEntries: boolean;
+    allowModifyingPastEntries: boolean;
+    allowDeleteTimeEntries: boolean;
+  };
+  projects: {
+    allowEmployeeCreate: boolean;
+  };
 }
 
 export function UserSettingsCard() {
@@ -25,6 +33,14 @@ export function UserSettingsCard() {
     },
     appearance: {
       allowCompactView: true,
+    },
+    time: {
+      allowFutureEntries: true,
+      allowModifyingPastEntries: true,
+      allowDeleteTimeEntries: true,
+    },
+    projects: {
+      allowEmployeeCreate: false,
     },
   });
   const [loading, setLoading] = useState(true);
@@ -51,6 +67,20 @@ export function UserSettingsCard() {
       const allowCompactView = allSettings.find(s => s.key === 'appearance.allowCompactView');
       if (allowCompactView) newSettings.appearance.allowCompactView = allowCompactView.value === 'true';
 
+      // Time settings
+      const allowFutureEntries = allSettings.find(s => s.key === 'time.allowFutureEntries');
+      if (allowFutureEntries) newSettings.time.allowFutureEntries = allowFutureEntries.value === 'true';
+
+      const allowModifyingPastEntries = allSettings.find(s => s.key === 'time.allowModifyingPastEntries');
+      if (allowModifyingPastEntries) newSettings.time.allowModifyingPastEntries = allowModifyingPastEntries.value === 'true';
+
+      const allowDeleteTimeEntries = allSettings.find(s => s.key === 'time.allowDeleteTimeEntries');
+      if (allowDeleteTimeEntries) newSettings.time.allowDeleteTimeEntries = allowDeleteTimeEntries.value === 'true';
+
+      // Project settings
+      const allowEmployeeCreate = allSettings.find(s => s.key === 'projects.allowEmployeeCreate');
+      if (allowEmployeeCreate) newSettings.projects.allowEmployeeCreate = allowEmployeeCreate.value === 'true';
+
       setSettings(newSettings);
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -72,53 +102,27 @@ export function UserSettingsCard() {
 
   const saveOrUpdateSetting = async (key: string, value: string, category: string, description: string) => {
     try {
-      // Try to get the setting first to see if it exists
-      // We could use the local state 'settings' but it's better to rely on the API or the list we fetched
-      // However, for simplicity and performance, let's try to update, and if it fails with 404, create it.
-      // But wait, the API returns 404 if not found on update?
-      // SettingsController.UpdateSetting returns NotFound if KeyNotFoundException.
-
-      // Better approach: We fetched all settings in loadSettings. We can know if they exist.
-      // But the user might have created them in another tab? Unlikely.
-      // Let's just try to get it first? No that's too many requests.
-
-      // Let's assume if we loaded it and it had a value, it exists.
-      // But we initialized state with defaults.
-
-      // Let's just try to update. If it fails (404), then create.
-      // Actually, let's just fetch the specific setting. If it exists, update. If 404, create.
-      // Or better: use the list we loaded.
-
-      // Let's use a try-catch block with update, and if it fails, create?
-      // No, let's use a helper that checks existence via API for safety, or just tries update then create.
-
-      // Let's implement a robust save:
-      try {
-        await settingsService.updateSetting(key, {
+      await settingsService.updateSetting(key, {
+        value,
+        category,
+        description,
+        dataType: 'boolean',
+        isPublic: true
+      });
+    } catch (error: any) {
+      // If 404, create it
+      if (error.response && error.response.status === 404) {
+        await settingsService.createSetting({
+          key,
           value,
           category,
           description,
           dataType: 'boolean',
           isPublic: true
         });
-      } catch (error: any) {
-        // If 404, create it
-        if (error.response && error.response.status === 404) {
-          await settingsService.createSetting({
-            key,
-            value,
-            category,
-            description,
-            dataType: 'boolean',
-            isPublic: true
-          });
-        } else {
-          throw error;
-        }
+      } else {
+        throw error;
       }
-    } catch (error) {
-      console.error(`Failed to save setting ${key}:`, error);
-      throw error;
     }
   };
 
@@ -126,26 +130,20 @@ export function UserSettingsCard() {
     try {
       setSaving(true);
 
-      await saveOrUpdateSetting(
-        'profile.allowProfilePicture',
-        settings.profile.allowProfilePicture.toString(),
-        'profile',
-        'Allow users to change their profile picture'
-      );
+      // Profile
+      await saveOrUpdateSetting('profile.allowProfilePicture', settings.profile.allowProfilePicture.toString(), 'profile', 'Allow users to change their profile picture');
+      await saveOrUpdateSetting('profile.allowBanner', settings.profile.allowBanner.toString(), 'profile', 'Allow users to change their profile banner');
 
-      await saveOrUpdateSetting(
-        'profile.allowBanner',
-        settings.profile.allowBanner.toString(),
-        'profile',
-        'Allow users to change their profile banner'
-      );
+      // Appearance
+      await saveOrUpdateSetting('appearance.allowCompactView', settings.appearance.allowCompactView.toString(), 'appearance', 'Allow users to use compact view');
 
-      await saveOrUpdateSetting(
-        'appearance.allowCompactView',
-        settings.appearance.allowCompactView.toString(),
-        'appearance',
-        'Allow users to use compact view'
-      );
+      // Time
+      await saveOrUpdateSetting('time.allowFutureEntries', settings.time.allowFutureEntries.toString(), 'time', 'Allow users to log time in the future');
+      await saveOrUpdateSetting('time.allowModifyingPastEntries', settings.time.allowModifyingPastEntries.toString(), 'time', 'Allow users to modify past time entries');
+      await saveOrUpdateSetting('time.allowDeleteTimeEntries', settings.time.allowDeleteTimeEntries.toString(), 'time', 'Allow users to delete time entries');
+
+      // Projects
+      await saveOrUpdateSetting('projects.allowEmployeeCreate', settings.projects.allowEmployeeCreate.toString(), 'projects', 'Allow employees to create projects');
 
       toast.success('Paramètres enregistrés avec succès');
     } catch (error) {
@@ -208,6 +206,90 @@ export function UserSettingsCard() {
         </CardContent>
       </Card>
 
+      {/* Suivi du Temps */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5 text-primary" />
+            Suivi du Temps
+          </CardTitle>
+          <CardDescription>
+            Règles pour la saisie et la modification des temps
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-future">Saisie dans le futur</Label>
+              <p className="text-sm text-muted-foreground">
+                Autoriser la saisie de temps pour des dates futures
+              </p>
+            </div>
+            <Switch
+              id="allow-future"
+              checked={settings.time.allowFutureEntries}
+              onCheckedChange={(checked) => handleUpdate('time', 'allowFutureEntries', checked)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-past">Modification du passé</Label>
+              <p className="text-sm text-muted-foreground">
+                Autoriser la modification des entrées de temps passées
+              </p>
+            </div>
+            <Switch
+              id="allow-past"
+              checked={settings.time.allowModifyingPastEntries}
+              onCheckedChange={(checked) => handleUpdate('time', 'allowModifyingPastEntries', checked)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-delete">Suppression d'entrées</Label>
+              <p className="text-sm text-muted-foreground">
+                Autoriser la suppression des entrées de temps
+              </p>
+            </div>
+            <Switch
+              id="allow-delete"
+              checked={settings.time.allowDeleteTimeEntries}
+              onCheckedChange={(checked) => handleUpdate('time', 'allowDeleteTimeEntries', checked)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Projets et Tâches */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-primary" />
+            Projets et Tâches
+          </CardTitle>
+          <CardDescription>
+            Permissions pour la création de projets et tâches
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-projects">Création de projets</Label>
+              <p className="text-sm text-muted-foreground">
+                Permettre aux employés de créer de nouveaux projets
+              </p>
+            </div>
+            <Switch
+              id="allow-projects"
+              checked={settings.projects.allowEmployeeCreate}
+              onCheckedChange={(checked) => handleUpdate('projects', 'allowEmployeeCreate', checked)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Apparence */}
       <Card>
         <CardHeader>
@@ -220,8 +302,6 @@ export function UserSettingsCard() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-
-
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="allow-compact-view">Vue compacte</Label>
