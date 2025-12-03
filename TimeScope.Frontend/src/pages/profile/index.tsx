@@ -237,7 +237,7 @@ export default function ProfilePage() {
       >
         {/* En-tête de profil */}
         {user && (
-          <motion.div variants={itemVariants} className="mb-8">
+          <motion.div variants={itemVariants as any} className="mb-8">
             <ProfileHeader
               user={user}
               onUploadPhoto={handleUploadPhoto}
@@ -252,7 +252,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 pb-8">
           {/* Colonne gauche - S'étend sur 2 colonnes sur les grands écrans */}
           <div className="lg:col-span-2 space-y-6">
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants as any}>
               <PersonalInfoCard
                 user={user}
                 isEditing={isEditingPersonalInfo}
@@ -260,14 +260,14 @@ export default function ProfilePage() {
                 onEdit={handleEditPersonalInfo}
               />
             </motion.div>
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants as any}>
               <ProfessionalInfoCard user={user} />
             </motion.div>
           </div>
 
           {/* Colonne droite - S'étend sur 1 colonne sur les grands écrans */}
           <div className="lg:col-span-1 space-y-6">
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants as any}>
               <ActivityStatsCard stats={activityStats} />
             </motion.div>
           </div>

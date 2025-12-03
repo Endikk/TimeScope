@@ -23,12 +23,19 @@ public class SettingsController : ControllerBase
     /// Récupère la configuration globale
     /// </summary>
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<AppSetting>>> GetAllSettings(
         [FromQuery] string? category = null,
         [FromQuery] bool? isPublic = null)
     {
         try
         {
+            // Si l'utilisateur n'est pas authentifié, on force isPublic = true
+            if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                isPublic = true;
+            }
+
             var filter = new SettingsFilter
             {
                 Category = category,

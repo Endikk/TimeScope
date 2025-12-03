@@ -38,26 +38,12 @@ const DEFAULT_ADMIN_SETTINGS = {
   },
 };
 
-const DEFAULT_USER_SETTINGS = {
-  profile: {
-    allowProfilePicture: true,
-    allowBanner: true,
-  },
-  appearance: {
-
-    allowCompactView: true,
-  },
-};
-
 export default function SettingsPageAPI() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Paramètres Admin (globaux pour toute l'application)
   const [adminSettings, setAdminSettings] = useState(DEFAULT_ADMIN_SETTINGS);
-
-  // Autorisations Employé (ce que l'admin permet aux employés de configurer)
-  const [userSettings, setUserSettings] = useState(DEFAULT_USER_SETTINGS);
 
   const handleAdminSettingUpdate = (key: string, value: string | number | boolean) => {
     const keys = key.split('.');
@@ -77,24 +63,6 @@ export default function SettingsPageAPI() {
     console.log(`Paramètre admin mis à jour: ${key} = ${value}`);
   };
 
-  const handleUserSettingUpdate = (key: string, value: string | number | boolean) => {
-    const keys = key.split('.');
-    setUserSettings(prev => {
-      const newSettings = { ...prev };
-      let current: Record<string, unknown> = newSettings;
-
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] as object };
-        current = current[keys[i]] as Record<string, unknown>;
-      }
-
-      current[keys[keys.length - 1]] = value;
-      return newSettings;
-    });
-
-    console.log(`Préférence utilisateur mise à jour: ${key} = ${value}`);
-  };
-
   // Charger les paramètres depuis le backend
   const loadSettings = useCallback(async () => {
     try {
@@ -103,7 +71,6 @@ export default function SettingsPageAPI() {
 
       // Convertir les paramètres du backend vers la structure locale
       const adminSettingsFromBackend = { ...DEFAULT_ADMIN_SETTINGS };
-      const userSettingsFromBackend = { ...DEFAULT_USER_SETTINGS };
 
       settings.forEach((setting: AppSetting) => {
         const keys = setting.key.split('.');
@@ -116,24 +83,17 @@ export default function SettingsPageAPI() {
           value = parseInt(setting.value, 10);
         }
 
-        // Déterminer si c'est un paramètre admin ou utilisateur
+        // Déterminer si c'est un paramètre admin
         if (keys[0] === 'admin' && keys.length >= 3) {
           const category = keys[1];
           const field = keys[2];
           if (adminSettingsFromBackend[category as keyof typeof adminSettingsFromBackend]) {
             (adminSettingsFromBackend[category as keyof typeof adminSettingsFromBackend] as Record<string, string | number | boolean>)[field] = value;
           }
-        } else if (keys[0] === 'allowed' && keys.length >= 3) {
-          const category = keys[1];
-          const field = keys[2];
-          if (userSettingsFromBackend[category as keyof typeof userSettingsFromBackend]) {
-            (userSettingsFromBackend[category as keyof typeof userSettingsFromBackend] as Record<string, string | number | boolean>)[field] = value;
-          }
         }
       });
 
       setAdminSettings(adminSettingsFromBackend);
-      setUserSettings(userSettingsFromBackend);
     } catch (error) {
       console.error('Erreur lors du chargement des paramètres:', error);
       toast.error('Erreur lors du chargement des paramètres');
@@ -158,12 +118,16 @@ export default function SettingsPageAPI() {
         Object.entries(values as Record<string, string | number | boolean>).forEach(([field, value]) => {
           const key = `admin.${category}.${field}`;
           const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
+
+          // Le mode maintenance doit être public pour que tout le monde puisse le voir
+          const isPublic = key === 'admin.system.maintenanceMode';
+
           settingsToSave.push({
             key,
             value: String(value),
             category: 'admin',
             dataType,
-            isPublic: false
+            isPublic
           });
         });
       });
@@ -198,75 +162,7 @@ export default function SettingsPageAPI() {
   };
 
   // Sauvegarder les autorisations employé
-  const saveUserSettings = async () => {
-    try {
-      setSaving(true);
 
-      // Récupérer les paramètres existants pour savoir lesquels créer/mettre à jour
-      const existingSettings = await settingsService.getAllSettings({ category: 'allowed' });
-      const existingKeys = new Set(existingSettings.map(s => s.key));
-
-      // Créer un map des valeurs existantes pour comparer
-      const existingValues = new Map(existingSettings.map(s => [s.key, s.value]));
-
-      // Convertir les paramètres en format clé/valeur pour le backend
-      const settingsToSave: { key: string; value: string; category: string; dataType: string; isPublic: boolean }[] = [];
-
-      Object.entries(userSettings).forEach(([category, values]) => {
-        Object.entries(values as Record<string, string | number | boolean>).forEach(([field, value]) => {
-          const key = `allowed.${category}.${field}`;
-          const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
-          settingsToSave.push({
-            key,
-            value: String(value),
-            category: 'allowed',
-            dataType,
-            isPublic: true // Les autorisations doivent être publiques pour que les employés puissent les lire
-          });
-        });
-      });
-
-      // Compter les paramètres modifiés
-      let modifiedCount = 0;
-
-      // Mettre à jour ou créer chaque paramètre
-      for (const setting of settingsToSave) {
-        if (existingKeys.has(setting.key)) {
-          // Vérifier si la valeur a changé
-          if (existingValues.get(setting.key) !== setting.value) {
-            modifiedCount++;
-          }
-          await settingsService.updateSetting(setting.key, {
-            value: setting.value,
-            category: setting.category,
-            dataType: setting.dataType,
-            isPublic: setting.isPublic
-          });
-        } else {
-          modifiedCount++;
-          await settingsService.createSetting({
-            key: setting.key,
-            value: setting.value,
-            category: setting.category,
-            dataType: setting.dataType,
-            isPublic: setting.isPublic
-          });
-        }
-      }
-
-      toast.success(
-        modifiedCount > 0
-          ? `${modifiedCount} autorisation${modifiedCount > 1 ? 's' : ''} enregistrée${modifiedCount > 1 ? 's' : ''} avec succès`
-          : 'Autorisations enregistrées',
-        { position: 'top-center' }
-      );
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde des autorisations:', error);
-      toast.error('Erreur lors de la sauvegarde des autorisations', { position: 'top-center' });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   useEffect(() => {
     loadSettings();
@@ -333,12 +229,7 @@ export default function SettingsPageAPI() {
               </div>
             </div>
           </div>
-          <UserSettingsCard
-            settings={userSettings}
-            onUpdate={handleUserSettingUpdate}
-            onSave={saveUserSettings}
-            saving={saving}
-          />
+          <UserSettingsCard />
         </TabsContent>
       </Tabs>
     </div>

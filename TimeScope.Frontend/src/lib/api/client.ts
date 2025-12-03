@@ -90,6 +90,11 @@ apiClient.interceptors.response.use(
       return Promise.reject(transformError(error));
     }
 
+    // Si l'erreur provient de la connexion, on ne tente pas de refresh
+    if (originalRequest.url?.includes('/auth/login')) {
+      return Promise.reject(transformError(error));
+    }
+
     // Si l'échec provient d'une tentative de rafraîchissement, déconnexion
     if (originalRequest.url?.includes('/auth/refresh')) {
       handleLogout();
@@ -167,7 +172,7 @@ const handleLogout = () => {
   localStorage.removeItem('user');
 
   // Redirection vers la page de connexion
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
     window.location.href = '/login';
   }
 };

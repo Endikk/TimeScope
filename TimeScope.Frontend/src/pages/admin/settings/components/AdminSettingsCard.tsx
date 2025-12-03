@@ -247,7 +247,7 @@ export function AdminSettingsCard({ settings, onUpdate, onSave, saving }: AdminS
             <div className="space-y-0.5">
               <Label htmlFor="maintenance-mode">Mode maintenance</Label>
               <p className="text-sm text-muted-foreground">
-                Activer le mode maintenance (seuls les admins peuvent se connecter)
+                Activer le mode maintenance (Les administrateurs peuvent toujours se connecter, les autres utilisateurs verront une page de maintenance)
               </p>
             </div>
             <Switch
