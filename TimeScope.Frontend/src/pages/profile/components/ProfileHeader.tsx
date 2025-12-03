@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Shield, Camera, ImageIcon, Trash2, Mail, MapPin } from 'lucide-react';
 import { User } from '@/lib/api/services/auth.service';
+import { settingsService } from '@/lib/api/services/settings.service';
 import { motion } from 'framer-motion';
 
 interface ProfileHeaderProps {
@@ -14,6 +16,27 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePhoto, onDeleteBanner }: ProfileHeaderProps) {
+  const [allowProfilePicture, setAllowProfilePicture] = useState(true);
+  const [allowBanner, setAllowBanner] = useState(true);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const allSettings = await settingsService.getAllSettings();
+
+      const profilePictureSetting = allSettings.find(s => s.key === 'profile.allowProfilePicture');
+      if (profilePictureSetting) setAllowProfilePicture(profilePictureSetting.value === 'true');
+
+      const bannerSetting = allSettings.find(s => s.key === 'profile.allowBanner');
+      if (bannerSetting) setAllowBanner(bannerSetting.value === 'true');
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    }
+  };
+
   const getInitials = () => {
     if (!user) return 'TS';
     return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
@@ -30,6 +53,9 @@ export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePho
         return 'secondary';
     }
   };
+
+  const canEditProfilePicture = allowProfilePicture;
+  const canEditBanner = allowBanner;
 
   return (
     <div className="relative bg-card rounded-xl overflow-hidden shadow-sm border border-border/50">
@@ -51,28 +77,30 @@ export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePho
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
         {/* Actions Bannière */}
-        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-10px] group-hover:translate-y-0">
-          <Button
-            variant="secondary"
-            size="icon"
-            onClick={onUploadBanner}
-            className="h-9 w-9 rounded-full bg-black/40 hover:bg-black/60 text-white border-none backdrop-blur-sm transition-all hover:scale-105"
-            title="Changer la bannière"
-          >
-            <ImageIcon className="h-4 w-4" />
-          </Button>
-          {user?.banner && (
+        {canEditBanner && (
+          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-10px] group-hover:translate-y-0">
             <Button
-              variant="destructive"
+              variant="secondary"
               size="icon"
-              onClick={onDeleteBanner}
-              className="h-9 w-9 rounded-full bg-red-500/80 hover:bg-red-600 text-white border-none backdrop-blur-sm transition-all hover:scale-105"
-              title="Supprimer la bannière"
+              onClick={onUploadBanner}
+              className="h-9 w-9 rounded-full bg-black/40 hover:bg-black/60 text-white border-none backdrop-blur-sm transition-all hover:scale-105"
+              title="Changer la bannière"
             >
-              <Trash2 className="h-4 w-4" />
+              <ImageIcon className="h-4 w-4" />
             </Button>
-          )}
-        </div>
+            {user?.banner && (
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={onDeleteBanner}
+                className="h-9 w-9 rounded-full bg-red-500/80 hover:bg-red-600 text-white border-none backdrop-blur-sm transition-all hover:scale-105"
+                title="Supprimer la bannière"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Contenu Profil */}
@@ -97,29 +125,31 @@ export function ProfileHeader({ user, onUploadPhoto, onUploadBanner, onDeletePho
               </Avatar>
 
               {/* Overlay sombre au survol */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                {/* Actions Avatar - Centré avec animation */}
-                <div className="flex gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">
-                  <Button
-                    size="icon"
-                    onClick={onUploadPhoto}
-                    className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/40 text-white border border-white/50 shadow-lg backdrop-blur-md transition-transform hover:scale-110"
-                    title="Changer la photo"
-                  >
-                    <Camera className="h-5 w-5" />
-                  </Button>
-                  {user?.avatar && (
+              {canEditProfilePicture && (
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                  {/* Actions Avatar - Centré avec animation */}
+                  <div className="flex gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">
                     <Button
                       size="icon"
-                      onClick={onDeletePhoto}
-                      className="h-10 w-10 rounded-full bg-red-500/80 hover:bg-red-600/90 text-white border border-white/20 shadow-lg backdrop-blur-md transition-transform hover:scale-110"
-                      title="Supprimer la photo"
+                      onClick={onUploadPhoto}
+                      className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/40 text-white border border-white/50 shadow-lg backdrop-blur-md transition-transform hover:scale-110"
+                      title="Changer la photo"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Camera className="h-5 w-5" />
                     </Button>
-                  )}
+                    {user?.avatar && (
+                      <Button
+                        size="icon"
+                        onClick={onDeletePhoto}
+                        className="h-10 w-10 rounded-full bg-red-500/80 hover:bg-red-600/90 text-white border border-white/20 shadow-lg backdrop-blur-md transition-transform hover:scale-110"
+                        title="Supprimer la photo"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useMemo } from "react"
+import { useAuth } from "@/contexts/AuthContext"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -75,7 +76,10 @@ const monthNames = [
   "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
 ]
 
+
+
 export default function Home() {
+  const { user } = useAuth()
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
@@ -419,6 +423,50 @@ export default function Home() {
 
   const isLoading = groupsLoading || projectsLoading || tasksLoading || entriesLoading
 
+  // État pour la vue compacte
+  const [isCompactView, setIsCompactView] = useState(false)
+
+  // Charger la préférence de vue compacte
+  useEffect(() => {
+    const loadCompactView = () => {
+      if (!user) return
+
+      const storageKey = `timeScope_userPreferences_${user.id}`
+      const savedPrefs = localStorage.getItem(storageKey)
+
+      if (savedPrefs) {
+        try {
+          const parsed = JSON.parse(savedPrefs)
+          setIsCompactView(parsed.appearance?.compactView === true)
+        } catch (e) {
+          console.error('Error parsing prefs', e)
+        }
+      } else {
+        // Reset to default if no prefs found for this user
+        setIsCompactView(false)
+      }
+    }
+
+    loadCompactView()
+
+    // Écouter les changements de préférences
+    const handlePrefsChange = (e: Event) => {
+      // If it's a custom event, we can check the userId
+      if (e instanceof CustomEvent && e.detail?.userId && user && e.detail.userId !== user.id) {
+        return;
+      }
+      loadCompactView()
+    }
+
+    window.addEventListener('timeScope_preferencesChanged', handlePrefsChange)
+    window.addEventListener('storage', handlePrefsChange)
+
+    return () => {
+      window.removeEventListener('timeScope_preferencesChanged', handlePrefsChange)
+      window.removeEventListener('storage', handlePrefsChange)
+    }
+  }, [user])
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -434,14 +482,23 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 md:gap-6 p-3 md:p-6 pt-2 md:pt-4">
+    <div className={cn(
+      "flex flex-1 flex-col p-3 pt-2 transition-all duration-300",
+      isCompactView ? "gap-2 md:gap-3 md:p-3 md:pt-2" : "gap-4 md:gap-6 md:p-6 md:pt-4"
+    )}>
       <div className="min-h-[100vh] flex-1 md:min-h-min">
-        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+        <div className={cn(
+          "max-w-7xl mx-auto transition-all duration-300",
+          isCompactView ? "space-y-2 md:space-y-3" : "space-y-4 md:space-y-6"
+        )}>
 
           <HomeHeader />
 
           <div className="bg-card rounded-xl border shadow-sm">
-            <div className="p-3 md:p-6">
+            <div className={cn(
+              "transition-all duration-300",
+              isCompactView ? "p-2 md:p-3" : "p-3 md:p-6"
+            )}>
               <MonthlyStats
                 selectedMonth={selectedMonth}
                 selectedYear={selectedYear}
@@ -506,6 +563,7 @@ export default function Home() {
                 selectedDates={selectedDates}
                 onDateClick={handleToggleDateSelection}
                 isMultiSelectMode={isMultiSelectMode}
+                isCompact={isCompactView}
               />
 
               {/* Panneau de contrôle multi-sélection */}

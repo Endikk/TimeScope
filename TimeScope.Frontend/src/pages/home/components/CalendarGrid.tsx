@@ -23,6 +23,7 @@ interface CalendarGridProps {
   selectedDates?: Set<string>
   onDateClick?: (dateStr: string, ctrlKey: boolean) => void
   isMultiSelectMode?: boolean
+  isCompact?: boolean
 }
 
 export function CalendarGrid({
@@ -37,7 +38,8 @@ export function CalendarGrid({
   selectedWeek = 0,
   selectedDates = new Set(),
   onDateClick,
-  isMultiSelectMode = false
+  isMultiSelectMode = false,
+  isCompact = false
 }: CalendarGridProps) {
   const weekDays = ["Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam.", "Dim."]
   const { holidays } = useHolidays(selectedYear)
@@ -84,14 +86,14 @@ export function CalendarGrid({
     <div className="mt-4">
       <div className={`grid ${viewMode === 'week' ? 'grid-cols-7' : 'grid-cols-7'} gap-px bg-border border border-border rounded-lg overflow-hidden`}>
         {weekDays.map((day) => (
-          <div key={day} className="bg-muted/50 text-center text-xs font-medium text-muted-foreground py-3">
+          <div key={day} className={`bg-muted/50 text-center font-medium text-muted-foreground ${isCompact ? 'py-1 text-[10px]' : 'py-3 text-xs'}`}>
             {day}
           </div>
         ))}
 
         {daysToDisplay.map((day, index) => {
           if (!day) {
-            return <div key={index} className="bg-card min-h-[100px]"></div>
+            return <div key={index} className={`bg-card ${isCompact ? 'min-h-[40px]' : 'min-h-[100px]'}`}></div>
           }
 
           const dateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
@@ -110,7 +112,8 @@ export function CalendarGrid({
               <PopoverAnchor asChild>
                 <div
                   className={`
-                    bg-card min-h-[100px] p-2 transition-all cursor-pointer relative
+                    bg-card transition-all cursor-pointer relative
+                    ${isCompact ? 'min-h-[50px] p-1' : 'min-h-[100px] p-2'}
                     ${isMultiSelected ? 'ring-2 ring-green-500 ring-inset bg-green-50 dark:bg-green-900/20' : ''}
                     ${isSelected && !isMultiSelected ? 'ring-2 ring-blue-500 ring-inset bg-blue-50 dark:bg-blue-900/20' : ''}
                     ${isToday && !isSelected && !isMultiSelected ? 'ring-1 ring-blue-300 dark:ring-blue-700 ring-inset' : ''}
@@ -134,41 +137,56 @@ export function CalendarGrid({
                   }}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <span className={`text-sm font-medium ${isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-foreground'}`}>
+                    <span className={`font-medium ${isCompact ? 'text-xs' : 'text-sm'} ${isToday ? 'bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center' : 'text-foreground'}`}>
                       {day}
                     </span>
                     {isMultiSelected && (
                       <div className="bg-green-500 text-white rounded-full p-0.5">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
+                    {/* Events / Holidays */}
                     {events.map((event, idx) => (
-                      <div key={idx} className="text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 px-2 py-1 rounded flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span className="font-medium truncate">{event.name}</span>
-                      </div>
+                      isCompact ? (
+                        <div key={idx} className="h-1.5 w-1.5 rounded-full bg-red-400 mx-auto mb-0.5" title={event.name} />
+                      ) : (
+                        <div key={idx} className="text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 px-2 py-1 rounded flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                          <span className="font-medium truncate">{event.name}</span>
+                        </div>
+                      )
                     ))}
 
-                    {timeEntries.slice(0, 3).map((entry, idx) => (
-                      <div key={`entry-${idx}`} className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="font-medium truncate">{entry.taskName}</span>
+                    {/* Time Entries */}
+                    {isCompact ? (
+                      <div className="flex flex-wrap gap-0.5 justify-center">
+                        {timeEntries.map((entry, idx) => (
+                          <div key={`entry-${idx}`} className="h-1.5 w-1.5 rounded-full bg-blue-400" title={entry.taskName} />
+                        ))}
                       </div>
-                    ))}
-
-                    {timeEntries.length > 3 && (
-                      <div className="text-xs text-muted-foreground px-2 py-1">
-                        +{timeEntries.length - 3} autre{timeEntries.length - 3 > 1 ? 's' : ''}
-                      </div>
+                    ) : (
+                      <>
+                        {timeEntries.slice(0, 3).map((entry, idx) => (
+                          <div key={`entry-${idx}`} className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="font-medium truncate">{entry.taskName}</span>
+                          </div>
+                        ))}
+                        {timeEntries.length > 3 && (
+                          <div className="text-xs text-muted-foreground px-2 py-1">
+                            +{timeEntries.length - 3} autre{timeEntries.length - 3 > 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

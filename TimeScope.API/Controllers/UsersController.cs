@@ -11,11 +11,13 @@ namespace TimeScope.API.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly ISettingsService _settingsService;
     private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService, ILogger<UsersController> logger)
+    public UsersController(IUserService userService, ISettingsService settingsService, ILogger<UsersController> logger)
     {
         _userService = userService;
+        _settingsService = settingsService;
         _logger = logger;
     }
 
@@ -269,9 +271,20 @@ public class UsersController : ControllerBase
     {
         // Vérification : modification de son propre profil uniquement (sauf Admin)
         var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        var isAdmin = User.IsInRole("Admin");
+        if (currentUserId == null || (id.ToString() != currentUserId && !isAdmin))
         {
             return Forbid();
+        }
+
+        // Vérification du paramètre global (si pas admin)
+        if (!isAdmin)
+        {
+            var allowProfilePicture = await _settingsService.GetSettingByKeyAsync("profile.allowProfilePicture");
+            if (allowProfilePicture != null && allowProfilePicture.Value.ToLower() == "false")
+            {
+                return StatusCode(403, new { message = "La modification de la photo de profil est désactivée par l'administrateur." });
+            }
         }
 
         try
@@ -326,9 +339,20 @@ public class UsersController : ControllerBase
     {
         // Vérification : modification de son propre profil uniquement (sauf Admin)
         var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        var isAdmin = User.IsInRole("Admin");
+        if (currentUserId == null || (id.ToString() != currentUserId && !isAdmin))
         {
             return Forbid();
+        }
+
+        // Vérification du paramètre global (si pas admin)
+        if (!isAdmin)
+        {
+            var allowBanner = await _settingsService.GetSettingByKeyAsync("profile.allowBanner");
+            if (allowBanner != null && allowBanner.Value.ToLower() == "false")
+            {
+                return StatusCode(403, new { message = "La modification de la bannière est désactivée par l'administrateur." });
+            }
         }
 
         try
@@ -383,9 +407,20 @@ public class UsersController : ControllerBase
     {
         // Vérification : modification de son propre profil uniquement (sauf Admin)
         var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        var isAdmin = User.IsInRole("Admin");
+        if (currentUserId == null || (id.ToString() != currentUserId && !isAdmin))
         {
             return Forbid();
+        }
+
+        // Vérification du paramètre global (si pas admin)
+        if (!isAdmin)
+        {
+            var allowProfilePicture = await _settingsService.GetSettingByKeyAsync("profile.allowProfilePicture");
+            if (allowProfilePicture != null && allowProfilePicture.Value.ToLower() == "false")
+            {
+                return StatusCode(403, new { message = "La suppression de la photo de profil est désactivée par l'administrateur." });
+            }
         }
 
         try
@@ -416,9 +451,20 @@ public class UsersController : ControllerBase
     {
         // Vérification : modification de son propre profil uniquement (sauf Admin)
         var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        if (currentUserId == null || (id.ToString() != currentUserId && !User.IsInRole("Admin")))
+        var isAdmin = User.IsInRole("Admin");
+        if (currentUserId == null || (id.ToString() != currentUserId && !isAdmin))
         {
             return Forbid();
+        }
+
+        // Vérification du paramètre global (si pas admin)
+        if (!isAdmin)
+        {
+            var allowBanner = await _settingsService.GetSettingByKeyAsync("profile.allowBanner");
+            if (allowBanner != null && allowBanner.Value.ToLower() == "false")
+            {
+                return StatusCode(403, new { message = "La suppression de la bannière est désactivée par l'administrateur." });
+            }
         }
 
         try

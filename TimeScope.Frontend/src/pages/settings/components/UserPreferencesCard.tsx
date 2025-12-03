@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Settings, Palette, Globe, Loader2, AlertCircle } from 'lucide-react';
 import { settingsService, AppSetting } from '@/lib/api/services/settings.service';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AllowedSettings {
   profile: {
@@ -126,26 +127,28 @@ export function UserPreferencesCard() {
   // Préférences de l'utilisateur
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_PREFERENCES);
 
+  const { user } = useAuth();
+
   const loadSettings = useCallback(async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
       const settings = await settingsService.getAllSettings();
 
       const newAllowed = { ...DEFAULT_ALLOWED_SETTINGS };
-      const newPrefs = { ...DEFAULT_PREFERENCES };
 
+      // Load allowed settings from API
       settings.forEach((setting: AppSetting) => {
         const keys = setting.key.split('.');
         let value: string | number | boolean = setting.value;
 
-        // Convertir la valeur selon le type
         if (setting.dataType === 'boolean') {
           value = setting.value === 'true';
         } else if (setting.dataType === 'number') {
           value = parseInt(setting.value, 10);
         }
 
-        // Charger les autorisations (allowed.*)
         if (keys[0] === 'allowed' && keys.length >= 3) {
           const category = keys[1] as keyof AllowedSettings;
           const field = keys[2];
@@ -153,25 +156,50 @@ export function UserPreferencesCard() {
             (newAllowed[category] as Record<string, boolean>)[field] = value as boolean;
           }
         }
-        // Charger les préférences utilisateur (userPref.*)
-        else if (keys[0] === 'userPref' && keys.length >= 3) {
-          const category = keys[1] as keyof UserPreferences;
-          const field = keys[2];
-          if (newPrefs[category]) {
-            (newPrefs[category] as Record<string, string | number | boolean>)[field] = value;
+        // Also check for the new format we used in UserSettingsCard (e.g. 'profile.allowProfilePicture')
+        // The previous code used 'allowed.profile.allowProfilePicture', but UserSettingsCard saves as 'profile.allowProfilePicture'
+        // We need to support both or align them. UserSettingsCard saves as 'profile.allowProfilePicture'.
+        // Let's check for that format too.
+        if (keys.length === 2) {
+          const category = keys[0] as keyof AllowedSettings;
+          const field = keys[1];
+          // Check if this field exists in our allowed settings structure
+          // e.g. category='profile', field='allowProfilePicture'
+          if (newAllowed[category] && field in newAllowed[category]) {
+            (newAllowed[category] as Record<string, boolean>)[field] = value as boolean;
           }
         }
       });
 
       setAllowedSettings(newAllowed);
-      setPreferences(newPrefs);
+
+      // Load user preferences from LocalStorage (User Specific)
+      const storageKey = `timeScope_userPreferences_${user.id}`;
+      const savedPrefs = localStorage.getItem(storageKey);
+      if (savedPrefs) {
+        try {
+          const parsedPrefs = JSON.parse(savedPrefs);
+          // Merge with default to ensure all keys exist
+          setPreferences(prev => ({
+            ...prev,
+            ...parsedPrefs,
+            // Ensure nested objects are merged correctly
+            profile: { ...prev.profile, ...parsedPrefs.profile },
+            notifications: { ...prev.notifications, ...parsedPrefs.notifications },
+            appearance: { ...prev.appearance, ...parsedPrefs.appearance },
+            regional: { ...prev.regional, ...parsedPrefs.regional },
+          }));
+        } catch (e) {
+          console.error('Error parsing saved preferences', e);
+        }
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des paramètres:', error);
       toast.error('Erreur lors du chargement des paramètres');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     loadSettings();
@@ -194,46 +222,18 @@ export function UserPreferencesCard() {
   };
 
   const savePreferences = async () => {
+    if (!user) return;
+
     try {
       setSaving(true);
 
-      const existingSettings = await settingsService.getAllSettings({ category: 'userPref' });
-      const existingKeys = new Set(existingSettings.map(s => s.key));
+      // Save to LocalStorage (User Specific)
+      const storageKey = `timeScope_userPreferences_${user.id}`;
+      localStorage.setItem(storageKey, JSON.stringify(preferences));
 
-      const settingsToSave: { key: string; value: string; category: string; dataType: string; isPublic: boolean }[] = [];
-
-      Object.entries(preferences).forEach(([category, values]) => {
-        Object.entries(values as Record<string, string | number | boolean>).forEach(([field, value]) => {
-          const key = `userPref.${category}.${field}`;
-          const dataType = typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
-          settingsToSave.push({
-            key,
-            value: String(value),
-            category: 'userPref',
-            dataType,
-            isPublic: false
-          });
-        });
-      });
-
-      for (const setting of settingsToSave) {
-        if (existingKeys.has(setting.key)) {
-          await settingsService.updateSetting(setting.key, {
-            value: setting.value,
-            category: setting.category,
-            dataType: setting.dataType,
-            isPublic: setting.isPublic
-          });
-        } else {
-          await settingsService.createSetting({
-            key: setting.key,
-            value: setting.value,
-            category: setting.category,
-            dataType: setting.dataType,
-            isPublic: setting.isPublic
-          });
-        }
-      }
+      // Dispatch a custom event to notify other components (like Home) of the change
+      // We include the userId in the event detail or just rely on the fact that Home also checks the user
+      window.dispatchEvent(new CustomEvent('timeScope_preferencesChanged', { detail: { userId: user.id } }));
 
       toast.success('Préférences enregistrées avec succès');
     } catch (error) {
