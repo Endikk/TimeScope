@@ -5,9 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Settings, Palette, Globe, Loader2, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { settingsService, AppSetting } from '@/lib/api/services/settings.service';
+import { settingsService } from '@/lib/api/services/settings.service';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from 'next-themes';
+// import { useTheme } from 'next-themes';
 
 interface UserPreferences {
     profile: {
@@ -43,7 +43,7 @@ interface AllowedSettings {
 
 export function UserPreferencesCard() {
     const { user } = useAuth();
-    const { setTheme } = useTheme();
+    // const { setTheme } = useTheme();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [preferences, setPreferences] = useState<UserPreferences>({
@@ -93,7 +93,7 @@ export function UserPreferencesCard() {
             const updateAllowed = (category: keyof AllowedSettings, key: string, settingKey: string) => {
                 const setting = settings.find(s => s.key === settingKey);
                 if (setting) {
-                    // @ts-ignore
+                    // @ts-expect-error - Dynamic assignment to typed object
                     newAllowedSettings[category][key] = setting.value === 'true';
                 }
             };
@@ -127,7 +127,7 @@ export function UserPreferencesCard() {
         setPreferences(prev => ({
             ...prev,
             [category]: {
-                // @ts-ignore
+                // @ts-expect-error - Dynamic assignment to typed object
                 ...prev[category],
                 [setting]: value
             }

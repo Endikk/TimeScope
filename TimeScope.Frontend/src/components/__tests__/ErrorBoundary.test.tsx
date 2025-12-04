@@ -3,6 +3,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { ErrorBoundary } from '../ErrorBoundary';
 
 // Component that throws an error
@@ -17,7 +18,7 @@ describe('ErrorBoundary', () => {
   // Suppress console.error for these tests
   const originalError = console.error;
   beforeAll(() => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => { });
+    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   afterAll(() => {

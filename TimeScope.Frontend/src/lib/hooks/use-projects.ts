@@ -8,7 +8,7 @@ import {
   type CreateThemeDto,
   type UpdateThemeDto
 } from '@/lib/api/services/projects.service';
-import type { Project, Group, Theme } from '@/types/project';
+
 
 /**
  * Hook pour récupérer tous les projets

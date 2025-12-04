@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Building2, Target, Calendar, MessageSquare } from "lucide-react"
 
-// eslint-disable-next-line react-refresh/only-export-components
+
 export const REQUEST_TYPES = [
     { value: "project", label: "Nouveau Projet", icon: Building2, color: "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-200" },
     { value: "activity", label: "Nouvelle Activité", icon: Target, color: "bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-200" },

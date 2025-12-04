@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   timeEntriesService,
-  TimeEntry,
   CreateTimeEntryDto,
   UpdateTimeEntryDto
 } from '../api/services';
