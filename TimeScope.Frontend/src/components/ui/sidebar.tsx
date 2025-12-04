@@ -833,7 +833,7 @@ function AppSidebar({
                     alt="TimeScope Logo"
                     width={200}
                     height={64}
-                    className="h-16 w-auto group-data-[collapsible=icon]:hidden transition-all duration-300 group-hover/logo:scale-105"
+                    className="h-9 w-auto group-data-[collapsible=icon]:hidden transition-all duration-300 group-hover/logo:scale-105"
                     style={{ width: 'auto', height: 'auto' }}
                   />
                   <Image
@@ -1007,13 +1007,17 @@ function AppSidebar({
           </SidebarGroup>
         </div>
 
-        <div className="sticky bottom-0 p-3 text-center border-t border-sidebar-border/30 bg-gradient-to-t from-sidebar-accent/5 to-transparent backdrop-blur-sm group-data-[collapsible=icon]:hidden">
-          <p className="text-xs text-sidebar-foreground/60 font-semibold transition-all duration-200 hover:text-sidebar-foreground/80">
-            TimeScope v1.0
-          </p>
-          <p className="text-[10px] text-sidebar-foreground/40 mt-0.5 transition-all duration-200 hover:text-sidebar-foreground/60">
-            © 2025 TimeScope
-          </p>
+
+
+        <div className="mt-auto p-3 text-center group-data-[collapsible=icon]:hidden">
+          <div className="flex flex-col items-center justify-center gap-0.5 opacity-60 hover:opacity-100 transition-opacity duration-200">
+            <p className="text-[10px] font-medium text-sidebar-foreground">
+              TimeScope v1.0
+            </p>
+            <p className="text-[9px] text-sidebar-foreground/60">
+              © 2025 TimeScope
+            </p>
+          </div>
         </div>
       </SidebarContent>
     </Sidebar>

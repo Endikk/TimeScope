@@ -13,6 +13,10 @@ import {
 import { usePathname } from "next/navigation"
 import { ProfileDropdown } from "@/components/ui/profile-dropdown"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+import { useMaintenance } from "@/contexts/MaintenanceContext"
+import { useAuth } from "@/contexts/AuthContext"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 export default function DashboardLayout({
     children,
@@ -39,6 +43,24 @@ export default function DashboardLayout({
     }
 
     const breadcrumbs = generateBreadcrumbs()
+
+
+    const { isMaintenanceMode, isLoading: isMaintenanceLoading } = useMaintenance()
+    const { user, isLoading: isAuthLoading, hasRole } = useAuth()
+    const router = useRouter()
+
+    useEffect(() => {
+        if (!isMaintenanceLoading && !isAuthLoading && isMaintenanceMode) {
+            // Si le mode maintenance est actif et que l'utilisateur n'est pas admin
+            if (user && !hasRole(['Admin'])) {
+                router.push('/maintenance')
+            }
+        }
+    }, [isMaintenanceMode, isMaintenanceLoading, isAuthLoading, user, hasRole, router])
+
+    if (isMaintenanceLoading || isAuthLoading) {
+        return null // Ou un composant de chargement
+    }
 
     return (
         <SidebarProvider>
