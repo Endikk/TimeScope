@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   projectsService,
   type CreateProjectDto,
@@ -14,142 +14,74 @@ import type { Project, Group, Theme } from '@/types/project';
  * Hook pour récupérer tous les projets
  */
 export function useProjects() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: projects = [], isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => projectsService.getAllProjects(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  const fetchProjects = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await projectsService.getAllProjects();
-      setProjects(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des projets');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  return { projects, loading, error, refetch: fetchProjects };
+  return { projects, loading, error: error ? (error as Error).message : null, refetch };
 }
 
 /**
  * Hook pour récupérer tous les groupes
  */
 export function useGroups() {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: groups = [], isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['groups'],
+    queryFn: () => projectsService.getAllGroups(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  const fetchGroups = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await projectsService.getAllGroups();
-      setGroups(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des groupes');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchGroups();
-  }, []);
-
-  return { groups, loading, error, refetch: fetchGroups };
+  return { groups, loading, error: error ? (error as Error).message : null, refetch };
 }
 
 /**
  * Hook pour récupérer tous les thèmes
  */
 export function useThemes() {
-  const [themes, setThemes] = useState<Theme[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: themes = [], isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['themes'],
+    queryFn: () => projectsService.getAllThemes(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  const fetchThemes = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await projectsService.getAllThemes();
-      setThemes(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des thèmes');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchThemes();
-  }, []);
-
-  return { themes, loading, error, refetch: fetchThemes };
+  return { themes, loading, error: error ? (error as Error).message : null, refetch };
 }
 
 /**
  * Hook pour les mutations de projets
  */
 export function useProjectMutations() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const createProject = async (projectData: CreateProjectDto) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const newProject = await projectsService.createProject(projectData);
-      return newProject;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la création du projet';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createProjectMutation = useMutation({
+    mutationFn: (projectData: CreateProjectDto) => projectsService.createProject(projectData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
 
-  const updateProject = async (id: string, projectData: UpdateProjectDto) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await projectsService.updateProject(id, projectData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise à jour du projet';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const updateProjectMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateProjectDto }) => projectsService.updateProject(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
 
-  const deleteProject = async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await projectsService.deleteProject(id);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la suppression du projet';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteProjectMutation = useMutation({
+    mutationFn: (id: string) => projectsService.deleteProject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
 
   return {
-    createProject,
-    updateProject,
-    deleteProject,
-    loading,
-    error,
+    createProject: createProjectMutation.mutateAsync,
+    updateProject: (id: string, data: UpdateProjectDto) => updateProjectMutation.mutateAsync({ id, data }),
+    deleteProject: deleteProjectMutation.mutateAsync,
+    loading: createProjectMutation.isPending || updateProjectMutation.isPending || deleteProjectMutation.isPending,
+    error: createProjectMutation.error || updateProjectMutation.error || deleteProjectMutation.error,
   };
 }
 
@@ -157,58 +89,35 @@ export function useProjectMutations() {
  * Hook pour les mutations de groupes
  */
 export function useGroupMutations() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const createGroup = async (groupData: CreateGroupDto) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const newGroup = await projectsService.createGroup(groupData);
-      return newGroup;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la création du groupe';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createGroupMutation = useMutation({
+    mutationFn: (groupData: CreateGroupDto) => projectsService.createGroup(groupData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
+  });
 
-  const updateGroup = async (id: string, groupData: UpdateGroupDto) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await projectsService.updateGroup(id, groupData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise à jour du groupe';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const updateGroupMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateGroupDto }) => projectsService.updateGroup(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
+  });
 
-  const deleteGroup = async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await projectsService.deleteGroup(id);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la suppression du groupe';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteGroupMutation = useMutation({
+    mutationFn: (id: string) => projectsService.deleteGroup(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
+  });
 
   return {
-    createGroup,
-    updateGroup,
-    deleteGroup,
-    loading,
-    error,
+    createGroup: createGroupMutation.mutateAsync,
+    updateGroup: (id: string, data: UpdateGroupDto) => updateGroupMutation.mutateAsync({ id, data }),
+    deleteGroup: deleteGroupMutation.mutateAsync,
+    loading: createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending,
+    error: createGroupMutation.error || updateGroupMutation.error || deleteGroupMutation.error,
   };
 }
 
@@ -216,57 +125,34 @@ export function useGroupMutations() {
  * Hook pour les mutations de thèmes
  */
 export function useThemeMutations() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const createTheme = async (themeData: CreateThemeDto) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const newTheme = await projectsService.createTheme(themeData);
-      return newTheme;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la création du thème';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createThemeMutation = useMutation({
+    mutationFn: (themeData: CreateThemeDto) => projectsService.createTheme(themeData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['themes'] });
+    },
+  });
 
-  const updateTheme = async (id: string, themeData: UpdateThemeDto) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await projectsService.updateTheme(id, themeData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise à jour du thème';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const updateThemeMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateThemeDto }) => projectsService.updateTheme(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['themes'] });
+    },
+  });
 
-  const deleteTheme = async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await projectsService.deleteTheme(id);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la suppression du thème';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteThemeMutation = useMutation({
+    mutationFn: (id: string) => projectsService.deleteTheme(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['themes'] });
+    },
+  });
 
   return {
-    createTheme,
-    updateTheme,
-    deleteTheme,
-    loading,
-    error,
+    createTheme: createThemeMutation.mutateAsync,
+    updateTheme: (id: string, data: UpdateThemeDto) => updateThemeMutation.mutateAsync({ id, data }),
+    deleteTheme: deleteThemeMutation.mutateAsync,
+    loading: createThemeMutation.isPending || updateThemeMutation.isPending || deleteThemeMutation.isPending,
+    error: createThemeMutation.error || updateThemeMutation.error || deleteThemeMutation.error,
   };
 }

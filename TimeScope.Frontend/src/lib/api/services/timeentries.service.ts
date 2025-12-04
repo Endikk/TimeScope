@@ -75,7 +75,7 @@ class TimeEntriesService {
    */
   async getTimeEntriesByDateRange(startDate: string, endDate: string): Promise<TimeEntry[]> {
     const response = await apiClient.get<TimeEntry[]>(
-      `${this.endpoint}/range?startDate=${startDate}&endDate=${endDate}`
+      `${this.endpoint}?startDate=${startDate}&endDate=${endDate}`
     );
     return response.data;
   }

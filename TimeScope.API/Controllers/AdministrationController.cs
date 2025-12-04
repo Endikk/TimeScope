@@ -6,7 +6,7 @@ namespace TimeScope.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public class AdministrationController : ControllerBase
 {
     private readonly IAdministrationService _administrationService;
@@ -24,6 +24,7 @@ public class AdministrationController : ControllerBase
     /// Récupère un résumé de l'état des bases de données
     /// </summary>
     [HttpGet("databases/summary")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<DatabasesSummary>> GetDatabasesSummary()
     {
         try
@@ -42,6 +43,7 @@ public class AdministrationController : ControllerBase
     /// Teste la connexion à toutes les bases de données configurées
     /// </summary>
     [HttpGet("databases/test-connections")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ConnectionTestResult>> TestDatabaseConnections()
     {
         try
@@ -60,6 +62,7 @@ public class AdministrationController : ControllerBase
     /// Nettoie définitivement les enregistrements supprimés (soft delete)
     /// </summary>
     [HttpPost("cleanup/soft-deleted")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<CleanupResult>> CleanupSoftDeleted()
     {
         try
@@ -99,6 +102,7 @@ public class AdministrationController : ControllerBase
     /// Exporte les données système pour analyse
     /// </summary>
     [HttpGet("export/system-data")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ExportResult>> ExportSystemData()
     {
         try

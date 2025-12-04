@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
    */
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error to console in development
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.error('ErrorBoundary caught an error:', error);
       console.error('Error Info:', errorInfo);
     }
@@ -115,7 +115,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {import.meta.env.DEV && error && (
+              {process.env.NODE_ENV === 'development' && error && (
                 <div className="space-y-2">
                   <h3 className="font-semibold text-sm">Error Details (Development Only):</h3>
                   <div className="bg-muted p-4 rounded-md overflow-auto max-h-48">
@@ -163,7 +163,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
  * Hook-based error boundary wrapper for functional components
  * Use this when you need error boundaries in hooks
  */
-// eslint-disable-next-line react-refresh/only-export-components
 export function useErrorHandler() {
   const [error, setError] = React.useState<Error | null>(null);
 

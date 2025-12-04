@@ -1,7 +1,7 @@
 "use client"
 
-import { useNavigate } from "react-router"
-import { Link } from "react-router"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 import {
   User,
   Settings,
@@ -32,11 +32,11 @@ export function ProfileDropdown({
   align = "end",
 }: ProfileDropdownProps) {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleLogout = async () => {
     await logout()
-    navigate("/login")
+    router.push("/login")
   }
 
   // Générer les initiales de l'utilisateur
@@ -98,13 +98,13 @@ export function ProfileDropdown({
           <DropdownMenuSeparator />
 
           <DropdownMenuItem asChild>
-            <Link to="/profile" className="flex items-center cursor-pointer">
+            <Link href="/profile" className="flex items-center cursor-pointer">
               <User className="mr-2 h-4 w-4" />
               <span>Mon Profil</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to="/settings" className="flex items-center cursor-pointer">
+            <Link href="/settings" className="flex items-center cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
               <span>Paramètres</span>
             </Link>

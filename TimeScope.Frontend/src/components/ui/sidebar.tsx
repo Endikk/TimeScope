@@ -17,7 +17,9 @@ import {
   ChevronRight,
   Inbox,
 } from "lucide-react"
-import { Link, useLocation } from "react-router"
+import Link from "next/link"
+import Image from "next/image"
+import { usePathname } from "next/navigation"
 
 import { useIsMobile } from "@/lib/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -744,13 +746,13 @@ const adminMenuItems = [
     icon: Settings,
     items: [
       {
-        title: "Dashboard",
+        title: "Vue d'ensemble",
         url: "/admin",
         icon: Presentation,
       },
       {
         title: "Gestion utilisateurs",
-        url: "/admin/user_management",
+        url: "/admin/user-management",
         icon: Users,
       },
       {
@@ -802,13 +804,13 @@ function AppSidebar({
   side?: "left" | "right"
   variant?: "sidebar" | "floating" | "inset"
 }) {
-  const location = useLocation()
+  const pathname = usePathname()
   const { state } = useSidebar()
   const { hasRole } = useAuth()
 
   // Check if a menu item is active
   const isActive = (url: string) => {
-    return location.pathname === url
+    return pathname === url
   }
 
   // Check if user has admin access
@@ -824,16 +826,21 @@ function AppSidebar({
               asChild
               className="hover:bg-transparent active:scale-95 transition-transform duration-200"
             >
-              <LinkWithRef to="/home" className="justify-center group/logo">
+              <LinkWithRef href="/home" className="justify-center group/logo">
                 <div className="flex items-center justify-center w-full py-2">
-                  <img
+                  <Image
                     src="/assets/images/2.svg"
                     alt="TimeScope Logo"
+                    width={200}
+                    height={64}
                     className="h-16 w-auto group-data-[collapsible=icon]:hidden transition-all duration-300 group-hover/logo:scale-105"
+                    style={{ width: 'auto', height: 'auto' }}
                   />
-                  <img
+                  <Image
                     src="/assets/images/3.svg"
                     alt="TimeScope Icon"
+                    width={32}
+                    height={32}
                     className="hidden group-data-[collapsible=icon]:flex aspect-square size-8 items-center justify-center rounded-lg  shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:rotate-3 animate-in fade-in"
                   />
                 </div>
@@ -864,7 +871,7 @@ function AppSidebar({
                       tooltip={item.title}
                       className="group/item relative overflow-hidden"
                     >
-                      <LinkWithRef to={item.url}>
+                      <LinkWithRef href={item.url}>
                         <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
                           <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
                         </div>
@@ -894,7 +901,7 @@ function AppSidebar({
                       // When collapsed, clicking the Admin icon should navigate directly to /admin
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild tooltip={item.title} className="group/item">
-                          <LinkWithRef to="/admin">
+                          <LinkWithRef href="/admin">
                             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
                               <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
                             </div>
@@ -905,7 +912,7 @@ function AppSidebar({
                     ) : (
                       <Collapsible
                         key={item.title}
-                        defaultOpen={location.pathname.startsWith("/admin")}
+                        defaultOpen={pathname?.startsWith("/admin")}
                         className="group/collapsible"
                       >
                         <SidebarMenuItem>
@@ -928,10 +935,10 @@ function AppSidebar({
                                 >
                                   <SidebarMenuSubButton
                                     asChild
-                                    isActive={isActive(subItem.url)}
+                                    isActive={pathname === subItem.url}
                                     className="group/subitem relative"
                                   >
-                                    <LinkWithRef to={subItem.url}>
+                                    <LinkWithRef href={subItem.url}>
                                       {subItem.icon && (
                                         <subItem.icon className="mr-2 h-4 w-4 group-hover/subitem:scale-110 transition-transform duration-200" />
                                       )}
@@ -981,7 +988,7 @@ function AppSidebar({
                         tooltip={item.title}
                         className="group/item relative overflow-hidden"
                       >
-                        <LinkWithRef to={item.url}>
+                        <LinkWithRef href={item.url}>
                           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent/0 group-hover/item:bg-sidebar-accent/50 transition-all duration-200">
                             <item.icon className="size-4 group-hover/item:scale-110 transition-transform duration-200" />
                           </div>
@@ -1038,5 +1045,5 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar, // eslint-disable-line react-refresh/only-export-components
+  useSidebar,
 }

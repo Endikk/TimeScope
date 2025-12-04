@@ -31,7 +31,7 @@ export function useMonitoringStream(enabled: boolean = true) {
 
       try {
         const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
-        const response = await fetch(`${env.VITE_API_URL}/monitoring/stream`, {
+        const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/monitoring/stream`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'text/event-stream'

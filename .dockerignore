@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# Build results
+**/bin
+**/obj
+**/out
+**/dist
+**/build
+
+# Node
+**/node_modules
+**/npm-debug.log
+**/yarn-error.log
+**/package-lock.json
+**/.next
+
+# IDE
+.idea
+.vscode
+*.swp
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+**/tests
+**/test
+**/e2e
+**/playwright-report
+**/test-results

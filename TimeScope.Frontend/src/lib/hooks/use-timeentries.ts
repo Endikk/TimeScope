@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   timeEntriesService,
   TimeEntry,
@@ -6,135 +6,84 @@ import {
   UpdateTimeEntryDto
 } from '../api/services';
 
-export function useTimeEntries() {
-  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// Interface pour les options de filtrage
+interface UseTimeEntriesOptions {
+  startDate?: string;
+  endDate?: string;
+}
 
-  const fetchTimeEntries = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await timeEntriesService.getAllTimeEntries();
-      setTimeEntries(data);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors du chargement des entrées de temps';
-      setError(errorMessage);
-      console.error('Erreur lors du chargement des entrées de temps :', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTimeEntries();
-  }, []);
+export function useTimeEntries(options?: UseTimeEntriesOptions) {
+  const { data: timeEntries = [], isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['timeEntries', options?.startDate, options?.endDate],
+    queryFn: () => {
+      if (options?.startDate && options?.endDate) {
+        return timeEntriesService.getTimeEntriesByDateRange(options.startDate, options.endDate);
+      }
+      return timeEntriesService.getAllTimeEntries();
+    },
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
 
   return {
     timeEntries,
     loading,
-    error,
-    refetch: fetchTimeEntries
+    error: error ? (error as Error).message : null,
+    refetch
   };
 }
 
 export function useTimeEntry(id: string) {
-  const [timeEntry, setTimeEntry] = useState<TimeEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchTimeEntry = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await timeEntriesService.getTimeEntryById(id);
-      setTimeEntry(data);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors du chargement de l\'entrée de temps';
-      setError(errorMessage);
-      console.error('Erreur lors du chargement de l\'entrée de temps :', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (id) {
-      fetchTimeEntry();
-    }
-  }, [id, fetchTimeEntry]);
+  const { data: timeEntry = null, isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['timeEntry', id],
+    queryFn: () => timeEntriesService.getTimeEntryById(id),
+    enabled: !!id,
+  });
 
   return {
     timeEntry,
     loading,
-    error,
-    refetch: fetchTimeEntry
+    error: error ? (error as Error).message : null,
+    refetch
   };
 }
 
 export function useTimeEntryMutations() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const createTimeEntry = async (entryData: CreateTimeEntryDto): Promise<TimeEntry | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const newEntry = await timeEntriesService.createTimeEntry(entryData);
-      return newEntry;
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la création de l\'entrée de temps';
-      setError(errorMessage);
-      console.error('Erreur lors de la création de l\'entrée de temps :', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createTimeEntryMutation = useMutation({
+    mutationFn: (entryData: CreateTimeEntryDto) => timeEntriesService.createTimeEntry(entryData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+    },
+  });
 
-  const updateTimeEntry = async (id: string, entryData: UpdateTimeEntryDto): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
-      await timeEntriesService.updateTimeEntry(id, entryData);
-      return true;
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la mise à jour de l\'entrée de temps';
-      setError(errorMessage);
-      console.error('Erreur lors de la mise à jour de l\'entrée de temps :', err);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const updateTimeEntryMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateTimeEntryDto }) => timeEntriesService.updateTimeEntry(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+    },
+  });
 
-  const deleteTimeEntry = async (id: string): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
-      await timeEntriesService.deleteTimeEntry(id);
-      return true;
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Erreur lors de la suppression de l\'entrée de temps';
-      setError(errorMessage);
-      console.error('Erreur lors de la suppression de l\'entrée de temps :', err);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteTimeEntryMutation = useMutation({
+    mutationFn: (id: string) => timeEntriesService.deleteTimeEntry(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+    },
+  });
 
   return {
-    createTimeEntry,
-    updateTimeEntry,
-    deleteTimeEntry,
-    loading,
-    error
+    createTimeEntry: createTimeEntryMutation.mutateAsync,
+    updateTimeEntry: (id: string, data: UpdateTimeEntryDto) => updateTimeEntryMutation.mutateAsync({ id, data }),
+    deleteTimeEntry: deleteTimeEntryMutation.mutateAsync,
+    loading: createTimeEntryMutation.isPending || updateTimeEntryMutation.isPending || deleteTimeEntryMutation.isPending,
+    error: createTimeEntryMutation.error || updateTimeEntryMutation.error || deleteTimeEntryMutation.error,
   };
 }
 
-// Hook pour filtrer les entrées par date
+// Hook pour filtrer les entrées par date (Legacy wrapper)
 export function useTimeEntriesByDate(date?: string) {
+  // Note: This is less efficient than using the date range directly in useTimeEntries
+  // but kept for backward compatibility if needed elsewhere.
   const { timeEntries, loading, error, refetch } = useTimeEntries();
 
   const filteredEntries = date

@@ -8,12 +8,13 @@ Write-Host ""
 
 # Arreter tous les services
 Write-Host "Arret des conteneurs..." -ForegroundColor Yellow
-docker-compose down
+docker-compose -f docker-compose.yml -f docker-compose.monitoring.yml down
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     Write-Host "OK - Tous les services sont arretes" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host ""
     Write-Host "ERREUR - Probleme lors de l'arret des services" -ForegroundColor Red
 }

@@ -11,16 +11,10 @@ import { z } from 'zod';
  */
 const envSchema = z.object({
   /** Base URL for the API backend */
-  VITE_API_URL: z.string().url().default('http://localhost:8080/api'),
+  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:8080/api'),
 
   /** Application environment (development, staging, production) */
-  MODE: z.enum(['development', 'production', 'test']).default('development'),
-
-  /** Enable development mode features */
-  DEV: z.boolean().default(true),
-
-  /** Enable production mode optimizations */
-  PROD: z.boolean().default(false),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
 /**
@@ -30,10 +24,8 @@ const envSchema = z.object({
 function validateEnv() {
   try {
     return envSchema.parse({
-      VITE_API_URL: import.meta.env.VITE_API_URL,
-      MODE: import.meta.env.MODE,
-      DEV: import.meta.env.DEV,
-      PROD: import.meta.env.PROD,
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+      NODE_ENV: process.env.NODE_ENV,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

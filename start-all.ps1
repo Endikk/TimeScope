@@ -1,6 +1,10 @@
 # Script de demarrage complet TimeScope (Docker)
 # Ce script demarre toute la stack via Docker Compose
 
+param (
+    [switch]$SkipMonitoring
+)
+
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "   TimeScope - Demarrage Docker         " -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
@@ -10,16 +14,28 @@ Write-Host ""
 $currentBranch = git rev-parse --abbrev-ref HEAD
 Write-Host "Branche detectee : $currentBranch" -ForegroundColor Cyan
 
+# Configuration des fichiers Docker Compose
+$baseFiles = "-f docker-compose.yml"
+$monitoringFile = ""
+
+if (-not $SkipMonitoring) {
+    $monitoringFile = "-f docker-compose.monitoring.yml"
+    Write-Host "Monitoring (ELK) : ACTIVE" -ForegroundColor Green
+}
+else {
+    Write-Host "Monitoring (ELK) : DESACTIVE" -ForegroundColor Gray
+}
+
 # Demarrer tous les services via Docker Compose
 Write-Host "Demarrage des services..." -ForegroundColor Yellow
 
 if ($currentBranch -eq "develop") {
     Write-Host "Mode DEVELOPPEMENT active (Hot Reload)" -ForegroundColor Magenta
-    docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+    Invoke-Expression "docker-compose $baseFiles -f docker-compose.dev.yml $monitoringFile up -d --build"
 }
 else {
     Write-Host "Mode PRODUCTION active" -ForegroundColor Blue
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+    Invoke-Expression "docker-compose $baseFiles -f docker-compose.prod.yml $monitoringFile up -d --build"
 }
 
 if ($LASTEXITCODE -eq 0) {
@@ -37,6 +53,11 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "  - DB Projects: localhost:5444" -ForegroundColor Gray
     Write-Host "  - DB Time:     localhost:5445" -ForegroundColor Gray
     Write-Host "  - DB Reports:  localhost:5446" -ForegroundColor Gray
+    Write-Host ""
+    
+    if (-not $SkipMonitoring) {
+        Write-Host "  - Kibana:      http://localhost:5601" -ForegroundColor Magenta
+    }
 }
 else {
     Write-Host ""

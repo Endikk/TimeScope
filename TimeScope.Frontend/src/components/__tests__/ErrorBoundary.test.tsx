@@ -2,8 +2,7 @@
  * ErrorBoundary Component Tests
  */
 
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
-import { render, screen } from '@/tests/utils/test-utils';
+import { render, screen } from '@testing-library/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 
 // Component that throws an error
@@ -18,7 +17,7 @@ describe('ErrorBoundary', () => {
   // Suppress console.error for these tests
   const originalError = console.error;
   beforeAll(() => {
-    console.error = vi.fn();
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   afterAll(() => {
@@ -58,7 +57,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('calls onError callback when error occurs', () => {
-    const onError = vi.fn();
+    const onError = jest.fn();
 
     render(
       <ErrorBoundary onError={onError}>

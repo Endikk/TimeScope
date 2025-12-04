@@ -12,7 +12,7 @@ export interface ApiError {
 }
 
 // Configuration de l'API
-const API_BASE_URL = env.VITE_API_URL;
+const API_BASE_URL = env.NEXT_PUBLIC_API_URL;
 const API_TIMEOUT = API_CONFIG.TIMEOUT;
 
 // Créer l'instance Axios

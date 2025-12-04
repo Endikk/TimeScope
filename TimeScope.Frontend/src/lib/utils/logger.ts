@@ -34,7 +34,7 @@ class Logger {
   private readonly isDevelopment: boolean;
 
   constructor() {
-    this.isDevelopment = env.DEV;
+    this.isDevelopment = env.NODE_ENV === 'development';
   }
 
   /**
