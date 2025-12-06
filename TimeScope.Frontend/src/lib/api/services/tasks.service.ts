@@ -4,7 +4,7 @@ import { Task } from '@/lib/types';
 export interface CreateTaskDto {
   name: string;
   description?: string;
-  projectId: string;
+  projectId?: string;
   assigneeId?: string;
   status: 'EnAttente' | 'EnCours' | 'Termine';
   precision: 'Low' | 'Medium' | 'High';

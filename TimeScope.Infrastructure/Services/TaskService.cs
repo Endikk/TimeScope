@@ -16,7 +16,7 @@ public class TaskService : ITaskService
     public async Task<WorkTask> CreateTaskAsync(CreateTaskCommand command)
     {
         // Validation et parsing des données entrantes
-        var projectId = ParseGuid(command.ProjectId, "ProjectId");
+        var projectId = ParseNullableGuid(command.ProjectId);
         var assigneeId = ParseNullableGuid(command.AssigneeId);
         var status = ParseEnum<TaskStatus>(command.Status, "Status");
         var precision = ParseEnum<TaskPrecision>(command.Precision, "Precision");
@@ -62,7 +62,7 @@ public class TaskService : ITaskService
         }
 
         // Parsing des nouvelles valeurs
-        var projectId = ParseGuid(command.ProjectId, "ProjectId");
+        var projectId = ParseNullableGuid(command.ProjectId);
         var assigneeId = ParseNullableGuid(command.AssigneeId);
         var status = ParseEnum<TaskStatus>(command.Status, "Status");
         var precision = ParseEnum<TaskPrecision>(command.Precision, "Precision");

@@ -27,7 +27,7 @@ public interface ICrossDbValidationService
     /// Valide une tâche avant création/modification
     /// Vérifie que ProjectId et AssigneeId (si fourni) existent
     /// </summary>
-    Task ValidateTaskReferencesAsync(Guid projectId, Guid? assigneeId);
+    Task ValidateTaskReferencesAsync(Guid? projectId, Guid? assigneeId);
 
     /// <summary>
     /// Valide une entrée de temps avant création/modification

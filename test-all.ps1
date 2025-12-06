@@ -38,5 +38,3 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "   SUCCES - Tous les tests sont passes  " -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Appuyez sur une touche pour fermer..." -ForegroundColor Yellow
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

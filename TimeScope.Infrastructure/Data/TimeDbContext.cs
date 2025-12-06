@@ -26,7 +26,7 @@ public class TimeDbContext : DbContext
             entity.ToTable("Tasks", "time");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.ProjectId).IsRequired();
+            entity.Property(e => e.ProjectId);
             entity.Property(e => e.AssigneeId);
             entity.HasQueryFilter(e => !e.IsDeleted);
 

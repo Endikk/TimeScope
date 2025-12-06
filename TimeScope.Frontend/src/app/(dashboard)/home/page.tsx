@@ -224,7 +224,7 @@ export default function Home() {
     // Détermination des dates cibles
     const targetDates = selectedDates.size > 0 ? Array.from(selectedDates) : (selectedDate ? [selectedDate] : [])
 
-    if (targetDates.length === 0 || !newEntry.groupeId || !newEntry.projetId || !newEntry.taskId || newEntry.heures <= 0) {
+    if (targetDates.length === 0 || !newEntry.taskId || newEntry.heures <= 0) {
       return
     }
 
@@ -425,12 +425,14 @@ export default function Home() {
     }, new Set()).size
 
   const getAvailableProjects = (groupeId: string) => {
-    if (!groupeId) return []
+    if (!groupeId) return projects // Si rien sélectionné, tout montrer
+    if (groupeId === "none") return projects.filter(p => !p.groupId) // Si "Aucune société", montrer orphelins
     return projects.filter(p => p.groupId === groupeId)
   }
 
   const getAvailableTasks = (projetId: string) => {
-    if (!projetId) return []
+    if (!projetId) return tasks // Si rien sélectionné, tout montrer
+    if (projetId === "none") return tasks.filter(t => !t.projectId) // Si "Aucun projet", montrer orphelins
     return tasks.filter(t => t.projectId === projetId)
   }
 
@@ -751,7 +753,7 @@ export default function Home() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div>
-                  <Label htmlFor="edit-groupe">Société/Groupe *</Label>
+                  <Label htmlFor="edit-groupe">Société/Groupe</Label>
                   <Select
                     value={editFormData.groupeId}
                     onValueChange={(value) => handleEditFormChange('groupeId', value)}
@@ -768,16 +770,16 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-projet">Projet *</Label>
+                  <Label htmlFor="edit-projet">Projet</Label>
                   <Select
-                    value={editFormData.projetId}
-                    onValueChange={(value) => handleEditFormChange('projetId', value)}
-                    disabled={!editFormData.groupeId}
+                    value={editFormData.projetId || ""}
+                    onValueChange={(value) => handleEditFormChange('projetId', value === "none" ? "" : value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un projet" />
+                      <SelectValue placeholder="Sélectionnez un projet (optionnel)" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">Aucun projet</SelectItem>
                       {getAvailableProjects(editFormData.groupeId).map(project => (
                         <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
                       ))}
@@ -790,10 +792,9 @@ export default function Home() {
                   <Select
                     value={editFormData.taskId}
                     onValueChange={(value) => handleEditFormChange('taskId', value)}
-                    disabled={!editFormData.projetId}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={!editFormData.projetId ? "Sélectionnez d'abord un projet" : getAvailableTasks(editFormData.projetId).length === 0 ? "Aucune tâche pour ce projet" : "Sélectionnez une tâche"} />
+                      <SelectValue placeholder="Sélectionnez une tâche" />
                     </SelectTrigger>
                     <SelectContent>
                       {getAvailableTasks(editFormData.projetId).length === 0 ? (

@@ -37,13 +37,16 @@ public class CrossDbValidationService : ICrossDbValidationService
             .AnyAsync(t => t.Id == themeId && !t.IsDeleted);
     }
 
-    public async Task ValidateTaskReferencesAsync(Guid projectId, Guid? assigneeId)
+    public async Task ValidateTaskReferencesAsync(Guid? projectId, Guid? assigneeId)
     {
-        // Vérifier que le projet existe
-        var projectExists = await ProjectExistsAsync(projectId);
-        if (!projectExists)
+        // Vérifier que le projet existe (si fourni)
+        if (projectId.HasValue)
         {
-            throw new ValidationException($"Project with ID {projectId} not found");
+            var projectExists = await ProjectExistsAsync(projectId.Value);
+            if (!projectExists)
+            {
+                throw new ValidationException($"Project with ID {projectId} not found");
+            }
         }
 
         // Vérifier que l'assigné existe (si fourni)
@@ -94,7 +97,7 @@ public class CrossDbValidationService : ICrossDbValidationService
 
         foreach (var task in tasks)
         {
-            if (!validProjectIds.Contains(task.ProjectId))
+            if (task.ProjectId.HasValue && !validProjectIds.Contains(task.ProjectId.Value))
             {
                 report.TasksWithInvalidProject.Add(task.Id);
             }

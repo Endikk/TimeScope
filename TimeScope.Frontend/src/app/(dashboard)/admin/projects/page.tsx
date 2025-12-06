@@ -27,7 +27,7 @@ export default function ProjectsManagementPageSimple() {
   const [newTask, setNewTask] = useState<CreateTaskDto>({
     name: '',
     description: '',
-    projectId: '',
+    projectId: undefined,
     status: 'EnAttente',
     precision: 'Medium',
     priority: 'Medium',
@@ -89,16 +89,14 @@ export default function ProjectsManagementPageSimple() {
 
   const handleCreateTask = async () => {
     try {
-      if (!newTask.projectId) {
-        return;
-      }
+
       await createTask(newTask);
       await refetchTasks();
       setIsAddTaskOpen(false);
       setNewTask({
         name: '',
         description: '',
-        projectId: '',
+        projectId: undefined,
         status: 'EnAttente',
         precision: 'Medium',
         priority: 'Medium',

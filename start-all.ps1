@@ -63,5 +63,3 @@ else {
 }
 
 Write-Host ""
-Write-Host "Appuyez sur une touche pour fermer cette fenetre..." -ForegroundColor Yellow
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

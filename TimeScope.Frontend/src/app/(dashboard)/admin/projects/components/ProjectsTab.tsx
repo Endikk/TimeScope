@@ -98,13 +98,14 @@ export function ProjectsTab({
                 <div className="grid gap-2">
                   <Label>Groupe</Label>
                   <Select
-                    value={newProject.groupId}
-                    onValueChange={(value) => onNewProjectChange({ ...newProject, groupId: value })}
+                    value={newProject.groupId || "none"}
+                    onValueChange={(value) => onNewProjectChange({ ...newProject, groupId: value === "none" ? undefined : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un groupe (optionnel)" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">Aucun groupe</SelectItem>
                       {groups.map((group) => (
                         <SelectItem key={group.id} value={group.id}>
                           {group.name}

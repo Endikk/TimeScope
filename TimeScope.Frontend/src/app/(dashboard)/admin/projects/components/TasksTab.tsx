@@ -64,15 +64,16 @@ export function TasksTab({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Projet *</Label>
+                  <Label>Projet</Label>
                   <Select
-                    value={newTask.projectId}
-                    onValueChange={(value) => onNewTaskChange({ ...newTask, projectId: value })}
+                    value={newTask.projectId || "none"}
+                    onValueChange={(value) => onNewTaskChange({ ...newTask, projectId: value === "none" ? undefined : value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un projet" />
+                      <SelectValue placeholder="Sélectionner un projet (optionnel)" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">Aucun projet</SelectItem>
                       {projects.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.name}

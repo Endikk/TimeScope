@@ -37,15 +37,16 @@ export function TaskForm({ formData, setFormData, projects, users }: TaskFormPro
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="project">Projet *</Label>
+          <Label htmlFor="project">Projet</Label>
           <Select
-            value={formData.projectId}
-            onValueChange={(value) => setFormData({ ...formData, projectId: value })}
+            value={formData.projectId || "none"}
+            onValueChange={(value) => setFormData({ ...formData, projectId: value === "none" ? undefined : value })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Sélectionner un projet" />
+              <SelectValue placeholder="Sélectionner un projet (optionnel)" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">Aucun projet</SelectItem>
               {projects.map((project) => (
                 <SelectItem key={project.id} value={project.id}>
                   {project.name}

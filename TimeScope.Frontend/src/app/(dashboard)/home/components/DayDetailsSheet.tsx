@@ -99,13 +99,14 @@ export function DayDetailsSheet({
                                 <div className="space-y-2">
                                     <Label className="text-foreground font-semibold text-xs sm:text-sm uppercase tracking-wider">Société/Groupe</Label>
                                     <Select
-                                        value={newEntry.groupeId}
+                                        value={newEntry.groupeId || ""}
                                         onValueChange={(value) => onNewEntryChange('groupeId', value)}
                                     >
                                         <SelectTrigger className="h-11 bg-muted/50 border-input focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 rounded-lg">
-                                            <SelectValue placeholder="Sélectionner..." />
+                                            <SelectValue placeholder="Toutes les sociétés" />
                                         </SelectTrigger>
                                         <SelectContent>
+                                            <SelectItem value="none">Aucune Société</SelectItem>
                                             {groups.map(g => (
                                                 <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
                                             ))}
@@ -117,14 +118,14 @@ export function DayDetailsSheet({
                                     <div className="space-y-2">
                                         <Label className="text-foreground font-semibold text-xs sm:text-sm uppercase tracking-wider">Projet</Label>
                                         <Select
-                                            value={newEntry.projetId}
+                                            value={newEntry.projetId || ""}
                                             onValueChange={(value) => onNewEntryChange('projetId', value)}
-                                            disabled={!newEntry.groupeId}
                                         >
                                             <SelectTrigger className="h-11 bg-muted/50 border-input focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 rounded-lg">
-                                                <SelectValue placeholder="Sélectionner..." />
+                                                <SelectValue placeholder="Tous les projets" />
                                             </SelectTrigger>
                                             <SelectContent>
+                                                <SelectItem value="none">Aucun projet</SelectItem>
                                                 {getAvailableProjects(newEntry.groupeId).map(p => (
                                                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                                                 ))}
@@ -137,7 +138,6 @@ export function DayDetailsSheet({
                                         <Select
                                             value={newEntry.taskId}
                                             onValueChange={(value) => onNewEntryChange('taskId', value)}
-                                            disabled={!newEntry.projetId}
                                         >
                                             <SelectTrigger className="h-11 bg-muted/50 border-input focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 rounded-lg">
                                                 <SelectValue placeholder="Sélectionner..." />
