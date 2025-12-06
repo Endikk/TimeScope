@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { ConsoleEasterEgg } from "@/components/console-easter-egg";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const poppins = Poppins({
@@ -23,6 +24,7 @@ export default function RootLayout({
     return (
         <html lang="fr" suppressHydrationWarning>
             <body className={`${inter.variable} ${poppins.variable} font-sans antialiased`}>
+                <ConsoleEasterEgg />
                 <Providers>
                     {children}
                 </Providers>
