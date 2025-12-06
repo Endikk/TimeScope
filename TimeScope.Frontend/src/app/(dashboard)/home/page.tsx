@@ -773,13 +773,12 @@ export default function Home() {
                   <Label htmlFor="edit-projet">Projet</Label>
                   <Select
                     value={editFormData.projetId || ""}
-                    onValueChange={(value) => handleEditFormChange('projetId', value === "none" ? "" : value)}
+                    onValueChange={(value) => handleEditFormChange('projetId', value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un projet (optionnel)" />
+                      <SelectValue placeholder="Sélectionnez un projet" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Aucun projet</SelectItem>
                       {getAvailableProjects(editFormData.groupeId).map(project => (
                         <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
                       ))}
@@ -794,11 +793,11 @@ export default function Home() {
                     onValueChange={(value) => handleEditFormChange('taskId', value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez une tâche" />
+                      <SelectValue placeholder="Sélectionner une tâche" />
                     </SelectTrigger>
                     <SelectContent>
                       {getAvailableTasks(editFormData.projetId).length === 0 ? (
-                        <div className="p-2 text-sm text-muted-foreground">Aucune tâche pour ce projet</div>
+                        <div className="p-2 text-sm text-muted-foreground">Aucune tâche disponible</div>
                       ) : (
                         getAvailableTasks(editFormData.projetId).map(task => (
                           <SelectItem key={task.id} value={task.id}>

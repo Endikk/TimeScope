@@ -63,25 +63,7 @@ export function TasksTab({
                     placeholder="Nom de la tâche"
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label>Projet</Label>
-                  <Select
-                    value={newTask.projectId || "none"}
-                    onValueChange={(value) => onNewTaskChange({ ...newTask, projectId: value === "none" ? undefined : value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un projet (optionnel)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Aucun projet</SelectItem>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+
                 <div className="grid gap-2">
                   <Label>Description</Label>
                   <Textarea
@@ -145,7 +127,6 @@ export function TasksTab({
             <TableHeader>
               <TableRow>
                 <TableHead>Nom</TableHead>
-                <TableHead>Projet</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead>Priorité</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -153,13 +134,9 @@ export function TasksTab({
             </TableHeader>
             <TableBody>
               {tasks.map((task) => {
-                const project = projects.find(p => p.id === task.projectId);
                 return (
                   <TableRow key={task.id}>
                     <TableCell className="font-medium">{task.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{project?.name || 'N/A'}</Badge>
-                    </TableCell>
                     <TableCell>
                       <Badge variant="secondary">{task.status}</Badge>
                     </TableCell>

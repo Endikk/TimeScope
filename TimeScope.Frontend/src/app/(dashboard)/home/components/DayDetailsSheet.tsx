@@ -106,7 +106,6 @@ export function DayDetailsSheet({
                                             <SelectValue placeholder="Toutes les sociétés" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="none">Aucune Société</SelectItem>
                                             {groups.map(g => (
                                                 <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
                                             ))}
@@ -125,7 +124,6 @@ export function DayDetailsSheet({
                                                 <SelectValue placeholder="Tous les projets" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="none">Aucun projet</SelectItem>
                                                 {getAvailableProjects(newEntry.groupeId).map(p => (
                                                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                                                 ))}
@@ -134,7 +132,7 @@ export function DayDetailsSheet({
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-foreground font-semibold text-xs sm:text-sm uppercase tracking-wider">Tâche</Label>
+                                        <Label className="text-foreground font-semibold text-xs sm:text-sm uppercase tracking-wider">Tâche *</Label>
                                         <Select
                                             value={newEntry.taskId}
                                             onValueChange={(value) => onNewEntryChange('taskId', value)}

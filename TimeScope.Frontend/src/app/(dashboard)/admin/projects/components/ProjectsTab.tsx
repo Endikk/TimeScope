@@ -95,25 +95,7 @@ export function ProjectsTab({
                     placeholder="Description du projet..."
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label>Groupe</Label>
-                  <Select
-                    value={newProject.groupId || "none"}
-                    onValueChange={(value) => onNewProjectChange({ ...newProject, groupId: value === "none" ? undefined : value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un groupe (optionnel)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Aucun groupe</SelectItem>
-                      {groups.map((group) => (
-                        <SelectItem key={group.id} value={group.id}>
-                          {group.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => onAddOpenChange(false)}>
@@ -151,25 +133,7 @@ export function ProjectsTab({
                   placeholder="Description du projet..."
                 />
               </div>
-              <div className="grid gap-2">
-                <Label>Groupe</Label>
-                <Select
-                  value={editingProject.groupId || "none"}
-                  onValueChange={(value) => setEditingProject({ ...editingProject, groupId: value === "none" ? undefined : value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un groupe (optionnel)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Aucun groupe</SelectItem>
-                    {groups.map((group) => (
-                      <SelectItem key={group.id} value={group.id}>
-                        {group.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+
             </div>
           )}
           <DialogFooter>
@@ -194,7 +158,6 @@ export function ProjectsTab({
               <TableRow>
                 <TableHead>Nom</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Groupe</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -203,15 +166,6 @@ export function ProjectsTab({
                 <TableRow key={project.id}>
                   <TableCell className="font-medium">{project.name}</TableCell>
                   <TableCell className="text-muted-foreground">{project.description || '-'}</TableCell>
-                  <TableCell>
-                    {project.groupId ? (
-                      <Badge variant="secondary">
-                        {groups.find(g => g.id === project.groupId)?.name || 'Groupe'}
-                      </Badge>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

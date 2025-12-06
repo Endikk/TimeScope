@@ -35,45 +35,24 @@ export function TaskForm({ formData, setFormData, projects, users }: TaskFormPro
           rows={3}
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="project">Projet</Label>
-          <Select
-            value={formData.projectId || "none"}
-            onValueChange={(value) => setFormData({ ...formData, projectId: value === "none" ? undefined : value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionner un projet (optionnel)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Aucun projet</SelectItem>
-              {projects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="assignee">Assigné à</Label>
-          <Select
-            value={formData.assigneeId || 'unassigned'}
-            onValueChange={(value) => setFormData({ ...formData, assigneeId: value === 'unassigned' ? '' : value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Non assigné" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="unassigned">Non assigné</SelectItem>
-              {users.map((user) => (
-                <SelectItem key={user.id} value={user.id}>
-                  {user.firstName} {user.lastName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="grid gap-2">
+        <Label htmlFor="assignee">Assigné à</Label>
+        <Select
+          value={formData.assigneeId || 'unassigned'}
+          onValueChange={(value) => setFormData({ ...formData, assigneeId: value === 'unassigned' ? '' : value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Non assigné" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="unassigned">Non assigné</SelectItem>
+            {users.map((user) => (
+              <SelectItem key={user.id} value={user.id}>
+                {user.firstName} {user.lastName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div className="grid gap-2">

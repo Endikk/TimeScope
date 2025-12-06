@@ -113,10 +113,7 @@ export default function TasksManagementPage() {
     enAttente: tasks.filter(t => t.status === 'EnAttente').length,
   };
 
-  const getProjectName = (projectId: string) => {
-    const project = projects.find(p => p.id === projectId);
-    return project?.name || 'N/A';
-  };
+
 
   const getUserName = (userId: string | undefined) => {
     if (!userId) return 'Non assigné';
@@ -172,7 +169,6 @@ export default function TasksManagementPage() {
             filteredTasks={filteredTasks}
             onEdit={openEditDialog}
             onDelete={handleDeleteTask}
-            getProjectName={getProjectName}
             getUserName={getUserName}
           />
 

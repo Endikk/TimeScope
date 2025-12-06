@@ -12,7 +12,6 @@ interface TasksTableProps {
   filteredTasks: Task[];
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
-  getProjectName: (id: string) => string;
   getUserName: (id: string | undefined) => string;
 }
 
@@ -44,7 +43,7 @@ const getPriorityBadge = (priority: string) => {
   );
 };
 
-export function TasksTable({ filteredTasks, onEdit, onDelete, getProjectName, getUserName }: TasksTableProps) {
+export function TasksTable({ filteredTasks, onEdit, onDelete, getUserName }: TasksTableProps) {
   return (
     <Card>
       <CardHeader>
@@ -67,7 +66,6 @@ export function TasksTable({ filteredTasks, onEdit, onDelete, getProjectName, ge
               <TableHeader>
                 <TableRow>
                   <TableHead>Tâche</TableHead>
-                  <TableHead>Projet</TableHead>
                   <TableHead>Assigné à</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Priorité</TableHead>
@@ -88,9 +86,6 @@ export function TasksTable({ filteredTasks, onEdit, onDelete, getProjectName, ge
                           </div>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{getProjectName(task.projectId)}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
