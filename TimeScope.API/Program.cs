@@ -163,6 +163,9 @@ app.UseCors("AllowFrontend");
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Middleware de maintenance (après Auth pour vérifier les rôles Admin)
+app.UseMiddleware<MaintenanceMiddleware>();
 app.MapControllers();
 
 // Initialisation de la base de données avec les données de test

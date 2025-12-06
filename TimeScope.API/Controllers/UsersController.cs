@@ -486,6 +486,46 @@ public class UsersController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    /// <summary>
+    /// Met à jour les préférences utilisateur
+    /// </summary>
+    [HttpPut("{id}/preferences")]
+    public async Task<ActionResult<User>> UpdatePreferences(Guid id, [FromBody] UpdatePreferencesDto dto)
+    {
+        // Vérification : modification de ses propres préférences uniquement (sauf Admin)
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var isAdmin = User.IsInRole("Admin");
+        if (currentUserId == null || (id.ToString() != currentUserId && !isAdmin))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            // Sérialisation du JSON si reçu comme objet ou utilisation directe si string
+            // Ici on suppose qu'on reçoit un objet structuré qu'on convertit en string pour le stockage
+            var jsonPreferences = System.Text.Json.JsonSerializer.Serialize(dto.Preferences);
+            
+            var user = await _userService.UpdatePreferencesAsync(id, jsonPreferences);
+
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating preferences for user {UserId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+}
+
+public class UpdatePreferencesDto
+{
+    public object Preferences { get; set; } = new object();
 }
 
 // DTOs

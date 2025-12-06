@@ -11,6 +11,7 @@ export interface User {
     jobTitle?: string;
     department?: string;
     hireDate?: string;
+    preferences?: string;
 }
 
 export const roleNumberToString = (role: number | string): 'Admin' | 'Manager' | 'Employee' => {

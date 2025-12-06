@@ -30,6 +30,7 @@ public class ApplicationDbContext : DbContext
 
     // Reports
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -227,6 +228,30 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Timestamp);
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.EntityType);
+        });
+
+        // --- Notifications Configuration ---
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("Notifications");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Message).IsRequired();
+            entity.Property(e => e.Type).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.IsRead).IsRequired();
+            entity.Property(e => e.Link).HasMaxLength(500);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.IsRead);
+            entity.HasIndex(e => e.CreatedAt);
+            
+            // FK to User
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
     }
 }

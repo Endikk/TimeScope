@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, MoreHorizontal, Trash2 } from 'lucide-react';
-import type { CreateProjectDto } from '@/lib/api/services/projects.service';
+import { Plus, MoreHorizontal, Trash2, Pencil } from 'lucide-react';
+import type { CreateProjectDto, UpdateProjectDto } from '@/lib/api/services/projects.service';
 import type { Project, Group } from '@/types/project';
 
 interface ProjectsTabProps {
@@ -21,6 +22,7 @@ interface ProjectsTabProps {
   newProject: CreateProjectDto;
   onNewProjectChange: (project: CreateProjectDto) => void;
   onCreateProject: () => void;
+  onUpdateProject: (id: string, project: UpdateProjectDto) => Promise<void>;
   onDeleteProject: (id: string) => void;
 }
 
@@ -33,8 +35,29 @@ export function ProjectsTab({
   newProject,
   onNewProjectChange,
   onCreateProject,
+  onUpdateProject,
   onDeleteProject
 }: ProjectsTabProps) {
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+
+  const handleEditClick = (project: Project) => {
+    setEditingProject(project);
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (editingProject) {
+      await onUpdateProject(editingProject.id, {
+        name: editingProject.name,
+        description: editingProject.description,
+        groupId: editingProject.groupId
+      });
+      setIsEditOpen(false);
+      setEditingProject(null);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -101,6 +124,62 @@ export function ProjectsTab({
           </Dialog>
         </div>
       </CardHeader>
+
+      {/* Dialog d'édition */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le projet</DialogTitle>
+            <DialogDescription>Modifiez les informations du projet</DialogDescription>
+          </DialogHeader>
+          {editingProject && (
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label>Nom</Label>
+                <Input
+                  value={editingProject.name}
+                  onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
+                  placeholder="Mon Projet"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Description</Label>
+                <Textarea
+                  value={editingProject.description || ''}
+                  onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
+                  placeholder="Description du projet..."
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Groupe</Label>
+                <Select
+                  value={editingProject.groupId || "none"}
+                  onValueChange={(value) => setEditingProject({ ...editingProject, groupId: value === "none" ? undefined : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un groupe (optionnel)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Aucun groupe</SelectItem>
+                    {groups.map((group) => (
+                      <SelectItem key={group.id} value={group.id}>
+                        {group.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveEdit}>Enregistrer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <CardContent>
         {loading ? (
           <p className="text-center py-8 text-muted-foreground">Chargement...</p>
@@ -142,6 +221,10 @@ export function ProjectsTab({
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleEditClick(project)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Modifier
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onDeleteProject(project.id)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Supprimer

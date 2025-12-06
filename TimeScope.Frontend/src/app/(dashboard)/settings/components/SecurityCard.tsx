@@ -7,11 +7,10 @@ import { useState } from 'react';
 
 interface SecurityCardProps {
     onPasswordChange: (current: string, newPass: string) => Promise<void>;
-    onEmailChange: (newEmail: string) => Promise<void>;
     currentEmail?: string;
 }
 
-export function SecurityCard({ onPasswordChange, onEmailChange, currentEmail }: SecurityCardProps) {
+export function SecurityCard({ onPasswordChange, currentEmail }: SecurityCardProps) {
     // Password state
     const [showPasswordFields, setShowPasswordFields] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
@@ -19,13 +18,6 @@ export function SecurityCard({ onPasswordChange, onEmailChange, currentEmail }: 
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [isPasswordLoading, setIsPasswordLoading] = useState(false);
-
-    // Email state
-    const [showEmailFields, setShowEmailFields] = useState(false);
-    const [newEmail, setNewEmail] = useState('');
-    const [confirmEmail, setConfirmEmail] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [isEmailLoading, setIsEmailLoading] = useState(false);
 
     const handlePasswordChange = async () => {
         setPasswordError('');
@@ -62,41 +54,7 @@ export function SecurityCard({ onPasswordChange, onEmailChange, currentEmail }: 
         }
     };
 
-    const handleEmailChange = async () => {
-        setEmailError('');
 
-        // Validation
-        if (!newEmail || !confirmEmail) {
-            setEmailError('Tous les champs sont requis');
-            return;
-        }
-
-        if (newEmail !== confirmEmail) {
-            setEmailError('Les adresses email ne correspondent pas');
-            return;
-        }
-
-        // Basic email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(newEmail)) {
-            setEmailError('Adresse email invalide');
-            return;
-        }
-
-        setIsEmailLoading(true);
-        try {
-            await onEmailChange(newEmail);
-
-            // Reset form
-            setNewEmail('');
-            setConfirmEmail('');
-            setShowEmailFields(false);
-        } catch (err) {
-            setEmailError(err instanceof Error ? err.message : "Erreur lors du changement d'email");
-        } finally {
-            setIsEmailLoading(false);
-        }
-    };
 
     return (
         <Card>
@@ -110,7 +68,7 @@ export function SecurityCard({ onPasswordChange, onEmailChange, currentEmail }: 
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                {/* Changement d'email */}
+                {/* Email Display (Read Only) */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
@@ -119,63 +77,13 @@ export function SecurityCard({ onPasswordChange, onEmailChange, currentEmail }: 
                                 Adresse Email
                             </Label>
                             <p className="text-sm text-muted-foreground">
-                                {currentEmail ? `Actuellement : ${currentEmail}` : 'Modifiez votre adresse email'}
+                                {currentEmail || 'Non définie'}
                             </p>
                         </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                setShowEmailFields(!showEmailFields);
-                                setEmailError('');
-                                setNewEmail('');
-                                setConfirmEmail('');
-                            }}
-                        >
-                            {showEmailFields ? 'Annuler' : 'Modifier'}
-                        </Button>
                     </div>
-
-                    {showEmailFields && (
-                        <div className="space-y-4 pl-6 border-l-2 border-indigo-200">
-                            {emailError && (
-                                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                    {emailError}
-                                </div>
-                            )}
-                            <div className="space-y-2">
-                                <Label htmlFor="new-email">Nouvel email</Label>
-                                <Input
-                                    id="new-email"
-                                    type="email"
-                                    value={newEmail}
-                                    onChange={(e) => setNewEmail(e.target.value)}
-                                    disabled={isEmailLoading}
-                                    placeholder="exemple@domaine.com"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="confirm-email">Confirmer l'email</Label>
-                                <Input
-                                    id="confirm-email"
-                                    type="email"
-                                    value={confirmEmail}
-                                    onChange={(e) => setConfirmEmail(e.target.value)}
-                                    disabled={isEmailLoading}
-                                    placeholder="exemple@domaine.com"
-                                />
-                            </div>
-                            <Button
-                                size="sm"
-                                className="w-full"
-                                onClick={handleEmailChange}
-                                disabled={isEmailLoading}
-                            >
-                                <Mail className="h-4 w-4 mr-2" />
-                                {isEmailLoading ? 'Mise à jour...' : "Mettre à jour l'email"}
-                            </Button>
-                        </div>
-                    )}
+                    <p className="text-xs text-muted-foreground italic">
+                        L'adresse email ne peut pas être modifiée ici. Contactez votre administrateur si nécessaire.
+                    </p>
                 </div>
 
                 <div className="border-t pt-6">

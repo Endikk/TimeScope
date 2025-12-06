@@ -79,11 +79,19 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     // Log de l'erreur API
-    apiLogger.error(
-      originalRequest?.method?.toUpperCase() || 'UNKNOWN',
-      originalRequest?.url || '',
-      error
-    );
+    if (error.response?.status === 404) {
+      apiLogger.warn(
+        originalRequest?.method?.toUpperCase() || 'UNKNOWN',
+        originalRequest?.url || '',
+        error.message
+      );
+    } else {
+      apiLogger.error(
+        originalRequest?.method?.toUpperCase() || 'UNKNOWN',
+        originalRequest?.url || '',
+        error
+      );
+    }
 
     // Si l'erreur n'est pas 401 ou s'il n'y a pas de config, rejet direct
     if (!originalRequest || error.response?.status !== 401) {

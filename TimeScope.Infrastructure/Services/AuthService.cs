@@ -94,7 +94,7 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during login for email: {Email}", loginDto.Email);
-            return null;
+            throw; // Re-throw to let Controller handle it as 500
         }
     }
 

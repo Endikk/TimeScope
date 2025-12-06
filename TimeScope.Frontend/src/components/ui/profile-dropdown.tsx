@@ -109,9 +109,11 @@ export function ProfileDropdown({
               <span>Paramètres</span>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
-            <Bell className="mr-2 h-4 w-4" />
-            <span>Notifications</span>
+          <DropdownMenuItem asChild>
+            <Link href="/notifications" className="flex items-center cursor-pointer">
+              <Bell className="mr-2 h-4 w-4" />
+              <span>Notifications</span>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

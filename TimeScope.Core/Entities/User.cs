@@ -53,6 +53,9 @@ public class User : BaseEntity
     /// </summary>
     public string? TwoFactorSecret { get; set; }
 
+    // Préférences utilisateur (stockées en JSON)
+    public string? Preferences { get; set; }
+
     // Relations avec les autres entités
     public ICollection<WorkTask> AssignedTasks { get; set; } = new List<WorkTask>();
     public ICollection<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();

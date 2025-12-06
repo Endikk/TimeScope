@@ -11,7 +11,7 @@ import { tokenStorage, User } from '@/lib/api/services/auth.service';
 import { motion } from 'framer-motion';
 
 export default function ProfilePage() {
-    const { user: authUser } = useAuth();
+    const { user: authUser, logout } = useAuth(); // Add logout
     const [user, setUser] = useState<User | null>(authUser);
     const [isEditingPersonalInfo, setIsEditingPersonalInfo] = useState(false);
     const [activityStats, setActivityStats] = useState<UserStatsResponse>({
@@ -22,13 +22,19 @@ export default function ProfilePage() {
     });
 
     // Chargement des données utilisateur fraîches et des statistiques au montage
+    // Chargement des données utilisateur fraîches et des statistiques au montage
     useEffect(() => {
+        let isMounted = true;
+
         const loadUserData = async () => {
             if (!authUser?.id) return;
 
             try {
                 // Chargement des données utilisateur depuis l'API
                 const freshUserData = await profileApiService.getUserProfile(authUser.id);
+
+                if (!isMounted) return;
+
                 setUser(freshUserData);
 
                 // Mise à jour du localStorage avec les données fraîches
@@ -40,16 +46,32 @@ export default function ProfilePage() {
 
                 // Chargement des statistiques utilisateur
                 const stats = await profileApiService.getUserStats(authUser.id);
+
+                if (!isMounted) return;
+
                 setActivityStats(stats);
-            } catch (error) {
+            } catch (error: any) {
+                // Si l'utilisateur n'est pas trouvé (404), on le déconnecte pour éviter un état incohérent
+                if (error?.response?.status === 404) {
+                    console.warn('User not found in database, logging out...');
+                    await logout();
+                    return;
+                }
+
                 console.error('Failed to load user data:', error);
+
+                if (!isMounted) return;
                 // Repli sur l'utilisateur du contexte d'auth si l'API échoue
                 setUser(authUser);
             }
         };
 
         loadUserData();
-    }, [authUser?.id, authUser]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [authUser?.id, authUser, logout]);
 
     const handleUploadPhoto = async () => {
         if (!user?.id) return;

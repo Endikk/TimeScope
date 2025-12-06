@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Settings, Palette, Globe, Loader2, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { settingsService } from '@/lib/api/services/settings.service';
+import { profileApiService } from '@/lib/api/services/profile.service';
 import { useAuth } from '@/contexts/AuthContext';
 // import { useTheme } from 'next-themes';
 
@@ -110,10 +111,27 @@ export function UserPreferencesCard() {
 
             setAllowedSettings(newAllowedSettings);
 
-            // Load user preferences from localStorage or use defaults
-            const savedPrefs = localStorage.getItem(`user_prefs_${user?.id}`);
-            if (savedPrefs) {
-                setPreferences(JSON.parse(savedPrefs));
+            // Load user preferences from backend (user.preferences) or localStorage as fallback
+            if (user?.preferences) {
+                try {
+                    const parsedPrefs = JSON.parse(user.preferences);
+                    // Merge with defaults to ensure all keys exist
+                    setPreferences(prev => ({
+                        ...prev,
+                        ...parsedPrefs,
+                        // Deep merge for nested objects
+                        profile: { ...prev.profile, ...parsedPrefs.profile },
+                        appearance: { ...prev.appearance, ...parsedPrefs.appearance },
+                        regional: { ...prev.regional, ...parsedPrefs.regional },
+                    }));
+                } catch (e) {
+                    console.error('Failed to parse user preferences', e);
+                }
+            } else {
+                const savedPrefs = localStorage.getItem(`user_prefs_${user?.id}`);
+                if (savedPrefs) {
+                    setPreferences(JSON.parse(savedPrefs));
+                }
             }
         } catch (error) {
             console.error('Failed to load settings:', error);
@@ -135,18 +153,24 @@ export function UserPreferencesCard() {
     };
 
     const savePreferences = async () => {
+        if (!user?.id) return;
+
         try {
             setSaving(true);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 800));
 
-            // Save to localStorage
+            // Call API
+            await profileApiService.updatePreferences(user.id, preferences);
+
+            // Save to localStorage as backup/cache
             localStorage.setItem(`user_prefs_${user?.id}`, JSON.stringify(preferences));
 
-            // Apply theme changes if needed
-            // This is where you would apply the color scheme, etc.
+            // Apply theme changes if needed (e.g. reload or context update)
+            // Ideally we should update the user context here
 
             alert('Préférences enregistrées avec succès');
+
+            // Reload page to apply changes everywhere (simple solution)
+            // window.location.reload(); 
         } catch (error) {
             console.error('Failed to save preferences:', error);
             alert('Erreur lors de l\'enregistrement');

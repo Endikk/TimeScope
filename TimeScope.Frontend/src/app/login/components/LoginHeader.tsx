@@ -8,7 +8,9 @@ export default function LoginHeader() {
         alt="TimeScope Logo"
         width={208}
         height={200}
+        priority
         className="w-52 h-50"
+        style={{ width: "auto", height: "auto" }}
         onError={(e) => {
           e.currentTarget.style.display = 'none';
         }}

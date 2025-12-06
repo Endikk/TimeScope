@@ -187,19 +187,7 @@ export function AdminSettingsCard({ settings, onUpdate, onSave, saving }: AdminS
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="email-notifications">Notifications par email</Label>
-              <p className="text-sm text-muted-foreground">
-                Envoyer des notifications par email aux utilisateurs
-              </p>
-            </div>
-            <Switch
-              id="email-notifications"
-              checked={settings?.notifications?.emailEnabled ?? true}
-              onCheckedChange={(checked) => onUpdate('notifications.emailEnabled', checked)}
-            />
-          </div>
+
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

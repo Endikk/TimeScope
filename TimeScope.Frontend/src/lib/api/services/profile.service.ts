@@ -119,4 +119,12 @@ export const profileApiService = {
     const response = await apiClient.delete<User>(`/users/${userId}/banner`);
     return response.data;
   },
+
+  /**
+   * Update user preferences
+   */
+  async updatePreferences(userId: string, preferences: any): Promise<User> {
+    const response = await apiClient.put<User>(`/users/${userId}/preferences`, { preferences });
+    return response.data;
+  },
 };

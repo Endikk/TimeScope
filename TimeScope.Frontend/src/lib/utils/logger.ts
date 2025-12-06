@@ -162,6 +162,13 @@ export const apiLogger = {
   error(method: string, url: string, error: unknown): void {
     logger.logApiError(method, url, error);
   },
+
+  /**
+   * Log HTTP warning
+   */
+  warn(method: string, url: string, message: string): void {
+    logger.warn(`API Warning: ${method} ${url} - ${message}`);
+  },
 };
 
 export default logger;

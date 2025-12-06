@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MonthData, ThemeRow, DayEntry, MonthlyProgress } from "@/lib/types"
-import { ChevronLeft, ChevronRight, Calendar, Target, Clock, TrendingUp, Save } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar, Target, Clock, TrendingUp, Save, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface MonthlyTrackerProps {
   userId: string
@@ -32,9 +33,11 @@ const workStructure = [
 
 export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [isLoading, setIsLoading] = useState(false)
+  const [localMonthData, setLocalMonthData] = useState<MonthData | null>(null)
 
-  // Génération des données du mois
-  const monthData: MonthData = useMemo(() => {
+  // Initialisation des données du mois
+  useEffect(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
     const monthNames = [
@@ -56,7 +59,6 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
         const isToday = date.toDateString() === today.toDateString()
 
         // Données exemple - à remplacer par vraies données utilisateur
-        // Données exemple - à remplacer par vraies données utilisateur
         const value = (day + item.id.length) % 7 === 0 ? 1 : 0
 
         days.push({
@@ -77,25 +79,33 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
       }
     })
 
-    return {
+    setLocalMonthData({
       year,
       month,
       monthName: monthNames[month],
       daysInMonth,
       firstDayOfWeek,
       themes: themeRows
-    }
+    })
   }, [currentDate])
 
   // Calcul des statistiques mensuelles
   const monthlyProgress: MonthlyProgress = useMemo(() => {
-    const totalHours = monthData.themes.reduce((sum, theme) => {
+    if (!localMonthData) return {
+      totalHours: 0,
+      totalDays: 0,
+      averageHoursPerDay: 0,
+      completedDays: 0,
+      progressPercentage: 0
+    }
+
+    const totalHours = localMonthData.themes.reduce((sum, theme) => {
       return sum + theme.days.reduce((daySum, day) => daySum + day.value * 7, 0)
     }, 0)
 
-    const totalDays = monthData.daysInMonth
-    const completedDays = monthData.themes[0].days.filter(day =>
-      monthData.themes.some(theme =>
+    const totalDays = localMonthData.daysInMonth
+    const completedDays = localMonthData.themes[0].days.filter(day =>
+      localMonthData.themes.some(theme =>
         theme.days[day.day - 1]?.value > 0
       )
     ).length
@@ -107,7 +117,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
       completedDays,
       progressPercentage: (completedDays / totalDays) * 100
     }
-  }, [monthData])
+  }, [localMonthData])
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate)
@@ -119,8 +129,49 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
     setCurrentDate(newDate)
   }
 
-  const updateDayValue = (_themeId: string, _day: number, _value: string) => {
-    // TODO: Update database with new value
+  const updateDayValue = (themeId: string, day: number, value: string) => {
+    if (!localMonthData) return
+
+    const newValue = Math.min(Math.max(parseFloat(value) || 0, 0), 1)
+
+    setLocalMonthData(prev => {
+      if (!prev) return null
+      return {
+        ...prev,
+        themes: prev.themes.map(theme => {
+          if (theme.id !== themeId) return theme
+          return {
+            ...theme,
+            days: theme.days.map(d => {
+              if (d.day !== day) return d
+              return { ...d, value: newValue }
+            })
+          }
+        })
+      }
+    })
+  }
+
+  const handleSave = async () => {
+    setIsLoading(true)
+    try {
+      // Simulation d'appel API
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // TODO: Remplacer par un vrai appel API
+      // await api.post('/timesheet/save', localMonthData)
+
+      toast.success("Modifications enregistrées", {
+        description: "Vos heures ont été mises à jour avec succès."
+      })
+    } catch (error) {
+      toast.error("Erreur lors de l'enregistrement", {
+        description: "Veuillez réessayer ultérieurement."
+      })
+      console.error(error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const getCellBackground = (value: number, isWeekend: boolean, isToday: boolean) => {
@@ -128,6 +179,8 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
     if (isToday) return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700'
     return value > 0 ? `bg-green-500` : 'bg-muted/30'
   }
+
+  if (!localMonthData) return <div>Chargement...</div>
 
   return (
     <div className="space-y-6">
@@ -141,7 +194,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
               </div>
               <div>
                 <CardTitle className="text-2xl font-bold">
-                  Suivi Mensuel - {monthData.monthName} {monthData.year}
+                  Suivi Mensuel - {localMonthData.monthName} {localMonthData.year}
                 </CardTitle>
                 <CardDescription>
                   Saisissez vos heures par groupe/projet/activité (max 1 = 7h de travail)
@@ -229,9 +282,9 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                     <th className="sticky bg-muted/50 px-2 py-2 text-left font-semibold text-foreground border-r w-[100px]" style={{ left: '200px' }}>
                       Activité
                     </th>
-                    {Array.from({ length: monthData.daysInMonth }, (_, i) => {
+                    {Array.from({ length: localMonthData.daysInMonth }, (_, i) => {
                       const day = i + 1
-                      const date = new Date(monthData.year, monthData.month, day)
+                      const date = new Date(localMonthData.year, localMonthData.month, day)
                       const isWeekend = date.getDay() === 0 || date.getDay() === 6
                       const isToday = date.toDateString() === new Date().toDateString()
 
@@ -249,7 +302,7 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {monthData.themes.map((theme, themeIndex) => (
+                  {localMonthData.themes.map((theme, themeIndex) => (
                     <tr key={theme.id} className={themeIndex % 2 === 0 ? 'bg-card' : 'bg-muted/30'}>
                       <td className="sticky left-0 bg-inherit px-2 py-2 border-r w-[100px]">
                         <div className="flex items-center space-x-1">
@@ -308,9 +361,17 @@ export function MonthlyTracker({ userId: _userId }: MonthlyTrackerProps) {
         <div className="text-sm text-muted-foreground">
           💡 Saisissez une valeur entre 0 et 1 (1 = 7h de travail)
         </div>
-        <Button className="bg-green-600 hover:bg-green-700">
-          <Save className="mr-2 h-4 w-4" />
-          Sauvegarder
+        <Button
+          className="bg-green-600 hover:bg-green-700"
+          onClick={handleSave}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="mr-2 h-4 w-4" />
+          )}
+          {isLoading ? "Enregistrement..." : "Sauvegarder"}
         </Button>
       </div>
     </div>

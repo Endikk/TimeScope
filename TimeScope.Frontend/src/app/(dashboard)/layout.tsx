@@ -50,6 +50,13 @@ export default function DashboardLayout({
     const router = useRouter()
 
     useEffect(() => {
+        if (!isAuthLoading) {
+            if (!user) {
+                router.push('/login')
+                return
+            }
+        }
+
         if (!isMaintenanceLoading && !isAuthLoading && isMaintenanceMode) {
             // Si le mode maintenance est actif et que l'utilisateur n'est pas admin
             if (user && !hasRole(['Admin'])) {

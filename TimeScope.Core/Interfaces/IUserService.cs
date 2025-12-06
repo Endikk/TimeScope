@@ -55,6 +55,11 @@ public interface IUserService
     Task<User> DeleteAvatarAsync(Guid id);
 
     /// <summary>
+    /// Met à jour les préférences de l'utilisateur (JSON)
+    /// </summary>
+    Task<User> UpdatePreferencesAsync(Guid id, string preferencesJson);
+
+    /// <summary>
     /// Supprime la bannière
     /// </summary>
     Task<User> DeleteBannerAsync(Guid id);

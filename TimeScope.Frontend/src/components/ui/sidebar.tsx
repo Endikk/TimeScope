@@ -833,6 +833,7 @@ function AppSidebar({
                     alt="TimeScope Logo"
                     width={200}
                     height={64}
+                    priority
                     className="h-9 w-auto group-data-[collapsible=icon]:hidden transition-all duration-300 group-hover/logo:scale-105"
                     style={{ width: 'auto', height: 'auto' }}
                   />

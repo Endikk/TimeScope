@@ -4,7 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProjects, useGroups, useProjectMutations, useGroupMutations } from '@/lib/hooks/use-projects';
 import { useTasks, useTaskMutations } from '@/lib/hooks/use-tasks';
-import type { CreateProjectDto, CreateGroupDto } from '@/lib/api/services/projects.service';
+import type { CreateProjectDto, UpdateProjectDto, CreateGroupDto } from '@/lib/api/services/projects.service';
 import type { CreateTaskDto } from '@/lib/api/services/tasks.service';
 import { ProjectsHeader, StatsCards, SearchBar, GroupsTab, ProjectsTab, TasksTab } from './components';
 
@@ -13,7 +13,7 @@ export default function ProjectsManagementPageSimple() {
   const { groups, loading: groupsLoading, refetch: refetchGroups } = useGroups();
   const { tasks, loading: tasksLoading, refetch: refetchTasks } = useTasks();
 
-  const { createProject, deleteProject } = useProjectMutations();
+  const { createProject, updateProject, deleteProject } = useProjectMutations();
   const { createGroup, deleteGroup } = useGroupMutations();
   const { createTask, deleteTask } = useTaskMutations();
 
@@ -53,6 +53,15 @@ export default function ProjectsManagementPageSimple() {
       } catch (error) {
         console.error(error);
       }
+    }
+  };
+
+  const handleUpdateProject = async (id: string, data: UpdateProjectDto) => {
+    try {
+      await updateProject(id, data);
+      await refetchProjects();
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -168,6 +177,7 @@ export default function ProjectsManagementPageSimple() {
             newProject={newProject}
             onNewProjectChange={setNewProject}
             onCreateProject={handleCreateProject}
+            onUpdateProject={handleUpdateProject}
             onDeleteProject={handleDeleteProject}
           />
         </TabsContent>

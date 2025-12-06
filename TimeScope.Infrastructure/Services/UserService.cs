@@ -330,6 +330,23 @@ public class UserService : IUserService
         return user;
     }
 
+    public async Task<User> UpdatePreferencesAsync(Guid id, string preferencesJson)
+    {
+        var user = await _adminUow.Users.GetByIdAsync(id);
+
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"User with ID {id} not found");
+        }
+
+        user.Preferences = preferencesJson;
+
+        await _adminUow.Users.UpdateAsync(user);
+        await _adminUow.SaveChangesAsync();
+
+        return user;
+    }
+
     #region Private Helper Methods - Logique métier
 
     private static void ValidateEmail(string email)
