@@ -49,10 +49,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "  - Swagger:     http://localhost:8080/swagger" -ForegroundColor Cyan
     Write-Host "  - pgAdmin:     http://localhost:5050" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  - DB Admin:    localhost:5443" -ForegroundColor Gray
-    Write-Host "  - DB Projects: localhost:5444" -ForegroundColor Gray
-    Write-Host "  - DB Time:     localhost:5445" -ForegroundColor Gray
-    Write-Host "  - DB Reports:  localhost:5446" -ForegroundColor Gray
+    Write-Host "  - Database:    localhost:5432 (PostgreSQL)" -ForegroundColor Gray
     Write-Host ""
     
     if (-not $SkipMonitoring) {
